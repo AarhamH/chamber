@@ -6,6 +6,6 @@ export default function App() {
   return (
     <ColorModeProvider initialColorMode="dark">
       <SideNavigation/>
-  </ColorModeProvider>
+    </ColorModeProvider>
   );
 }
