@@ -11,6 +11,10 @@ export const theme = {
     }
   },
   extend: {
+    fontFamily: {
+      title: ["Kaushan Script", "cursive"],
+      general: ["Urbanist", "sans-serif"],
+    },
     colors: {
       border: "hsl(var(--border))",
       input: "hsl(var(--input))",

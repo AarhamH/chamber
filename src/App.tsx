@@ -1,14 +1,11 @@
 import "./App.css"
-import { Button } from "~/components/ui/button"
+import {ColorModeProvider} from "@kobalte/core"
+import { SideNavigation } from "./components/SideNavigation";
 
-
-function App() {
-
+export default function App() {
   return (
-    <div>
-      <Button variant="destructive">Click here</Button> 
-    </div>
+    <ColorModeProvider initialColorMode="dark">
+      <SideNavigation/>
+    </ColorModeProvider>
   );
 }
-
-export default App;

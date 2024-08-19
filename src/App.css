@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  body {
+    font-family: "Urbanist", sans-serif;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
