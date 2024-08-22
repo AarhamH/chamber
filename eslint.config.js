@@ -11,7 +11,12 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {rules: {
-    "no-unused-vars": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+      }
+    ],
     "no-undef": "error",
     "no-shadow": "error",
     "no-unused-expressions": "error",
