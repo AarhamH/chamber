@@ -8,7 +8,7 @@ export const SideNavigation = () => {
   const searchIcon = "https://img.icons8.com/?size=100&id=elSdeHsB03U3&format=png&color=FFFFFF"
   return (
     <div>
-      <NavigationMenu class="bg-neutral-900 w-[12%] min-w-48" orientation="vertical">
+      <NavigationMenu class="bg-neutral-900 min-w-48" orientation="vertical">
         <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
           <img class="w-8 mr-2" src={palmTree}/>
           <span>Palm</span>
