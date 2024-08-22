@@ -1,11 +1,16 @@
 import { NavigationMenu } from "~/components/ui/navigation-menu"
 import { Button } from "~/components/ui/button";
 
-export const SideNavigation = () => {
+type SideNavigationProps = {
+  setActiveComponent: (_component: string) => void;
+}
+
+export const SideNavigation = (props:SideNavigationProps) => {
   const palmTree = "https://img.icons8.com/?size=100&id=10718&format=png&color=FFFFFF"
   const emptyFolder = "https://img.icons8.com/?size=100&id=43325&format=png&color=737373"
   const homeIcon = "https://img.icons8.com/?size=100&id=z6m63h25vYs2&format=png&color=FFFFFF"
   const searchIcon = "https://img.icons8.com/?size=100&id=elSdeHsB03U3&format=png&color=FFFFFF"
+  
   return (
     <div>
       <NavigationMenu class="bg-neutral-900 min-w-48" orientation="vertical">
@@ -14,11 +19,11 @@ export const SideNavigation = () => {
           <span>Palm</span>
         </div>
         <div>
-          <Button variant="ghost" size="lg" class="flex space-x-2">
+          <Button onClick={() => {props.setActiveComponent("home")}} variant="ghost" size="lg" class="flex space-x-2">
             <img class="w-5" src={homeIcon} />
             <span>Home</span>
           </Button> 
-          <Button variant="ghost" size="lg" class="flex space-x-2">
+          <Button onClick={() => {props.setActiveComponent("search")}} variant="ghost" size="lg" class="flex space-x-2">
             <img class="w-5" src={searchIcon} />
             <span>Search</span>
           </Button> 

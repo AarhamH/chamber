@@ -1,20 +1,24 @@
 import "./App.css"
 import {ColorModeProvider} from "@kobalte/core"
 import { SideNavigation } from "./components/SideNavigation";
-import { Route, Router } from "@solidjs/router";
 import { HomePage } from "./pages/HomePage";
+import { SearchPage } from "./pages/SearchPage";
+import { createSignal } from "solid-js";
 
 export default function App() {
+  const [activeComponent, setActiveComponent] = createSignal("home");
+
   return (
     <ColorModeProvider initialColorMode="dark">
       <div class="flex flex-row">
         <div class="flex-shrink-0">
-          <SideNavigation/>
+          <SideNavigation 
+            setActiveComponent={setActiveComponent} 
+          />
         </div>
         <div class="flex-1">
-          <Router>
-            <Route path="/" component={HomePage} />
-          </Router>
+          {activeComponent() === "home" && <HomePage />}
+          {activeComponent() === "search" && <SearchPage />}
         </div>
       </div>
     </ColorModeProvider>
