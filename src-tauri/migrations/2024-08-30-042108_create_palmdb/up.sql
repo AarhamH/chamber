@@ -1,0 +1,6 @@
+CREATE TABLE music(
+  id INTEGER PRIMARY KEY NOT NULL,
+  title TEXT NOT NULL,
+  artist TEXT NOT NULL,
+  path TEXT NOT NULL
+);

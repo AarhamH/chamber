@@ -1,9 +1,10 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    posts (id) {
+    music (id) {
         id -> Integer,
         title -> Text,
-        body -> Text,
+        artist -> Text,
+        path -> Text,
     }
 }
