@@ -22,7 +22,7 @@ fn run_migrations() {
     connection.run_pending_migrations(MIGRATIONS).unwrap();
 }
 
-fn establish_connection() -> SqliteConnection {
+pub fn establish_connection() -> SqliteConnection {
     let db_path: String = "sqlite://".to_string() + get_db_path().as_str();
 
     SqliteConnection::establish(&db_path)
