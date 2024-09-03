@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use serde::{Serialize,Deserialize};
 
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::music)]
@@ -15,4 +16,11 @@ pub struct Music {
   pub title: String,
   pub artist: String,
   pub path: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MusicArg{
+  pub title: Option<String>,
+  pub artist: Option<String>,
+  pub path:Option<String>,
 }

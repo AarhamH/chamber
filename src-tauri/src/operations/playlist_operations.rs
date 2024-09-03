@@ -1,27 +1,19 @@
 use diesel::prelude::*;
-use crate::entities::playlist_entity:: {
-    CreatePlaylist,
-    UpdatePlaylist,
-    InsertMusicIntoPlaylist,
-};
-
 use crate::models::playlist_model:: {
-    Playlist,
-    NewPlaylist 
+    NewPlaylist, Playlist, PlaylistArg 
 };
-
-use crate::models::playlist_music_model::NewPlaylistMusic;
-
+use crate::models::playlist_music_model::{NewPlaylistMusic, InsertMusicIntoPlaylistArg};
 use crate::db::establish_connection;
 
-pub fn create_playlist(playlist_arg: CreatePlaylist) {
+#[tauri::command]
+pub fn create_playlist(playlist_arg: PlaylistArg) {
   use crate::schema::playlist::dsl::*;
 
   let mut connection: SqliteConnection = establish_connection();
 
   let new_playlist: NewPlaylist<'_> = NewPlaylist {
-    title: &playlist_arg.title,
-    created_on: &playlist_arg.created_on,
+    title: &playlist_arg.title.unwrap_or_default().to_string(),
+    created_on: &playlist_arg.created_on.unwrap_or_default().to_string(),
   };
 
   diesel::insert_into(playlist)
@@ -30,24 +22,30 @@ pub fn create_playlist(playlist_arg: CreatePlaylist) {
     .expect("Error saving new playlist");
 }
 
-pub fn update_playlist(playlist_arg: UpdatePlaylist) {
-  use crate::schema::playlist::dsl::*;
+#[tauri::command]
+pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) {
+    use crate::schema::playlist::dsl::*;
 
-  let mut connection = establish_connection();
+    let mut connection = establish_connection();
 
-  let new_playlist = Playlist{
-    id: playlist_arg.id,
-    title: playlist_arg.title,
-    created_on: playlist_arg.created_on,
-  };
+    let current_playlist: Playlist = playlist
+        .find(id_arg)
+        .first(&mut connection)
+        .expect("Error loading playlist");
 
-  diesel::update(playlist.find(playlist_arg.id))
-    .set(&new_playlist)
-    .execute(&mut connection)
-    .expect("Error updating playlist");
+    let new_playlist = Playlist {
+        id:id_arg,
+        title: playlist_arg.title.unwrap_or(current_playlist.title),
+        created_on: playlist_arg.created_on.unwrap_or(current_playlist.created_on),
+    };
+
+    diesel::update(playlist.find(id_arg))
+        .set(&new_playlist)
+        .execute(&mut connection)
+        .expect("Error updating playlist");
 }
 
-pub fn inser_song_into_playlist(playlist_relationship: InsertMusicIntoPlaylist) {
+pub fn insert_song_into_playlist(playlist_relationship: InsertMusicIntoPlaylistArg) {
   use crate::schema::playlist_music::dsl::*;
 
   let mut connection = establish_connection();
