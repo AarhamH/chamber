@@ -10,7 +10,15 @@ pub mod operations {
 }
 
 fn main() {
+    use operations::playlist_operations::*;
+    use operations::music_operations::*;    
     tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![
+            create_playlist,
+            update_playlist,
+            create_music,
+            update_music
+         ])
         .setup(|_app| {
             db::init();
             Ok(())
