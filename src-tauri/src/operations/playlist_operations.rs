@@ -31,7 +31,7 @@ pub fn get_all_playlists() -> Vec<Playlist> {
     let playlists = playlist
         .load::<Playlist>(&mut connection)
         .expect("Error loading playlists");
-    println!("Displaying playlists");
+    
     playlists 
 }
 

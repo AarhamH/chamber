@@ -22,7 +22,6 @@ fn main() {
          ])
         .setup(|_app| {
             db::init();
-            print!("{:?}", get_all_playlists());
             Ok(())
         })
         .run(tauri::generate_context!())
