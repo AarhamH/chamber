@@ -20,8 +20,10 @@
     "windows": [
       {
         "title": "palm-player",
-        "width": 800,
-        "height": 600
+        "width": 1920,
+        "height": 1080,
+        "minWidth": 800,
+        "minHeight": 800
       }
     ],
     "security": {

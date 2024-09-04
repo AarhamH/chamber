@@ -23,6 +23,19 @@ pub fn create_playlist(playlist_arg: PlaylistArg) {
 }
 
 #[tauri::command]
+pub fn get_all_playlists() -> Vec<Playlist> {
+    use crate::schema::playlist::dsl::*;
+
+    let mut connection = establish_connection();
+
+    let playlists = playlist
+        .load::<Playlist>(&mut connection)
+        .expect("Error loading playlists");
+    
+    playlists 
+}
+
+#[tauri::command]
 pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) {
     use crate::schema::playlist::dsl::*;
 

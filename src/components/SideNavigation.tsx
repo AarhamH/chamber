@@ -1,12 +1,11 @@
 import type { JSX, ValidComponent } from "solid-js"
-import { splitProps } from "solid-js"
-
+import { createSignal, onMount, splitProps } from "solid-js"
 import type { PolymorphicProps } from "@kobalte/core"
 import * as NavigationMenuPrimitive from "@kobalte/core/navigation-menu"
-
 import { cn } from "~/lib/utils"
-
 import { Button } from "./Button"
+import { invoke } from "@tauri-apps/api/tauri"
+import { Playlist } from "~/interfaces/interfaces"
 
 type NavigationMenuProps<T extends ValidComponent = "ul"> =
   NavigationMenuPrimitive.NavigationMenuRootProps<T> & {
@@ -22,7 +21,7 @@ const NavigationMenu = <T extends ValidComponent = "ul">(
     <NavigationMenuPrimitive.Root
       gutter={6}
       class={cn(
-        "group/menu flex h-screen w-max flex-1 list-none data-[orientation=vertical]:flex-col [&>li]:w-full",
+        "group/menu flex flex-1 list-none data-[orientation=vertical]:flex-col [&>li]:w-full",
         local.class
       )}
       {...others}
@@ -61,9 +60,20 @@ export const SideNavigation = (props:SideNavigationProps) => {
   const homeIcon = "https://img.icons8.com/?size=100&id=z6m63h25vYs2&format=png&color=FFFFFF"
   const searchIcon = "https://img.icons8.com/?size=100&id=elSdeHsB03U3&format=png&color=FFFFFF"
   
+  const [playlists, setPlaylists] = createSignal<Playlist[]>([]);
+
+  onMount(async () => {
+    try {
+      const result = await invoke<Playlist[]>("get_all_playlists");
+      setPlaylists(result);
+    } catch (error) {
+      return error;
+    }
+  });
+
   return (
     <div>
-      <NavigationMenu class="bg-neutral-900 min-w-48" orientation="vertical">
+      <NavigationMenu class="bg-neutral-900 min-w-48 h-screen " orientation="vertical">
         <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
           <img class="w-8 mr-2" src={palmTree}/>
           <span>Palm</span>
@@ -79,10 +89,18 @@ export const SideNavigation = (props:SideNavigationProps) => {
           </Button> 
           <div class="mt-10">
             <Button variant="secondary" size="lg">(+) Add Playlist</Button>
-            <div>
-              <div class="flex flex-col items-center justify-center mt-12">
-                <img class="w-16" src={emptyFolder} />
-                <span class="text-neutral-400 text-lg m-4">No Playlist</span>
+            <div class="border-white-500 border-t max-h-[50vh] overflow-y-auto mt-5">
+              <div class="flex flex-col items-center justify-center">
+                {playlists().length > 0 ? (
+                  playlists().map((playlist) => (
+                    <Button variant="ghost" size="lg">{playlist.title}</Button>
+                  ))
+                ) : (
+                  <div class="flex flex-col items-center justify-center mt-12">
+                    <img class="w-16" src={emptyFolder} alt="Empty Folder" />
+                    <span class="text-neutral-400 text-lg m-4">No Playlist</span>
+                  </div>
+                )}
               </div> 
             </div>
           </div>
