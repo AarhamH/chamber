@@ -73,7 +73,7 @@ export const SideNavigation = (props:SideNavigationProps) => {
 
   return (
     <div>
-      <NavigationMenu class="bg-neutral-900 min-w-48 h-screen " orientation="vertical">
+      <NavigationMenu class="bg-neutral-900 min-w-48 h-screen overflow-hidden " orientation="vertical">
         <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
           <img class="w-8 mr-2" src={palmTree}/>
           <span>Palm</span>
