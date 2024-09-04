@@ -8,7 +8,7 @@ pub struct NewPlaylist<'a> {
     pub created_on: &'a str,
 }
 
-#[derive(Debug, Queryable, AsChangeset)]
+#[derive(Debug, Queryable, AsChangeset,Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::playlist)]
 pub struct Playlist{
   pub id: i32,

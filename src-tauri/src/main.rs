@@ -17,10 +17,12 @@ fn main() {
             create_playlist,
             update_playlist,
             create_music,
-            update_music
+            update_music,
+            get_all_playlists
          ])
         .setup(|_app| {
             db::init();
+            print!("{:?}", get_all_playlists());
             Ok(())
         })
         .run(tauri::generate_context!())
