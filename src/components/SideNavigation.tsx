@@ -89,21 +89,22 @@ export const SideNavigation = (props:SideNavigationProps) => {
           </Button> 
           <div class="mt-10">
             <Button variant="secondary" size="lg">(+) Add Playlist</Button>
-            <div class="border-white-500 border-t max-h-[50vh] overflow-y-auto mt-5">
-              <div class="flex flex-col items-center justify-center">
-                {playlists().length > 0 ? (
-                  playlists().map((playlist) => (
-                    <Button variant="ghost" size="lg">{playlist.title}</Button>
-                  ))
-                ) : (
-                  <div class="flex flex-col items-center justify-center mt-12">
-                    <img class="w-16" src={emptyFolder} alt="Empty Folder" />
-                    <span class="text-neutral-400 text-lg m-4">No Playlist</span>
-                  </div>
-                )}
-              </div> 
-            </div>
           </div>
+        </div>
+
+        <div class="border-white-500 border-t max-h-screen overflow-y-auto mt-5">
+          <div class="flex flex-col items-center justify-center">
+            {playlists().length > 0 ? (
+              playlists().map((playlist) => (
+                <Button variant="ghost" size="lg">{playlist.title}</Button>
+              ))
+            ) : (
+              <div class="flex flex-col items-center justify-center mt-12">
+                <img class="w-16" src={emptyFolder} alt="Empty Folder" />
+                <span class="text-neutral-400 text-lg m-4">No Playlist</span>
+              </div>
+            )}
+          </div> 
         </div>
       </NavigationMenu>
     </div>
