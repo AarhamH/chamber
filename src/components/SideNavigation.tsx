@@ -79,31 +79,38 @@ export const SideNavigation = (props:SideNavigationProps) => {
           <span>Palm</span>
         </div>
         <div>
-          <Button onClick={() => {props.setActiveComponent("home")}} variant="ghost" size="lg" class="flex space-x-2">
+          <Button onClick={() => {props.setActiveComponent("home")}} variant="default" class="flex space-x-2 px-10">
             <img class="w-5" src={homeIcon} />
             <span>Home</span>
           </Button> 
-          <Button onClick={() => {props.setActiveComponent("search")}} variant="ghost" size="lg" class="flex space-x-2">
+          <Button onClick={() => {props.setActiveComponent("search")}} variant="default" class="flex space-x-2 px-10">
             <img class="w-5" src={searchIcon} />
             <span>Search</span>
           </Button> 
           <div class="mt-10">
-            <Button variant="secondary" size="lg">(+) Add Playlist</Button>
-            <div class="border-white-500 border-t max-h-[50vh] overflow-y-auto mt-5">
-              <div class="flex flex-col items-center justify-center">
-                {playlists().length > 0 ? (
-                  playlists().map((playlist) => (
-                    <Button variant="ghost" size="lg">{playlist.title}</Button>
-                  ))
-                ) : (
-                  <div class="flex flex-col items-center justify-center mt-12">
-                    <img class="w-16" src={emptyFolder} alt="Empty Folder" />
-                    <span class="text-neutral-400 text-lg m-4">No Playlist</span>
-                  </div>
-                )}
-              </div> 
-            </div>
+            <Button variant="filled" size="lg">(+) Add Playlist</Button>
           </div>
+        </div>
+
+        <div class="border-white-500 border-t max-h-screen overflow-y-auto mt-5">
+          <div class="flex flex-col items-center justify-center">
+            {playlists().length > 0 ? (
+              playlists().map((playlist,index) => (
+                <Button variant="default" class="flex justify-between items-center text-left">
+                  <div class="p-2">
+                    {index + 1 + "."}
+                  </div>
+                  <span class="flex-grow">{playlist.title}</span>
+                  <i class="fas fa-icon-class p-2">(i)</i>
+                </Button>
+              ))
+            ) : (
+              <div class="flex flex-col items-center justify-center mt-12">
+                <img class="w-16" src={emptyFolder} alt="Empty Folder" />
+                <span class="text-neutral-400 text-lg m-4">No Playlist</span>
+              </div>
+            )}
+          </div> 
         </div>
       </NavigationMenu>
     </div>
