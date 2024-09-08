@@ -6,6 +6,7 @@ import { cn } from "~/lib/utils"
 import { Button } from "./Button"
 import { invoke } from "@tauri-apps/api/tauri"
 import { Playlist } from "~/interfaces/interfaces"
+import { useNavigate } from "@solidjs/router"
 
 type NavigationMenuProps<T extends ValidComponent = "ul"> =
   NavigationMenuPrimitive.NavigationMenuRootProps<T> & {
@@ -50,17 +51,14 @@ const NavigationMenuViewport = <T extends ValidComponent = "li">(
   )
 }
 
-type SideNavigationProps = {
-  setActiveComponent: (_component: string) => void;
-}
-
-export const SideNavigation = (props:SideNavigationProps) => {
+export const SideNavigation = () => {
   const palmTree = "https://img.icons8.com/?size=100&id=10718&format=png&color=FFFFFF"
   const emptyFolder = "https://img.icons8.com/?size=100&id=43325&format=png&color=737373"
   const homeIcon = "https://img.icons8.com/?size=100&id=z6m63h25vYs2&format=png&color=FFFFFF"
   const searchIcon = "https://img.icons8.com/?size=100&id=elSdeHsB03U3&format=png&color=FFFFFF"
   
   const [playlists, setPlaylists] = createSignal<Playlist[]>([]);
+  const navigate = useNavigate();
 
   onMount(async () => {
     try {
@@ -79,11 +77,11 @@ export const SideNavigation = (props:SideNavigationProps) => {
           <span>Palm</span>
         </div>
         <div>
-          <Button onClick={() => {props.setActiveComponent("home")}} variant="default" class="flex space-x-2 px-10">
+          <Button onClick={() => navigate("/")} variant="default" class="flex space-x-2 px-10">
             <img class="w-5" src={homeIcon} />
             <span>Home</span>
           </Button> 
-          <Button onClick={() => {props.setActiveComponent("search")}} variant="default" class="flex space-x-2 px-10">
+          <Button onClick={() => navigate("/search")} variant="default" class="flex space-x-2 px-10">
             <img class="w-5" src={searchIcon} />
             <span>Search</span>
           </Button> 
