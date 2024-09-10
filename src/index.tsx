@@ -7,6 +7,7 @@ import { HomePage } from "./pages/HomePage";
 import { SearchPage } from "./pages/SearchPage";
 import {ColorModeProvider} from "@kobalte/core"
 import { JSX } from "solid-js";
+import { PlaylistPage } from "./pages/PlaylistPage";
 
 type AppProps = {
   children?: JSX.Element;
@@ -34,5 +35,6 @@ render(
     <Router root={App}>
       <Route path="/" component={HomePage} />
       <Route path="/search" component={SearchPage} />
+      <Route path="/playlist/:id" component={PlaylistPage} />
     </Router>), 
   document.getElementById("root") as HTMLElement);
