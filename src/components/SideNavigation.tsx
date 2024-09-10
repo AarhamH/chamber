@@ -1,5 +1,5 @@
 import type { JSX, ValidComponent } from "solid-js"
-import { createSignal, onMount, splitProps } from "solid-js"
+import { onMount, splitProps } from "solid-js"
 import type { PolymorphicProps } from "@kobalte/core"
 import * as NavigationMenuPrimitive from "@kobalte/core/navigation-menu"
 import { cn } from "~/lib/utils"
@@ -7,6 +7,7 @@ import { Button } from "./Button"
 import { invoke } from "@tauri-apps/api/tauri"
 import { Playlist } from "~/interfaces/interfaces"
 import { useNavigate } from "@solidjs/router"
+import { playlists, setPlaylists } from "~/store/store"
 
 type NavigationMenuProps<T extends ValidComponent = "ul"> =
   NavigationMenuPrimitive.NavigationMenuRootProps<T> & {
@@ -57,17 +58,34 @@ export const SideNavigation = () => {
   const homeIcon = "https://img.icons8.com/?size=100&id=z6m63h25vYs2&format=png&color=FFFFFF"
   const searchIcon = "https://img.icons8.com/?size=100&id=elSdeHsB03U3&format=png&color=FFFFFF"
   
-  const [playlists, setPlaylists] = createSignal<Playlist[]>([]);
+  let playlistRef!: HTMLDivElement;
+
   const navigate = useNavigate();
 
-  onMount(async () => {
+  const fetchPlaylists = async () => {
     try {
       const result = await invoke<Playlist[]>("get_all_playlists");
       setPlaylists(result);
     } catch (error) {
       return error;
     }
-  });
+  };
+
+  onMount(fetchPlaylists);
+
+  async function addPlaylist() {
+    const playlistArg = {
+      title: "New Playlist232323",
+      created_on: "2021-09-01",
+    };
+    await invoke("create_playlist", { playlistArg });
+    fetchPlaylists();
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    playlistRef.scrollTop = playlistRef.scrollHeight; 
+  }
 
   return (
     <div>
@@ -86,14 +104,14 @@ export const SideNavigation = () => {
             <span>Search</span>
           </Button> 
           <div class="mt-10">
-            <Button variant="filled" size="lg">(+) Add Playlist</Button>
+            <Button onClick={addPlaylist} variant="filled" size="lg">(+) Add Playlist</Button>
           </div>
         </div>
 
-        <div class="border-white-500 border-t max-h-screen overflow-y-auto mt-5">
+        <div class="border-white-500 border-t max-h-screen overflow-y-auto mt-5" ref={playlistRef}>
           <div class="flex flex-col items-center justify-center">
-            {playlists().length > 0 ? (
-              playlists().map((playlist,index) => (
+            {playlists.length > 0 ? (
+              playlists.map((playlist,index) => (
                 <Button variant="default" class="flex justify-between items-center text-left">
                   <div class="p-2">
                     {index + 1 + "."}

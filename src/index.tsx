@@ -31,8 +31,8 @@ const App = (props: AppProps) => {
 
 render(
   () => (
-  <Router root={App}>
-    <Route path="/" component={HomePage} />
-    <Route path="/search" component={SearchPage} />
-  </Router>), 
+    <Router root={App}>
+      <Route path="/" component={HomePage} />
+      <Route path="/search" component={SearchPage} />
+    </Router>), 
   document.getElementById("root") as HTMLElement);
