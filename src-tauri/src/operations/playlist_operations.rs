@@ -16,14 +16,14 @@ pub fn create_playlist(playlist_arg: PlaylistArg) -> Result<(), String> {
     created_on: &playlist_arg.created_on.unwrap_or_default().to_string(),
   };
 
-  let result = diesel::insert_into(playlist)
+  let result: Result<usize, diesel::result::Error> = diesel::insert_into(playlist)
     .values(&new_playlist)
     .execute(&mut connection);
 
   match result {
     Ok(_) => Ok(()),
     Err(diesel::result::Error::DatabaseError(diesel::result::DatabaseErrorKind::UniqueViolation, _)) => {
-        Err("Error: Duplicate key value pair".to_string())
+        Err("Error: Could not create playlist entry".to_string())
     }
     Err(err) => {
         Err(format!("Error: {}", err))
@@ -41,7 +41,7 @@ pub fn get_all_playlists() -> Result<Vec<Playlist>, String> {
       Ok(result) => result,
       Err(err) => {
           eprintln!("Error loading playlists: {}", err);
-          return Err(format!("Error loading playlists: {}", err)); // Return an error message
+          return Err(format!("Error querying playlist entries: {}", err)); // Return an error message
       }
   };
   
@@ -52,7 +52,7 @@ pub fn get_all_playlists() -> Result<Vec<Playlist>, String> {
 pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) -> Result<(), String> {
   use crate::schema::playlist::dsl::*;
 
-  let mut connection = establish_connection();
+  let mut connection: SqliteConnection = establish_connection();
 
   let current_playlist: Playlist = playlist
     .find(id_arg)
@@ -65,13 +65,13 @@ pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) -> Result<(), Str
     created_on: playlist_arg.created_on.unwrap_or(current_playlist.created_on),
   };
 
-  let result = diesel::update(playlist.find(id_arg))
+  let result: Result<_, _> = diesel::update(playlist.find(id_arg))
     .set(&new_playlist)
     .execute(&mut connection);
 
   match result {
     Ok(_) => Ok(()),
-    Err(err) => Err(format!("Error updating playlist: {}", err)), // Return error to the client
+    Err(err) => Err(format!("Error updating playlist entry: {}", err)), // Return error to the client
   }
 }
 
@@ -79,9 +79,9 @@ pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) -> Result<(), Str
 pub fn insert_song_into_playlist(playlist_id_arg: i32, music_id_arg: i32) -> Result<(), String> {
   use crate::schema::playlist_music::dsl::*;
 
-  let mut connection = establish_connection();
+  let mut connection: SqliteConnection = establish_connection();
 
-  let new_playlist_music = NewPlaylistMusic {
+  let new_playlist_music: NewPlaylistMusic = NewPlaylistMusic {
     playlist_id: playlist_id_arg,
     music_id: music_id_arg,
   };
@@ -93,7 +93,7 @@ pub fn insert_song_into_playlist(playlist_id_arg: i32, music_id_arg: i32) -> Res
   match result {
       Ok(_) => Ok(()),
       Err(diesel::result::Error::DatabaseError(diesel::result::DatabaseErrorKind::UniqueViolation, _)) => {
-          Err("Error: Duplicate key value pair".to_string()) // Return error to the client
+          Err("Error: Duplicate key value pair for playlist entry".to_string())
       }
       Err(err) => {
           Err(format!("Error: {}", err))
