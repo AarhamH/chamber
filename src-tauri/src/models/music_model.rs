@@ -12,6 +12,7 @@ pub struct NewMusic<'a> {
 
 #[derive(Debug, Queryable, AsChangeset)]
 #[diesel(table_name = crate::schema::music)]
+#[derive(Serialize, Deserialize)]
 pub struct Music {
   pub id: i32,
   pub title: String,
