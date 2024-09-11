@@ -7,7 +7,8 @@ pub struct NewMusic<'a> {
     pub title: &'a str,
     pub artist: &'a str,
     pub path: &'a str,
-}
+    pub duration: &'a str
+  }
 
 #[derive(Debug, Queryable, AsChangeset)]
 #[diesel(table_name = crate::schema::music)]
@@ -16,6 +17,7 @@ pub struct Music {
   pub title: String,
   pub artist: String,
   pub path: String,
+  pub duration: String
 }
 
 #[derive(Serialize, Deserialize)]
@@ -23,4 +25,5 @@ pub struct MusicArg{
   pub title: Option<String>,
   pub artist: Option<String>,
   pub path:Option<String>,
+  pub duration:Option<String>
 }
