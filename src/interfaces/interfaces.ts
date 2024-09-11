@@ -14,10 +14,12 @@ export type Music = {
   title: string;
   artist: string;
   path: string;
+  duration: string;
 }
 
 export type MusicArg = {
   title: string | null;
   artist: string | null;
   path: string | null;
+  duration: string | null;
 }

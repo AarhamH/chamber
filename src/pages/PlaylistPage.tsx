@@ -1,4 +1,6 @@
 import { useParams } from "@solidjs/router"
+import { invoke } from "@tauri-apps/api/tauri";
+import { createEffect} from "solid-js";
 import {
   Table,
   TableBody,
@@ -9,9 +11,28 @@ import {
   TableRow
 } from "~/components/Table"
 
+import { Music } from "~/interfaces/interfaces";
+import { musicInPlaylist, setMusicInPlaylist } from "~/store/store";
+
 export const PlaylistPage = () => {
   const params = useParams();
   const playIcon = "https://img.icons8.com/?size=100&id=Uh8hvgeb99i5&format=png&color=FFFFFF" 
+
+  const fetchMusicFromPlaylist = async () => {
+    try {
+      const result = await invoke<Music[]>("get_all_music_from_playlist", {playlistIdArg: parseInt(params.id)});
+      setMusicInPlaylist(result);
+    } catch (error) {
+      return error
+    }
+  }
+
+  createEffect(() => {
+    if (params.id) {
+      fetchMusicFromPlaylist();
+    }
+  });
+  
   return(
     <div>
       <div class="h-40">
@@ -30,19 +51,24 @@ export const PlaylistPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow>
-            <TableCell class="flex justify-end w-16">
-              <img class="w-5" src={playIcon} />
-            </TableCell>
-            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">200</TableCell>
-            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">Vacuitya</TableCell>
-            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">Gojira</TableCell>
-            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">path/mp3.mpa</TableCell>
-            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">4:00</TableCell>
-            <TableCell class="flex justify-start w-16">
-              <img class="w-5" src={playIcon} />
-            </TableCell>  
-          </TableRow>
+          
+          {musicInPlaylist.map((song:Music) => (
+            <TableRow>
+              <TableCell class="flex justify-end w-16">
+                <img class="w-5" src={playIcon} />
+              </TableCell>
+              <>
+                <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.id}</TableCell>
+                <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
+                <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
+                <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
+                <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
+              </>
+              <TableCell class="flex justify-start w-16">
+                <img class="w-5" src={playIcon} />
+              </TableCell>  
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
       Playlist with id of <code>{params.id}</code>
