@@ -18,7 +18,11 @@ fn main() {
             update_playlist,
             create_music,
             update_music,
-            get_all_playlists
+            get_all_music_from_playlist,
+            get_all_playlists,
+            get_all_music,
+            insert_song_into_playlist
+         
          ])
         .setup(|_app| {
             db::init();

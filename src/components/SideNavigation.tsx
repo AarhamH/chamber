@@ -112,7 +112,7 @@ export const SideNavigation = () => {
           <div class="flex flex-col items-center justify-center">
             {playlists.length > 0 ? (
               playlists.map((playlist,index) => (
-                <Button variant="default" class="flex justify-between items-center text-left">
+                <Button onClick={() => navigate("/playlist/"+playlist.id)} variant="default" class="flex justify-between items-center text-left">
                   <div class="p-2">
                     {index + 1 + "."}
                   </div>

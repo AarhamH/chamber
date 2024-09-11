@@ -6,6 +6,7 @@ diesel::table! {
         title -> Text,
         artist -> Text,
         path -> Text,
+        duration -> Text,
     }
 }
 
