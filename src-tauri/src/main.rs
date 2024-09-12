@@ -21,6 +21,8 @@ fn main() {
             get_all_music_from_playlist,
             get_all_playlists,
             get_all_music,
+            get_playlist,
+            get_music,
             insert_song_into_playlist
          
          ])
