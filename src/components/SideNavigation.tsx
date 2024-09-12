@@ -70,7 +70,7 @@ export const SideNavigation = () => {
       return error;
     }
   };
-
+  
   onMount(fetchPlaylists);
 
   async function addPlaylist() {

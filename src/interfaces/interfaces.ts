@@ -4,11 +4,6 @@ export type Playlist = {
   created_on: string;
 }
 
-export type PlaylistArg = {
-  title: string | null;
-  created_on: string | null;
-}
-
 export type Music = {
   id: number;
   title: string;
@@ -17,9 +12,5 @@ export type Music = {
   duration: string;
 }
 
-export type MusicArg = {
-  title: string | null;
-  artist: string | null;
-  path: string | null;
-  duration: string | null;
-}
+export type PlaylistArg = Partial<Playlist>;
+export type MusicArg = Partial<Music>;
