@@ -83,7 +83,24 @@ pub fn get_all_music_from_playlist(playlist_id_arg: i32) -> Result<Vec<Music>, S
   
 }
 
+#[tauri::command]
+pub fn get_music(music_id_arg: i32) -> Result<Vec<Music>, String> {
+  use crate::schema::music::dsl::*;
 
+  let mut connection: SqliteConnection = establish_connection();
+
+  let music_list: Vec<Music> = match music
+    .filter(id.eq(music_id_arg))
+    .load::<Music>(&mut connection) {
+      Ok(result) => result,
+      Err(err) => {
+        eprintln!("Error loading music from playlist: {}", err);
+        return Err(format!("Error querying playlist music entries: {}", err));
+      }
+  };
+
+  Ok(music_list)
+}
 
 #[tauri::command]
 pub fn update_music(id_arg: i32, music_arg: MusicArg) -> Result<(), String> {
