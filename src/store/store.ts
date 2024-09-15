@@ -1,5 +1,5 @@
 import { createStore } from "solid-js/store";
-import type { Music, Playlist } from "~/interfaces/interfaces";
+import type { Music, Playlist } from "~/utils/types";
 
 export const [playlists, setPlaylists] = createStore<Playlist[]>([]);
 export const [musicInPlaylist, setMusicInPlaylist] = createStore<Music[]>([]);

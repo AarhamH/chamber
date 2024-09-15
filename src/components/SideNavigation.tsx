@@ -5,7 +5,7 @@ import * as NavigationMenuPrimitive from "@kobalte/core/navigation-menu"
 import { cn } from "~/lib/utils"
 import { Button } from "./Button"
 import { invoke } from "@tauri-apps/api/tauri"
-import { Playlist } from "~/interfaces/interfaces"
+import { Playlist } from "~/utils/types"
 import { useNavigate } from "@solidjs/router"
 import { playlists, setPlaylists } from "~/store/store"
 
