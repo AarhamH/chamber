@@ -1,7 +1,7 @@
 import { useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
 import { createEffect, createSignal} from "solid-js";
-import { PlaylistArg } from "~/interfaces/interfaces";
+import { PlaylistArg } from "~/utils/types";
 import {
   Table,
   TableBody,
@@ -12,8 +12,10 @@ import {
   TableRow
 } from "~/components/Table"
 
-import { Music } from "~/interfaces/interfaces";
+import { Music } from "~/utils/types";
 import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist } from "~/store/store";
+import { Button } from "~/components/Button";
+import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -51,20 +53,39 @@ export const PlaylistPage = () => {
     const newInput = e.target as HTMLInputElement;
     setPlaylistTitle(newInput.value); // Just set the local state without invoking update
   };
+
+  const insertMusicToPlaylist = async () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.multiple = true;
+    fileInput.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        console.log(files);
+      }
+    };
+    fileInput.click();
+  }
     
   return(
     <div>
-      <div class="h-40 flex items-center justify-center">
-        <input
-          type="text"
-          value={playlistTitle()}
-          onInput={handleInput}  
-          onBlur={changePlaylistTitle} 
-          onKeyPress={(e) => {
-            if (e.key === "Enter") changePlaylistTitle();
-          }}
-          class="text-center font-medium bg-transparent text-7xl"
-        />
+      <div class="pt-10 flex items-end justify- start">
+        <img src={img} class="ml-10 mr-10 w-48 h-auto rounded-md" />
+        <div class="flex flex-col">
+          <input
+            type="text"
+            value={playlistTitle()}
+            onInput={handleInput}  
+            onBlur={changePlaylistTitle} 
+            onKeyPress={(e) => {
+              if (e.key === "Enter") changePlaylistTitle();
+            }}
+            class="font-medium bg-transparent text-7xl"
+          />
+          <div class="flex flex-row mt-2">
+            <Button class="w-32" onClick={insertMusicToPlaylist} variant={"link"}>Add Music</Button> 
+          </div>
+        </div>
       </div>
       <Table>
         <TableCaption>A list of your recent invoices.</TableCaption>
