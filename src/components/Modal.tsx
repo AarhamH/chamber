@@ -4,7 +4,10 @@ import { createEffect, onCleanup, onMount, createUniqueId} from "solid-js";
 type ModalProps = {
   isShown: boolean;
   closeModal: () => void;
+  title: string;
   children: JSX.Element;
+  isAudioModal?: boolean;
+  headerButtons?: JSX.Element[];  
 };
 
 const Modal: Component<ModalProps> = (props) => {
@@ -14,7 +17,7 @@ const Modal: Component<ModalProps> = (props) => {
 
   function onCancel() {
     props.closeModal();
-  }
+  } 
 
   function onBackdropClick(e: MouseEvent) {
     const rect = modalRef?.getBoundingClientRect();
@@ -36,7 +39,7 @@ const Modal: Component<ModalProps> = (props) => {
       modalRef?.showModal();
     } else {
       modalRef?.close();
-    }
+    } 
   });
 
   onCleanup(() => {
@@ -45,18 +48,27 @@ const Modal: Component<ModalProps> = (props) => {
   });
 
   return (
-    <div class="fixed inset-0 z-50 flex items-center justify-center transition duration-700 bg-black bg-opacity-50">
+    <div class="absolute inset-0 z-50 flex items-center justify-center transition duration-700 bg-black bg-opacity-50">
       <dialog
         ref={modalRef}
         id={`modal-${dialogId}`}
-        class="p-4 bg-black w-3/4 h-3/4 rounded-md transition-transform duration-300 transform scale-95"
+        class="p-4 bg-zinc-900 w-5/6 h-5/6 rounded-md overflow-hidden"
       >
         <div>
           <button onClick={props.closeModal} class="absolute top-4 right-4 cursor-pointer">
             X
           </button>
+          <div class="flex flex-col items-center justify-center font-medium text-4xl">
+            {props.title}
+            <div class="flex space-x-2">
+              {props.headerButtons?.map((button) => (
+                <div>{button}</div>
+              ))}
+            </div>
+          </div>
+
         </div>
-        <div class="flex items-center justify-center h-full">
+        <div class="flex justify-center h-5/6">
           {props.children}
         </div>
       </dialog>
