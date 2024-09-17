@@ -21,7 +21,7 @@ const App = (props: AppProps) => {
           <div class="flex-shrink-0">
             <SideNavigation />
           </div>
-          <div class="flex-1">
+          <div class="flex-1 max-h-screen overflow-auto">
             {props.children}
           </div>
         </div>

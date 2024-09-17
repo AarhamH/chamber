@@ -1,6 +1,6 @@
 import { useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
-import { createEffect, createSignal} from "solid-js";
+import { createEffect, createSignal, onMount} from "solid-js";
 import { MusicArg, PlaylistArg } from "~/utils/types";
 import {
   Table,
@@ -13,10 +13,11 @@ import {
 } from "~/components/Table"
 
 import { Music } from "~/utils/types";
-import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist } from "~/store/store";
+import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import Modal from "~/components/Modal";
+import { on } from "events";
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -24,6 +25,13 @@ export const PlaylistPage = () => {
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists[parseInt(params.id)-1].title);
   const [modalIsOpen, setModalIsOpen] = createSignal(false);
   const closeModal = () => setModalIsOpen(false);
+  let playlistPageRef!: HTMLDivElement;
+
+  onMount(() => {
+    if (params.id) {
+      playlistPageRef.scrollTop = 0 
+    }
+  })
 
   createEffect(() => {
     if (params.id) {
@@ -32,11 +40,25 @@ export const PlaylistPage = () => {
       setPlaylistTitle(playlists[playlistIndex]?.title || ""); // Update playlist title
     }
   });
+
+  createEffect(() => {
+    fetchAllAudio();
+    fetchMusicFromPlaylist();
+  },[musicInPlaylist, music]);
   
   const fetchMusicFromPlaylist = async () => {
     try {
       const result = await invoke<Music[]>("get_all_music_from_playlist", {playlistIdArg: parseInt(params.id)});
       setMusicInPlaylist(result);
+    } catch (error) {
+      return error
+    }
+  }
+
+  const fetchAllAudio = async () => {
+    try {
+      const result = await invoke<Music[]>("get_all_music");
+      setMusic(result);
     } catch (error) {
       return error
     }
@@ -67,8 +89,12 @@ export const PlaylistPage = () => {
     await invoke("create_music", { musicArg }); 
   };
 
+  const headerButtons = [
+    <Button class="w-32" onClick={insertMusicToPlaylist} variant={"link"}>Add Audio</Button>,
+  ]
+
   return(
-    <div>
+    <div ref={playlistPageRef}>
       <div class="pt-10 flex items-end justify- start">
         <img src={img} class="ml-10 mr-10 w-48 h-auto rounded-md" />
         <div class="flex flex-col">
@@ -101,8 +127,7 @@ export const PlaylistPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-            
-          {musicInPlaylist.map((song:Music) => (
+          {music.map((song:Music) => (
             <TableRow>
               <TableCell class="flex justify-end w-16">
                 <img class="w-5" src={playIcon} />
@@ -121,8 +146,33 @@ export const PlaylistPage = () => {
       </Table>
 
       {modalIsOpen() && (
-        <Modal isShown={modalIsOpen()} closeModal={closeModal}>
-          hey
+        <Modal isAudioModal title="Downloaded Music" isShown={modalIsOpen()} closeModal={closeModal} headerButtons={headerButtons}>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead class="w-2 truncate">ID</TableHead>
+                <TableHead class="w-1/4 truncate">Title</TableHead>
+                <TableHead class="w-2/12 truncate">Artist</TableHead>
+                <TableHead class="w-1/2 truncate">Path</TableHead>
+                <TableHead class="w-10 truncate">Duration</TableHead>
+                <TableHead class="w-16 text-right truncate"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {music.map((song:Music) => (
+                <TableRow>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.id}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
+                  <TableCell class="flex justify-end w-16">
+                    <img class="w-5" src={playIcon} />
+                  </TableCell>  
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Modal>
       )}
     </div>
