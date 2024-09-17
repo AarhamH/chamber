@@ -1,63 +1,18 @@
-import type { JSX, ValidComponent } from "solid-js"
-import { onMount, splitProps } from "solid-js"
-import type { PolymorphicProps } from "@kobalte/core"
-import * as NavigationMenuPrimitive from "@kobalte/core/navigation-menu"
-import { cn } from "~/lib/utils"
+import { onMount } from "solid-js"
 import { Button } from "./Button"
 import { invoke } from "@tauri-apps/api/tauri"
-import { Playlist } from "~/interfaces/interfaces"
+import { Playlist } from "~/utils/types"
 import { useNavigate } from "@solidjs/router"
 import { playlists, setPlaylists } from "~/store/store"
 
-type NavigationMenuProps<T extends ValidComponent = "ul"> =
-  NavigationMenuPrimitive.NavigationMenuRootProps<T> & {
-    class?: string | undefined
-    children?: JSX.Element
-  }
-
-const NavigationMenu = <T extends ValidComponent = "ul">(
-  props: PolymorphicProps<T, NavigationMenuProps<T>>
-) => {
-  const [local, others] = splitProps(props as NavigationMenuProps, ["class", "children"])
-  return (
-    <NavigationMenuPrimitive.Root
-      gutter={6}
-      class={cn(
-        "group/menu flex flex-1 list-none data-[orientation=vertical]:flex-col [&>li]:w-full",
-        local.class
-      )}
-      {...others}
-    >
-      {local.children}
-      <NavigationMenuViewport />
-    </NavigationMenuPrimitive.Root>
-  )
-}
-
-type NavigationMenuViewportProps<T extends ValidComponent = "li"> =
-  NavigationMenuPrimitive.NavigationMenuViewportProps<T> & { class?: string | undefined }
-
-const NavigationMenuViewport = <T extends ValidComponent = "li">(
-  props: PolymorphicProps<T, NavigationMenuViewportProps<T>>
-) => {
-  const [local, others] = splitProps(props as NavigationMenuViewportProps, ["class"])
-  return (
-    <NavigationMenuPrimitive.Viewport
-      class={cn(
-        "pointer-events-none z-[1000] flex h-[var(--kb-navigation-menu-viewport-height)] w-[var(--kb-navigation-menu-viewport-width)] origin-[var(--kb-menu-content-transform-origin)] items-center justify-center overflow-x-clip overflow-y-visible rounded-md border bg-popover opacity-0 shadow-lg transition-[width,height] duration-200 ease-in data-[expanded]:pointer-events-auto data-[orientation=vertical]:overflow-y-clip data-[orientation=vertical]:overflow-x-visible data-[expanded]:rounded-md data-[expanded]:opacity-100 data-[expanded]:ease-out",
-        local.class
-      )}
-      {...others}
-    />
-  )
-}
+const icons = {
+  palmTree: "https://img.icons8.com/?size=100&id=10718&format=png&color=FFFFFF",
+  emptyFolder: "https://img.icons8.com/?size=100&id=43325&format=png&color=737373",
+  homeIcon: "https://img.icons8.com/?size=100&id=z6m63h25vYs2&format=png&color=FFFFFF",
+  searchIcon: "https://img.icons8.com/?size=100&id=elSdeHsB03U3&format=png&color=FFFFFF",
+};
 
 export const SideNavigation = () => {
-  const palmTree = "https://img.icons8.com/?size=100&id=10718&format=png&color=FFFFFF"
-  const emptyFolder = "https://img.icons8.com/?size=100&id=43325&format=png&color=737373"
-  const homeIcon = "https://img.icons8.com/?size=100&id=z6m63h25vYs2&format=png&color=FFFFFF"
-  const searchIcon = "https://img.icons8.com/?size=100&id=elSdeHsB03U3&format=png&color=FFFFFF"
-  
   let playlistRef!: HTMLDivElement;
 
   const navigate = useNavigate();
@@ -88,47 +43,40 @@ export const SideNavigation = () => {
   }
 
   return (
-    <div>
-      <NavigationMenu class="bg-neutral-900 min-w-48 h-screen overflow-hidden " orientation="vertical">
-        <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
-          <img class="w-8 mr-2" src={palmTree}/>
-          <span>Palm</span>
+    <div class="bg-neutral-900 min-w-48 h-screen flex flex-col">
+      <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
+        <img class="w-8 mr-2" src={icons.palmTree} alt="Palm Icon" />
+        <span>Palm</span>
+      </div>
+      <div>
+        <Button class="flex space-x-2 px-10" onClick={() => navigate("/")}>
+          <img class="w-5" src={icons.homeIcon} alt="Home" />
+          <span>Home</span>
+        </Button>
+        <Button class="flex space-x-2 px-10" onClick={() => navigate("/search")}>
+          <img class="w-5" src={icons.searchIcon} alt="Search" />
+          <span>Search</span>
+        </Button>
+        <div class="mt-10">
+          <Button class="w-full" variant={"filled"} onClick={addPlaylist}>(+) Add Playlist</Button>
         </div>
-        <div>
-          <Button onClick={() => navigate("/")} variant="default" class="flex space-x-2 px-10">
-            <img class="w-5" src={homeIcon} />
-            <span>Home</span>
-          </Button> 
-          <Button onClick={() => navigate("/search")} variant="default" class="flex space-x-2 px-10">
-            <img class="w-5" src={searchIcon} />
-            <span>Search</span>
-          </Button> 
-          <div class="mt-10">
-            <Button onClick={addPlaylist} variant="filled" size="lg">(+) Add Playlist</Button>
+      </div>
+      <div class="border-t border-white-500 max-h-screen overflow-y-auto mt-5 flex-1" ref={playlistRef}>
+        {playlists.length > 0 ? (
+          playlists.map((playlist, index) => (
+            <Button class="flex justify-between w-full" onClick={() => navigate(`/playlist/${playlist.id}`)}>
+              <span class="p-2">{index + 1}.</span>
+              <span class="flex-grow text-left">{playlist.title}</span>
+              <i class="fas fa-icon-class p-2">(i)</i>
+            </Button>
+          ))
+        ) : (
+          <div class="flex flex-col items-center justify-center mt-12">
+            <img class="w-16" src={icons.emptyFolder} alt="Empty Folder" />
+            <span class="text-neutral-400 text-lg m-4">No Playlist</span>
           </div>
-        </div>
-
-        <div class="border-white-500 border-t max-h-screen overflow-y-auto mt-5" ref={playlistRef}>
-          <div class="flex flex-col items-center justify-center">
-            {playlists.length > 0 ? (
-              playlists.map((playlist,index) => (
-                <Button onClick={() => navigate("/playlist/"+playlist.id)} variant="default" class="flex justify-between items-center text-left">
-                  <div class="p-2">
-                    {index + 1 + "."}
-                  </div>
-                  <span class="flex-grow">{playlist.title}</span>
-                  <i class="fas fa-icon-class p-2">(i)</i>
-                </Button>
-              ))
-            ) : (
-              <div class="flex flex-col items-center justify-center mt-12">
-                <img class="w-16" src={emptyFolder} alt="Empty Folder" />
-                <span class="text-neutral-400 text-lg m-4">No Playlist</span>
-              </div>
-            )}
-          </div> 
-        </div>
-      </NavigationMenu>
+        )}
+      </div>
     </div>
   );
 }
