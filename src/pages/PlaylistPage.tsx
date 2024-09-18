@@ -27,12 +27,6 @@ export const PlaylistPage = () => {
   const closeModal = () => setModalIsOpen(false);
   let playlistPageRef!: HTMLDivElement;
 
-  onMount(() => {
-    if (params.id) {
-      playlistPageRef.scrollTop = 0 
-    }
-  })
-
   createEffect(() => {
     if (params.id) {
       const playlistIndex = parseInt(params.id) - 1;
