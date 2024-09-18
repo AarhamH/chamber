@@ -1,11 +1,10 @@
 import { useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
-import { createEffect, createSignal, onMount} from "solid-js";
+import { createEffect, createSignal} from "solid-js";
 import { MusicArg, PlaylistArg } from "~/utils/types";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -17,7 +16,6 @@ import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, se
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import Modal from "~/components/Modal";
-import { on } from "events";
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -35,11 +33,6 @@ export const PlaylistPage = () => {
     }
   });
 
-  createEffect(() => {
-    fetchAllAudio();
-    fetchMusicFromPlaylist();
-  },[musicInPlaylist, music]);
-  
   const fetchMusicFromPlaylist = async () => {
     try {
       const result = await invoke<Music[]>("get_all_music_from_playlist", {playlistIdArg: parseInt(params.id)});
@@ -72,19 +65,30 @@ export const PlaylistPage = () => {
     const newInput = e.target as HTMLInputElement;
     setPlaylistTitle(newInput.value); // Just set the local state without invoking update
   };
+  
+  const insertMusicToPlaylist = async (id:number) => {
+    try{
+      await invoke("insert_song_into_playlist", { playlistIdArg: parseInt(params.id), musicIdArg: id });
+      fetchMusicFromPlaylist();
+    } catch (error) {
+      return error
+    }
+  };
 
-  const insertMusicToPlaylist = async () => {
+
+  const  addAudio= async () => {
     const musicArg: MusicArg = {
       title: "Unknown",
       artist: "Unknown",
       path: "Unknown",   
       duration: "Unknown"
     }
-    await invoke("create_music", { musicArg }); 
+    await invoke("create_music", { musicArg });
+    fetchAllAudio();
   };
-
+  
   const headerButtons = [
-    <Button class="w-32" onClick={insertMusicToPlaylist} variant={"link"}>Add Audio</Button>,
+    <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>,
   ]
 
   return(
@@ -120,12 +124,12 @@ export const PlaylistPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {music.map((song:Music) => (
+          {musicInPlaylist.map((song:Music, index: number) => (
             <TableRow>
               <TableCell class="flex justify-end w-16">
                 <img class="w-5" src={playIcon} />
               </TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.id}</TableCell>
+              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
@@ -152,15 +156,15 @@ export const PlaylistPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {music.map((song:Music) => (
+              {music.map((song:Music,index:number) => (
                 <TableRow>
-                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.id}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
                   <TableCell class="flex justify-end w-16">
-                    <img class="w-5" src={playIcon} />
+                    <img onClick={() => insertMusicToPlaylist(song.id)} class="w-5" src={playIcon} />
                   </TableCell>  
                 </TableRow>
               ))}
