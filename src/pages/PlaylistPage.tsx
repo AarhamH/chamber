@@ -95,7 +95,7 @@ export const PlaylistPage = () => {
 
   return(
     <div ref={playlistPageRef}>
-      <div class="pt-10 flex items-end justify- start">
+      <div class="pt-10 pb-5 flex items-end justify- start">
         <img src={img} class="ml-10 mr-10 w-48 h-auto rounded-md" />
         <div class="flex flex-col">
           <input
@@ -114,7 +114,6 @@ export const PlaylistPage = () => {
         </div>
       </div>
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead class="ml-5 w-16 text-left"></TableHead>
