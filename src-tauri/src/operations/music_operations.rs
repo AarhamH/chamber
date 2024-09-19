@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use crate::schema::music::dsl::*;
 
 use crate::models::music_model:: {
     Music, MusicArg, NewMusic
@@ -6,8 +7,13 @@ use crate::models::music_model:: {
 use crate::db::establish_connection;
 
 #[tauri::command]
-pub fn create_music(music_arg: MusicArg) -> Result<(), String> {
-  use crate::schema::music::dsl::*;
+pub fn create_music(file_path: String) -> Result<(), String> {
+  use crate::helper::files::process_audio_file;
+
+  let music_arg: MusicArg = match process_audio_file(file_path) {
+      Ok(arg) => arg,
+      Err(err) => return Err(err),
+  };
 
   let mut connection: SqliteConnection = establish_connection();
 
