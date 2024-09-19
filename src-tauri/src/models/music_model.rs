@@ -21,7 +21,7 @@ pub struct Music {
   pub duration: String
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug,Serialize, Deserialize)]
 pub struct MusicArg{
   pub title: Option<String>,
   pub artist: Option<String>,
