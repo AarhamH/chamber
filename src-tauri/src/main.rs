@@ -1,23 +1,16 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-pub mod db;
-pub mod models;
-pub mod schema;
-
-pub mod operations {
-    pub mod playlist_operations;
-    pub mod music_operations;
-}
+use palm_player::operations::playlist_operations::*;
+use palm_player::operations::music_operations::*;
+use palm_player::db;
 
 fn main() {
-    use operations::playlist_operations::*;
-    use operations::music_operations::*;    
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             create_playlist,
             update_playlist,
-            create_music,
             update_music,
+            create_music,
             get_all_music_from_playlist,
             get_all_playlists,
             get_all_music,
