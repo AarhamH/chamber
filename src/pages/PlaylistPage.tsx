@@ -1,7 +1,7 @@
 import { useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
 import { createEffect, createSignal} from "solid-js";
-import { MusicArg, PlaylistArg } from "~/utils/types";
+import { PlaylistArg } from "~/utils/types";
 import {
   Table,
   TableBody,
@@ -77,13 +77,8 @@ export const PlaylistPage = () => {
 
 
   const  addAudio= async () => {
-    const musicArg: MusicArg = {
-      title: "Unknown",
-      artist: "Unknown",
-      path: "Unknown",   
-      duration: "Unknown"
-    }
-    await invoke("create_music", { musicArg });
+    const filePath = "/home/ahaider/Desktop/History's Worst Non-Water Floods.mp3"
+    await invoke("create_music", { filePath: filePath });
     fetchAllAudio();
   };
   
