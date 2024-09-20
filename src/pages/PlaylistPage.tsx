@@ -29,6 +29,7 @@ export const PlaylistPage = () => {
     if (params.id) {
       const playlistIndex = parseInt(params.id) - 1;
       fetchMusicFromPlaylist();
+      fetchAllAudio();
       setPlaylistTitle(playlists[playlistIndex]?.title || ""); // Update playlist title
     }
   });
