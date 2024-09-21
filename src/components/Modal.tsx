@@ -1,5 +1,6 @@
 import type { Component, JSX } from "solid-js";
 import { createEffect, onCleanup, onMount} from "solid-js";
+import { IoCloseOutline } from "solid-icons/io";
 
 type ModalProps = {
   isShown: boolean;
@@ -54,19 +55,14 @@ const Modal: Component<ModalProps> = (props) => {
             props.size === "md" ? "w-2/3 h-2/3" :
               "w-5/6 h-5/6"
         } rounded-md overflow-hidden bg-zinc-900 bg-opacity-70`}>
-        <div>
-          <button onClick={props.closeModal} class="absolute top-4 right-4 cursor-pointer">
-            X
-          </button>
-          <div class="flex flex-col items-center justify-center font-medium text-4xl">
-            {props.title}
-            <div class="flex space-x-2">
-              {props.headerButtons?.map((button) => (
-                <div>{button}</div>
-              ))}
-            </div>
+        <IoCloseOutline class="absolute top-4 right-4 cursor-pointer" onClick={props.closeModal} />
+        <div class="flex flex-col items-center justify-center font-medium text-4xl">
+          {props.title}
+          <div class="flex space-x-2">
+            {props.headerButtons?.map((button) => (
+              <div>{button}</div>
+            ))}
           </div>
-
         </div>
         <div class="flex justify-center h-5/6">
           {props.children}

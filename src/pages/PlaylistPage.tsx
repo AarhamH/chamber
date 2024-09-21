@@ -16,10 +16,12 @@ import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, se
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import Modal from "~/components/Modal";
+import { BiRegularTrashAlt } from "solid-icons/bi"
+import { BiRegularPlay } from "solid-icons/bi"
+import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 
 export const PlaylistPage = () => {
   const params = useParams();
-  const playIcon = "https://img.icons8.com/?size=100&id=Uh8hvgeb99i5&format=png&color=FFFFFF" 
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(
     playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || ""
   );
@@ -104,7 +106,7 @@ export const PlaylistPage = () => {
 
   return(
     <div ref={playlistPageRef}>
-      <div class="pt-10 pb-5 flex items-end justify- start">
+      <div class="pt-10 pb-5 flex items-end justify-start">
         <img src={img} class="ml-10 mr-10 w-48 h-auto rounded-md" />
         <div class="flex flex-col">
           <input
@@ -138,16 +140,16 @@ export const PlaylistPage = () => {
         <TableBody>
           {musicInPlaylist.map((song:Music, index: number) => (
             <TableRow>
-              <TableCell class="flex justify-end w-16">
-                <img class="w-5" src={playIcon} />
+              <TableCell class="flex justify-end hover:curso  r-pointer">
+                <BiRegularPlay size={36} />
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
-              <TableCell class="flex justify-start w-16">
-                <img class="w-5" src={playIcon} />
+              <TableCell>
+                <BiRegularTrashAlt class="flex justify-start hover:cursor-pointer" size={24} />
               </TableCell>  
             </TableRow>
           ))}
@@ -185,8 +187,8 @@ export const PlaylistPage = () => {
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
-                  <TableCell class="flex justify-end w-16">
-                    <img onClick={() => insertMusicToPlaylist(song.id)} class="w-5" src={playIcon} />
+                  <TableCell class="flex justify-end hover:cursor-pointer">
+                    <BiRegularDotsVerticalRounded size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
                   </TableCell>  
                 </TableRow>
               ))}
