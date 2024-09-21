@@ -51,7 +51,7 @@ const Modal: Component<ModalProps> = (props) => {
       <dialog
         ref={modalRef}
         class={`p-4 ${
-          props.size === "sm" ? "w-1/4 h-1/4" :
+          props.size === "sm" ? "w-1/5 h-1/5" :
             props.size === "md" ? "w-2/3 h-2/3" :
               "w-5/6 h-5/6"
         } rounded-md overflow-hidden bg-zinc-900`}>
@@ -64,7 +64,7 @@ const Modal: Component<ModalProps> = (props) => {
             ))}
           </div>
         </div>
-        <div class="flex justify-center h-5/6">
+        <div class="flex justify-center h-5/6 text-center">
           {props.children}
         </div>
       </dialog>

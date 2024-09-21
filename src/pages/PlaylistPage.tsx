@@ -32,11 +32,10 @@ import { IoAdd } from "solid-icons/io"
 export const PlaylistPage = () => {
   const params = useParams();
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(
-    playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || ""
-  );
-  const [modalIsOpen, setModalIsOpen] = createSignal(false);
+    playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
+  const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
-  const closeModal = () => setModalIsOpen(false);
+  const closeModal = () => setIsAddModalOpen(false);
   const closeDeleteModal = () => setIsDeleteModalOpen(false);
   let playlistPageRef!: HTMLDivElement;
   const navigate = useNavigate()
@@ -143,15 +142,13 @@ export const PlaylistPage = () => {
             type="text"
             value={playlistTitle()}
             onInput={handleInput}  
-            onBlur={changePlaylistTitle} 
-            onKeyPress={(e) => {
-              if (e.key === "Enter") changePlaylistTitle();
-            }}
+            onBlur={() => playlistTitle().trim() !== "" ? changePlaylistTitle() : null} 
+            onKeyPress={(e) => e.key === "Enter" && playlistTitle().trim() !== "" ? changePlaylistTitle() : null}
             class="font-medium bg-transparent text-7xl"
           />
           <div class="flex flex-row mt-6 space-x-4">
-            <Button class="w-32" onClick={() => {setModalIsOpen(true)}} variant={"filled"} size={"sm"}>Add Music</Button> 
-            <Button class="w-32" onClick={() => {setIsDeleteModalOpen(true)}} variant={"destructive"} size={"sm"}>Delete Playlist</Button> 
+            <Button class="w-32" onClick={() => setIsAddModalOpen(true)} variant={"filled"} size={"sm"}>Add Music</Button> 
+            <Button class="w-32" onClick={() => setIsDeleteModalOpen(true)} variant={"destructive"} size={"sm"}>Delete Playlist</Button> 
           </div>
         </div>
       </div>
@@ -195,7 +192,7 @@ export const PlaylistPage = () => {
       {isDeleteModalOpen() && (
         <Modal size="sm" isShown={isDeleteModalOpen()} closeModal={closeDeleteModal}>
           <div class="flex flex-col items-center justify-center mt-5 ">
-            <div class="text-xl font-semibold">Are you sure you want to delete?</div>
+            <div class="text-xl font-semibold mb-4">Are you sure you want to delete?</div>
             <div class="flex flex-row space-x-4">
               <Button class="w-16" onClick={closeDeleteModal} variant={"default"} size={"sm"}>Cancel</Button>
               <Button class="w-16" onClick={deleteCurrentPlaylist} variant={"destructive"} size={"sm"}>Delete</Button>
@@ -203,8 +200,8 @@ export const PlaylistPage = () => {
           </div>  
         </Modal>
       )}
-      {modalIsOpen() && (
-        <Modal size="lg" title="Add Audio To Playlist" isShown={modalIsOpen()} closeModal={closeModal} headerButtons={headerButtons}>
+      {isAddModalOpen() && (
+        <Modal size="lg" title="Add Audio To Playlist" isShown={isAddModalOpen()} closeModal={closeModal} headerButtons={headerButtons}>
           <Table>
             <TableHeader>
               <TableRow>
