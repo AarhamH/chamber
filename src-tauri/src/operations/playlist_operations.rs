@@ -78,7 +78,7 @@ pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) -> Result<(), Str
     .first(&mut connection)
     .expect("Error loading playlist");
 
-  let new_playlist = Playlist {
+  let new_playlist: Playlist = Playlist {
     id: id_arg,
     title: playlist_arg.title.unwrap_or(current_playlist.title),
     created_on: playlist_arg.created_on.unwrap_or(current_playlist.created_on),

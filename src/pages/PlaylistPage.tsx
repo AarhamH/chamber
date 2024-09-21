@@ -11,14 +11,21 @@ import {
   TableRow
 } from "~/components/Table"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "~/components/Dropdown"
+
 import { Music } from "~/utils/types";
 import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import Modal from "~/components/Modal";
-import { BiRegularTrashAlt } from "solid-icons/bi"
 import { BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
+import { IoAdd } from "solid-icons/io"
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -100,6 +107,15 @@ export const PlaylistPage = () => {
     } 
   }
 
+  const removeFromPlaylist = async (id: number) => {
+    try {
+      await invoke("destroy_song_from_playlist", { playlistIdArg: parseInt(params.id), musicIdArg: id });
+      fetchMusicFromPlaylist();
+    } catch (error) {
+      return error
+    } 
+  }
+
   const headerButtons = [
     <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>,
   ]
@@ -140,7 +156,7 @@ export const PlaylistPage = () => {
         <TableBody>
           {musicInPlaylist.map((song:Music, index: number) => (
             <TableRow>
-              <TableCell class="flex justify-end hover:curso  r-pointer">
+              <TableCell class="flex justify-end hover:cursor-pointer">
                 <BiRegularPlay size={36} />
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
@@ -149,7 +165,14 @@ export const PlaylistPage = () => {
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
               <TableCell>
-                <BiRegularTrashAlt class="flex justify-start hover:cursor-pointer" size={24} />
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <BiRegularDotsVerticalRounded size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem class="text-red-500 hover:cursor-pointer" onClick={() => {removeFromPlaylist(song.id)}}>Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>                    
               </TableCell>  
             </TableRow>
           ))}
@@ -167,7 +190,7 @@ export const PlaylistPage = () => {
         </Modal>
       )}
       {modalIsOpen() && (
-        <Modal size="lg" title="Downloaded Music" isShown={modalIsOpen()} closeModal={closeModal} headerButtons={headerButtons}>
+        <Modal size="lg" title="Add Audio To Playlist" isShown={modalIsOpen()} closeModal={closeModal} headerButtons={headerButtons}>
           <Table>
             <TableHeader>
               <TableRow>
@@ -187,8 +210,8 @@ export const PlaylistPage = () => {
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
-                  <TableCell class="flex justify-end hover:cursor-pointer">
-                    <BiRegularDotsVerticalRounded size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
+                  <TableCell>
+                    <IoAdd class="flex justify-end hover:cursor-pointer" size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
                   </TableCell>  
                 </TableRow>
               ))}

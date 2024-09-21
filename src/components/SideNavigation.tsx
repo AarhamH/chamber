@@ -39,7 +39,7 @@ export const SideNavigation = () => {
   }
 
   return (
-    <div class="bg-neutral-900 w-64 h-screen flex flex-col">
+    <div class="bg-zinc-900 w-64 h-screen flex flex-col">
       <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
         <span>Palm</span>
       </div>

@@ -54,7 +54,7 @@ const Modal: Component<ModalProps> = (props) => {
           props.size === "sm" ? "w-1/4 h-1/4" :
             props.size === "md" ? "w-2/3 h-2/3" :
               "w-5/6 h-5/6"
-        } rounded-md overflow-hidden bg-zinc-900 bg-opacity-70`}>
+        } rounded-md overflow-hidden bg-zinc-900`}>
         <IoCloseOutline class="absolute top-4 right-4 cursor-pointer" onClick={props.closeModal} />
         <div class="flex flex-col items-center justify-center font-medium text-4xl">
           {props.title}
