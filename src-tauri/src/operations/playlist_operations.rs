@@ -3,7 +3,6 @@ use crate::models::playlist_model:: {
     NewPlaylist, Playlist, PlaylistArg 
 };
 use crate::models::music_model::Music;
-use crate::models::playlist_music_model::NewPlaylistMusic;
 use crate::db::establish_connection;
 
 #[tauri::command]
@@ -95,31 +94,6 @@ pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) -> Result<(), Str
   }
 }
 
-#[tauri::command]
-pub fn insert_song_into_playlist(playlist_id_arg: i32, music_id_arg: i32) -> Result<(), String> {
-  use crate::schema::playlist_music::dsl::*;
-
-  let mut connection: SqliteConnection = establish_connection();
-
-  let new_playlist_music: NewPlaylistMusic = NewPlaylistMusic {
-    playlist_id: playlist_id_arg,
-    music_id: music_id_arg,
-  };
-
-  let result: Result<usize, diesel::result::Error> = diesel::insert_into(playlist_music)
-    .values(&new_playlist_music)
-    .execute(&mut connection);
-
-  match result {
-      Ok(_) => Ok(()),
-      Err(diesel::result::Error::DatabaseError(diesel::result::DatabaseErrorKind::UniqueViolation, _)) => {
-          Err("Error: Duplicate key value pair for playlist entry".to_string())
-      }
-      Err(err) => {
-          Err(format!("Error: {}", err))
-      }
-  }
-}
 
 #[tauri::command]
 pub fn get_all_music_from_playlist(playlist_id_arg: i32) -> Result<Vec<Music>, String> {
@@ -155,14 +129,26 @@ pub fn get_all_music_from_playlist(playlist_id_arg: i32) -> Result<Vec<Music>, S
 #[tauri::command]
 pub fn delete_playlist(playlist_id_arg: i32) -> Result<(), String> {
   use crate::schema::playlist::dsl::*;
-
+  use crate::schema::playlist_music::dsl::*;
+  
   let mut connection: SqliteConnection = establish_connection();
 
-  let result: Result<usize, diesel::result::Error> = diesel::delete(playlist.filter(id.eq(playlist_id_arg)))
+  // Delete playlist entries from playlist_music first to maintain referential integrity
+  let result_playlist_music: Result<usize, diesel::result::Error> = diesel::delete(playlist_music.filter(playlist_id.eq(playlist_id_arg)))
     .execute(&mut connection);
 
-  match result {
+  match result_playlist_music {
+    Ok(_) => (),
+    Err(err) => return Err(format!("Error deleting playlist music entries: {}", err)), // Return error to the client
+  }
+
+  // Delete the playlist entry
+  let result_playlist: Result<usize, diesel::result::Error> = diesel::delete(playlist.filter(id.eq(playlist_id_arg)))
+    .execute(&mut connection);
+
+  match result_playlist {
     Ok(_) => Ok(()),
     Err(err) => Err(format!("Error deleting playlist entry: {}", err)), // Return error to the client
   }
+
 }

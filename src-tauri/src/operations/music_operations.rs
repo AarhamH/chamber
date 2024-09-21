@@ -105,3 +105,30 @@ pub fn update_music(id_arg: i32, music_arg: MusicArg) -> Result<(), String> {
       Err(err) => Err(format!("Error updating music entry: {}", err)), // Return error to the client
     }
 }
+
+#[tauri::command]
+pub fn delete_music(music_id_arg: i32) -> Result<(), String> {
+  use crate::schema::music::dsl::*;
+  use crate::schema::playlist_music::dsl::*;
+  
+  let mut connection: SqliteConnection = establish_connection();
+
+  // Delete playlist entries from playlist_music first to maintain referential integrity
+  let result_playlist_music: Result<usize, diesel::result::Error> = diesel::delete(playlist_music.filter(playlist_id.eq(music_id_arg)))
+    .execute(&mut connection);
+
+  match result_playlist_music {
+    Ok(_) => (),
+    Err(err) => return Err(format!("Error deleting playlist music entries: {}", err)), // Return error to the client
+  }
+
+  // Delete the playlist entry
+  let result_playlist: Result<usize, diesel::result::Error> = diesel::delete(music.filter(id.eq(music_id_arg)))
+    .execute(&mut connection);
+
+  match result_playlist {
+    Ok(_) => Ok(()),
+    Err(err) => Err(format!("Error deleting playlist entry: {}", err)), // Return error to the client
+  }
+
+}
