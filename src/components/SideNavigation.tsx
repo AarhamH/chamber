@@ -38,7 +38,7 @@ export const SideNavigation = () => {
   async function addPlaylist(title: string) {
     const playlistArg = {
       title: title,
-      created_on: Date.now().toString(),
+      created_on: new Date().toISOString(),
     };
     await invoke("create_playlist", { playlistArg });
     fetchPlaylists();
