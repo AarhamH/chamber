@@ -14,4 +14,5 @@ pub mod models {
 pub mod operations {
     pub mod playlist_operations;
     pub mod music_operations;
+    pub mod playlist_music_operations;
 }

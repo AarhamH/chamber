@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use palm_player::operations::playlist_operations::*;
 use palm_player::operations::music_operations::*;
+use palm_player::operations::playlist_music_operations::*;
 use palm_player::db;
 
 fn main() {
@@ -16,8 +17,9 @@ fn main() {
             get_all_music,
             get_playlist,
             get_music,
-            insert_song_into_playlist
-         
+            delete_music,
+            insert_song_into_playlist,
+            delete_playlist
          ])
         .setup(|_app| {
             db::init();

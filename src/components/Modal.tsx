@@ -1,18 +1,16 @@
 import type { Component, JSX } from "solid-js";
-import { createEffect, onCleanup, onMount, createUniqueId} from "solid-js";
+import { createEffect, onCleanup, onMount} from "solid-js";
 
 type ModalProps = {
   isShown: boolean;
   closeModal: () => void;
-  title: string;
+  title?: string;
   children: JSX.Element;
-  isAudioModal?: boolean;
-  headerButtons?: JSX.Element[];  
+  headerButtons?: JSX.Element[];
+  size: "sm" | "md" | "lg";
 };
 
 const Modal: Component<ModalProps> = (props) => {
-  const dialogId = createUniqueId();
-
   let modalRef: HTMLDialogElement | undefined;
 
   function onCancel() {
@@ -48,12 +46,14 @@ const Modal: Component<ModalProps> = (props) => {
   });
 
   return (
-    <div class="absolute inset-0 z-50 flex items-center justify-center transition duration-700 bg-black bg-opacity-50">
+    <div class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md">
       <dialog
         ref={modalRef}
-        id={`modal-${dialogId}`}
-        class="p-4 bg-zinc-900 w-5/6 h-5/6 rounded-md overflow-hidden"
-      >
+        class={`p-4 ${
+          props.size === "sm" ? "w-1/4 h-1/4" :
+            props.size === "md" ? "w-2/3 h-2/3" :
+              "w-5/6 h-5/6"
+        } rounded-md overflow-hidden bg-zinc-900 bg-opacity-70`}>
         <div>
           <button onClick={props.closeModal} class="absolute top-4 right-4 cursor-pointer">
             X

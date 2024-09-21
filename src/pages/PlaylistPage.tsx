@@ -1,7 +1,7 @@
-import { useParams } from "@solidjs/router"
+import { useNavigate, useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
 import { createEffect, createSignal} from "solid-js";
-import { PlaylistArg } from "~/utils/types";
+import { Playlist, PlaylistArg } from "~/utils/types";
 import {
   Table,
   TableBody,
@@ -20,16 +20,22 @@ import Modal from "~/components/Modal";
 export const PlaylistPage = () => {
   const params = useParams();
   const playIcon = "https://img.icons8.com/?size=100&id=Uh8hvgeb99i5&format=png&color=FFFFFF" 
-  const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists[parseInt(params.id)-1].title);
+  const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(
+    playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || ""
+  );
   const [modalIsOpen, setModalIsOpen] = createSignal(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
   const closeModal = () => setModalIsOpen(false);
+  const closeDeleteModal = () => setIsDeleteModalOpen(false);
   let playlistPageRef!: HTMLDivElement;
+  const navigate = useNavigate()
 
   createEffect(() => {
     if (params.id) {
-      const playlistIndex = parseInt(params.id) - 1;
       fetchMusicFromPlaylist();
-      setPlaylistTitle(playlists[playlistIndex]?.title || ""); // Update playlist title
+      fetchAllAudio();
+      const playlist = playlists.find((playlistItem) => playlistItem.id === parseInt(params.id));
+      setPlaylistTitle(playlist?.title || "");
     }
   });
 
@@ -75,13 +81,23 @@ export const PlaylistPage = () => {
     }
   };
 
-
   const  addAudio= async () => {
     const filePath = "/home/ahaider/Desktop/History's Worst Non-Water Floods.mp3"
     await invoke("create_music", { filePath: filePath });
     fetchAllAudio();
   };
-  
+ 
+  const deleteCurrentPlaylist = async () => {
+    try {
+      await invoke("delete_playlist", { playlistIdArg: parseInt(params.id) });
+      const result = await invoke<Playlist[]>("get_all_playlists");
+      setPlaylists(result);
+      navigate("/search");
+    } catch (error) {
+      return error
+    } 
+  }
+
   const headerButtons = [
     <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>,
   ]
@@ -101,8 +117,9 @@ export const PlaylistPage = () => {
             }}
             class="font-medium bg-transparent text-7xl"
           />
-          <div class="flex flex-row mt-2">
-            <Button class="w-32" onClick={() => {setModalIsOpen(true)}} variant={"link"}>Add Music</Button> 
+          <div class="flex flex-row mt-6 space-x-4">
+            <Button class="w-32" onClick={() => {setModalIsOpen(true)}} variant={"filled"} size={"sm"}>Add Music</Button> 
+            <Button class="w-32" onClick={() => {setIsDeleteModalOpen(true)}} variant={"destructive"} size={"sm"}>Delete Playlist</Button> 
           </div>
         </div>
       </div>
@@ -136,9 +153,19 @@ export const PlaylistPage = () => {
           ))}
         </TableBody>
       </Table>
-
+      {isDeleteModalOpen() && (
+        <Modal size="sm" isShown={isDeleteModalOpen()} closeModal={closeDeleteModal}>
+          <div class="flex flex-col items-center justify-center mt-5 ">
+            <div class="text-xl font-semibold">Are you sure you want to delete?</div>
+            <div class="flex flex-row space-x-4">
+              <Button class="w-16" onClick={closeDeleteModal} variant={"default"} size={"sm"}>Cancel</Button>
+              <Button class="w-16" onClick={deleteCurrentPlaylist} variant={"destructive"} size={"sm"}>Delete</Button>
+            </div>
+          </div>  
+        </Modal>
+      )}
       {modalIsOpen() && (
-        <Modal isAudioModal title="Downloaded Music" isShown={modalIsOpen()} closeModal={closeModal} headerButtons={headerButtons}>
+        <Modal size="lg" title="Downloaded Music" isShown={modalIsOpen()} closeModal={closeModal} headerButtons={headerButtons}>
           <Table>
             <TableHeader>
               <TableRow>
