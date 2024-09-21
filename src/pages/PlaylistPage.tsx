@@ -63,7 +63,8 @@ export const PlaylistPage = () => {
     const playlistArg: PlaylistArg = { title: playlistTitle() };
     try{
       await invoke("update_playlist", { idArg: parseInt(params.id), playlistArg });
-      setPlaylists(parseInt(params.id) - 1, "title", playlistTitle());
+      const result = await invoke<Playlist[]>("get_all_playlists");
+      setPlaylists(result);
     } catch (error) {
       return error
     }
