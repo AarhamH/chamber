@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
+import { open } from "@tauri-apps/api/dialog";
 import { createEffect, createSignal} from "solid-js";
 import { Playlist, PlaylistArg } from "~/utils/types";
 import {
@@ -11,23 +12,30 @@ import {
   TableRow
 } from "~/components/Table"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "~/components/Dropdown"
+
 import { Music } from "~/utils/types";
 import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import Modal from "~/components/Modal";
-import { BiRegularTrashAlt } from "solid-icons/bi"
 import { BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
+import { IoAdd } from "solid-icons/io"
+
 
 export const PlaylistPage = () => {
   const params = useParams();
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(
-    playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || ""
-  );
-  const [modalIsOpen, setModalIsOpen] = createSignal(false);
+    playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
+  const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
-  const closeModal = () => setModalIsOpen(false);
+  const closeModal = () => setIsAddModalOpen(false);
   const closeDeleteModal = () => setIsDeleteModalOpen(false);
   let playlistPageRef!: HTMLDivElement;
   const navigate = useNavigate()
@@ -85,9 +93,21 @@ export const PlaylistPage = () => {
   };
 
   const  addAudio= async () => {
-    const filePath = "/home/ahaider/Desktop/History's Worst Non-Water Floods.mp3"
-    await invoke("create_music", { filePath: filePath });
-    fetchAllAudio();
+    const filePaths = await open({
+      multiple: true,
+      filters: [{
+        name: "Audio Files",
+        extensions: ["mp3", "wav"],
+      }],
+    });
+    
+    // Check if any files were selected
+    if (filePaths && Array.isArray(filePaths)) {
+      for (const filePath of filePaths) {
+        await invoke("create_music", { filePath });
+      }
+      fetchAllAudio();
+    }
   };
  
   const deleteCurrentPlaylist = async () => {
@@ -96,6 +116,15 @@ export const PlaylistPage = () => {
       const result = await invoke<Playlist[]>("get_all_playlists");
       setPlaylists(result);
       navigate("/search");
+    } catch (error) {
+      return error
+    } 
+  }
+
+  const removeFromPlaylist = async (id: number) => {
+    try {
+      await invoke("destroy_song_from_playlist", { playlistIdArg: parseInt(params.id), musicIdArg: id });
+      fetchMusicFromPlaylist();
     } catch (error) {
       return error
     } 
@@ -114,15 +143,13 @@ export const PlaylistPage = () => {
             type="text"
             value={playlistTitle()}
             onInput={handleInput}  
-            onBlur={changePlaylistTitle} 
-            onKeyPress={(e) => {
-              if (e.key === "Enter") changePlaylistTitle();
-            }}
+            onBlur={() => playlistTitle().trim() !== "" ? changePlaylistTitle() : null} 
+            onKeyPress={(e) => e.key === "Enter" && playlistTitle().trim() !== "" ? changePlaylistTitle() : null}
             class="font-medium bg-transparent text-7xl"
           />
           <div class="flex flex-row mt-6 space-x-4">
-            <Button class="w-32" onClick={() => {setModalIsOpen(true)}} variant={"filled"} size={"sm"}>Add Music</Button> 
-            <Button class="w-32" onClick={() => {setIsDeleteModalOpen(true)}} variant={"destructive"} size={"sm"}>Delete Playlist</Button> 
+            <Button class="w-32" onClick={() => setIsAddModalOpen(true)} variant={"filled"} size={"sm"}>Add Music</Button> 
+            <Button class="w-32" onClick={() => setIsDeleteModalOpen(true)} variant={"destructive"} size={"sm"}>Delete Playlist</Button> 
           </div>
         </div>
       </div>
@@ -141,7 +168,7 @@ export const PlaylistPage = () => {
         <TableBody>
           {musicInPlaylist.map((song:Music, index: number) => (
             <TableRow>
-              <TableCell class="flex justify-end hover:curso  r-pointer">
+              <TableCell class="flex justify-end hover:cursor-pointer">
                 <BiRegularPlay size={36} />
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
@@ -150,7 +177,14 @@ export const PlaylistPage = () => {
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
               <TableCell>
-                <BiRegularTrashAlt class="flex justify-start hover:cursor-pointer" size={24} />
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <BiRegularDotsVerticalRounded size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem class="text-red-500 hover:cursor-pointer" onClick={() => {removeFromPlaylist(song.id)}}>Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>                    
               </TableCell>  
             </TableRow>
           ))}
@@ -159,7 +193,7 @@ export const PlaylistPage = () => {
       {isDeleteModalOpen() && (
         <Modal size="sm" isShown={isDeleteModalOpen()} closeModal={closeDeleteModal}>
           <div class="flex flex-col items-center justify-center mt-5 ">
-            <div class="text-xl font-semibold">Are you sure you want to delete?</div>
+            <div class="text-xl font-semibold mb-4">Are you sure you want to delete?</div>
             <div class="flex flex-row space-x-4">
               <Button class="w-16" onClick={closeDeleteModal} variant={"default"} size={"sm"}>Cancel</Button>
               <Button class="w-16" onClick={deleteCurrentPlaylist} variant={"destructive"} size={"sm"}>Delete</Button>
@@ -167,8 +201,8 @@ export const PlaylistPage = () => {
           </div>  
         </Modal>
       )}
-      {modalIsOpen() && (
-        <Modal size="lg" title="Downloaded Music" isShown={modalIsOpen()} closeModal={closeModal} headerButtons={headerButtons}>
+      {isAddModalOpen() && (
+        <Modal size="lg" title="Add Audio To Playlist" isShown={isAddModalOpen()} closeModal={closeModal} headerButtons={headerButtons}>
           <Table>
             <TableHeader>
               <TableRow>
@@ -188,8 +222,8 @@ export const PlaylistPage = () => {
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
-                  <TableCell class="flex justify-end hover:cursor-pointer">
-                    <BiRegularDotsVerticalRounded size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
+                  <TableCell>
+                    <IoAdd class="flex justify-end hover:cursor-pointer" size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
                   </TableCell>  
                 </TableRow>
               ))}

@@ -19,7 +19,8 @@ fn main() {
             get_music,
             delete_music,
             insert_song_into_playlist,
-            delete_playlist
+            delete_playlist,
+            destroy_song_from_playlist
          ])
         .setup(|_app| {
             db::init();
