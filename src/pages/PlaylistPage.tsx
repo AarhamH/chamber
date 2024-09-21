@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
+import { open } from "@tauri-apps/api/dialog";
 import { createEffect, createSignal} from "solid-js";
 import { Playlist, PlaylistArg } from "~/utils/types";
 import {
@@ -26,6 +27,7 @@ import Modal from "~/components/Modal";
 import { BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
+
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -91,9 +93,21 @@ export const PlaylistPage = () => {
   };
 
   const  addAudio= async () => {
-    const filePath = "/home/ahaider/Desktop/History's Worst Non-Water Floods.mp3"
-    await invoke("create_music", { filePath: filePath });
-    fetchAllAudio();
+    const filePaths = await open({
+      multiple: true,
+      filters: [{
+        name: "Audio Files",
+        extensions: ["mp3", "wav"],
+      }],
+    });
+    
+    // Check if any files were selected
+    if (filePaths && Array.isArray(filePaths)) {
+      for (const filePath of filePaths) {
+        await invoke("create_music", { filePath });
+      }
+      fetchAllAudio();
+    }
   };
  
   const deleteCurrentPlaylist = async () => {
