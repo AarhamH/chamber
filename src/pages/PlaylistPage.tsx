@@ -31,14 +31,13 @@ import { IoAdd } from "solid-icons/io"
 
 export const PlaylistPage = () => {
   const params = useParams();
-  const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(
-    playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
+  const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
   const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
   const closeModal = () => setIsAddModalOpen(false);
   const closeDeleteModal = () => setIsDeleteModalOpen(false);
   let playlistPageRef!: HTMLDivElement;
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   createEffect(() => {
     if (params.id) {
