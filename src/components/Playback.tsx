@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onMount } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BiRegularPlay, BiRegularPause } from "solid-icons/bi";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
@@ -45,7 +45,9 @@ const PlayBack = () => {
         audioRef.addEventListener("timeupdate", () => {
           setTrackProgress(audioRef.currentTime);
         });
-  
+        
+        audioRef.play();
+
         audioRef.addEventListener("play", () => {
           setIsAudioPlaying(true);
         });
