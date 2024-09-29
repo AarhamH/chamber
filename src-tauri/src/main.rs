@@ -4,6 +4,7 @@ use palm_player::operations::playlist_operations::*;
 use palm_player::operations::music_operations::*;
 use palm_player::operations::playlist_music_operations::*;
 use palm_player::db;
+use palm_player::audio::audio_handler::*;
 
 fn main() {
     tauri::Builder::default()
@@ -20,7 +21,8 @@ fn main() {
             delete_music,
             insert_song_into_playlist,
             delete_playlist,
-            destroy_song_from_playlist
+            destroy_song_from_playlist,
+            get_audio_data
          ])
         .setup(|_app| {
             db::init();
