@@ -27,6 +27,7 @@ import Modal from "~/components/Modal";
 import { BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
+import { setActiveAudio } from "~/store/store";
 
 
 export const PlaylistPage = () => {
@@ -168,7 +169,7 @@ export const PlaylistPage = () => {
           {musicInPlaylist.map((song:Music, index: number) => (
             <TableRow>
               <TableCell class="flex justify-end hover:cursor-pointer">
-                <BiRegularPlay size={36} />
+                <BiRegularPlay size={36} onClick={() => setActiveAudio(song)} />
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>

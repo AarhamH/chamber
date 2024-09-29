@@ -1,9 +1,9 @@
-import { createSignal, onMount } from "solid-js";
+import { createEffect, createSignal, onMount } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BiRegularPlay, BiRegularPause } from "solid-icons/bi";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
 import { BiRegularVolumeFull } from "solid-icons/bi";
-import { activeAudio, setActiveAudio } from "~/store/store";
+import { activeAudio } from "~/store/store";
 
 const PlayBack = () => {
   const [audioUrl, setAudioUrl] = createSignal("");
@@ -18,26 +18,38 @@ const PlayBack = () => {
     return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  onMount(async () => {
+  createEffect(async () => {
     try {
-      const audioData: number[] = await invoke("get_audio_data");
-      const audioBlob = new Blob([new Uint8Array(audioData)], { type: "audio/mp3" });
+      const audioData: string = await invoke("get_audio_data", { filePath: activeAudio?.path });
+  
+      // Decode the base64 string to binary
+      const byteCharacters = atob(audioData);
+      const byteNumbers = new Array(byteCharacters.length);
+      
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      
+      const byteArray = new Uint8Array(byteNumbers);
+  
+      // Create a Blob from the Uint8Array
+      const audioBlob = new Blob([byteArray], { type: "audio/mp3" }); // Adjust the type according to your audio format
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
-
+  
       if (audioRef) {
         audioRef.addEventListener("loadedmetadata", () => {
           setAudioDuration(audioRef.duration);
         });
-
+  
         audioRef.addEventListener("timeupdate", () => {
           setTrackProgress(audioRef.currentTime);
         });
-
+  
         audioRef.addEventListener("play", () => {
           setIsAudioPlaying(true);
         });
-
+  
         audioRef.addEventListener("pause", () => {
           setIsAudioPlaying(false);
         });
@@ -45,7 +57,7 @@ const PlayBack = () => {
     } catch (error) {
       return error;
     }
-  });
+  }, [activeAudio]);
 
   const togglePlay = () => {
     if(audioRef) {
