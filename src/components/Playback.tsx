@@ -5,7 +5,7 @@ import { activeAudio } from "~/store/store";
 import { useAudio } from "./AudioContext";
 
 const PlayBack = () => {
-  const { loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange } = useAudio();
+  const { loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -48,7 +48,6 @@ const PlayBack = () => {
             value={trackProgress()}
             onInput={handleTrackChange}
             class="flex-grow"
-            style={{ width: "calc(100% - 96px)" }} // Adjust based on label widths
           />
           <span class="text-sm ml-2 w-12 text-left">
             {formatTime(audioDuration())}
@@ -57,7 +56,7 @@ const PlayBack = () => {
       </div>
       <div class="w-1/5 p-2 flex flex-row justify-start">
         <BiRegularVolumeFull size={28} class="mr-2" />
-        <input type="range" min={0} max={100} class="w-1/2" />
+        <input type="range" min="0" max="1" step="0.01"onInput={handleVolumeChange} class="w-1/2" />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { createContext, createEffect, createSignal, ParentProps, useContext } fr
 import { activeAudio } from "~/store/store";
 
 interface AudioContextType {
+  loading: () => boolean; 
   audioUrl: () => string;
   trackProgress: () => number;
   isAudioPlaying: () => boolean;
@@ -12,6 +13,8 @@ interface AudioContextType {
   handleSkipBackward: () => void;
   // eslint-disable-next-line no-unused-vars
   handleTrackChange: (event: Event) => void;
+  // eslint-disable-next-line no-unused-vars
+  handleVolumeChange: (event: Event) => void;
 }
 
 const AudioContext = createContext<AudioContextType>();
@@ -23,12 +26,12 @@ export const AudioProvider  = (props: ParentProps) => {
   let audioRef: HTMLAudioElement | undefined;
   const [isAudioPlaying, setIsAudioPlaying] = createSignal(false);
   const [audioDuration, setAudioDuration] = createSignal(0);
-
+  const [loading, setLoading] = createSignal(false);
 
   createEffect(async () => {
     try {
+      setLoading(true);
       const audioData: string = await invoke("get_audio_data", { filePath: activeAudio?.path });
-  
       // Decode the base64 string to binary
       const byteCharacters = atob(audioData);
       const byteNumbers = new Array(byteCharacters.length);
@@ -54,7 +57,6 @@ export const AudioProvider  = (props: ParentProps) => {
         });
         
         audioRef.play();
-
         audioRef.addEventListener("play", () => {
           setIsAudioPlaying(true);
         });
@@ -65,6 +67,8 @@ export const AudioProvider  = (props: ParentProps) => {
       }
     } catch (error) {
       return error;
+    } finally {
+      setLoading(false);
     }
   }, audioUrl);
 
@@ -98,9 +102,16 @@ export const AudioProvider  = (props: ParentProps) => {
     }
   };
 
+  const handleVolumeChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (audioRef) {
+      audioRef.volume = parseFloat(target.value);
+    }
+  };
+
   return (
-    <AudioContext.Provider value={{ audioUrl, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange: handleTrackChange }}>
-      <audio ref={audioRef} src={audioUrl()} id="audio" />
+    <AudioContext.Provider value={{ loading, audioUrl, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange}}>
+      <audio ref={audioRef} src={audioUrl()} id="audio"/>
       {props.children}
     </AudioContext.Provider>
   );
