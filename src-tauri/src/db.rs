@@ -13,7 +13,7 @@ pub fn init() {
     if !db_file_exists() {
         create_db_file();
     }
-
+    create_audio_store_directory();
     run_migrations();
 }
 
@@ -48,4 +48,13 @@ fn db_file_exists() -> bool {
 fn get_db_path() -> String {
     let repo_dir: std::path::PathBuf = env::current_dir().unwrap();
     repo_dir.to_str().unwrap().to_string() + "/palmdb.sqlite"
+}
+
+fn create_audio_store_directory() {
+    let audio_store_path = Path::new("audio_store");
+    if !audio_store_path.exists() {
+        fs::create_dir(audio_store_path).unwrap_or_else(|err| {
+            eprintln!("Failed to create audio_store directory: {}", err);
+        });
+    }
 }
