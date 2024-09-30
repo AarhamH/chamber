@@ -1,11 +1,10 @@
 import { BiRegularPlay, BiRegularPause } from "solid-icons/bi";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
 import { BiRegularVolumeFull } from "solid-icons/bi";
-import { activeAudio } from "~/store/store";
 import { useAudio } from "./AudioContext";
 
 const PlayBack = () => {
-  const { trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange } = useAudio();
+  const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -18,12 +17,12 @@ const PlayBack = () => {
       <div class="w-1/5 ml-16 h-full p-2 flex flex-col items-center justify-center text-center">
         <div class="truncate w-full mb-1">
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center">
-            {activeAudio?.title ?? "n/A"}
+            {loading() ? "Loading..." : `${activeAudio()?.title ?? "n/A"}`}
           </span>
         </div>
-        <div class="truncate w-full">
+        <div class="truncate w-full" style={{ width: "200px" }}>
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center text-sm font-thin">
-            {activeAudio?.path?? "n/A"}
+            {loading() ? "Hold on!" : activeAudio()?.path ?? "n/A"}
           </span>
         </div>
       </div>
@@ -48,7 +47,6 @@ const PlayBack = () => {
             value={trackProgress()}
             onInput={handleTrackChange}
             class="flex-grow"
-            style={{ width: "calc(100% - 96px)" }} // Adjust based on label widths
           />
           <span class="text-sm ml-2 w-12 text-left">
             {formatTime(audioDuration())}
@@ -57,7 +55,7 @@ const PlayBack = () => {
       </div>
       <div class="w-1/5 p-2 flex flex-row justify-start">
         <BiRegularVolumeFull size={28} class="mr-2" />
-        <input type="range" min={0} max={100} class="w-1/2" />
+        <input type="range" min="0" max="1" step="0.01"onInput={handleVolumeChange} class="w-1/2" />
       </div>
     </div>
   );

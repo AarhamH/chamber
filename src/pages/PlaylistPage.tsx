@@ -20,19 +20,21 @@ import {
 } from "~/components/Dropdown"
 
 import { Music } from "~/utils/types";
-import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic, activeAudio, setActiveAudio } from "~/store/store";
+import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic, activeAudio } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import Modal from "~/components/Modal";
 import { BiRegularPause, BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
+import { useAudio } from "~/components/AudioContext";
 
 export const PlaylistPage = () => {
   const params = useParams();
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
   const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
+  const { setActiveAudio } = useAudio();
   const closeModal = () => setIsAddModalOpen(false);
   const closeDeleteModal = () => setIsDeleteModalOpen(false);
   let playlistPageRef!: HTMLDivElement;
@@ -90,7 +92,7 @@ export const PlaylistPage = () => {
     }
   };
 
-  const  addAudio= async () => {
+  const addAudio= async () => {
     const filePaths = await open({
       multiple: true,
       filters: [{
