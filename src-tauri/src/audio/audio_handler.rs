@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn get_audio_data(file_path: String) -> Result<String, String> {
     let mut file = File::open(&file_path)
         .map_err(|e| e.to_string())?;
