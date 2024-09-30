@@ -5,7 +5,7 @@ import { activeAudio } from "~/store/store";
 import { useAudio } from "./AudioContext";
 
 const PlayBack = () => {
-  const { trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange } = useAudio();
+  const { loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange } = useAudio();
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -18,12 +18,12 @@ const PlayBack = () => {
       <div class="w-1/5 ml-16 h-full p-2 flex flex-col items-center justify-center text-center">
         <div class="truncate w-full mb-1">
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center">
-            {activeAudio?.title ?? "n/A"}
+            {loading() ? "Loading..." : `${activeAudio?.title ?? "n/A"}`}
           </span>
         </div>
-        <div class="truncate w-full">
+        <div class="truncate w-full" style={{ width: "200px" }}>
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center text-sm font-thin">
-            {activeAudio?.path?? "n/A"}
+            {loading() ? "Hold on!" : activeAudio?.path ?? "n/A"}
           </span>
         </div>
       </div>
