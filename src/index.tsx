@@ -9,6 +9,7 @@ import {ColorModeProvider} from "@kobalte/core"
 import { createEffect, createSignal, JSX } from "solid-js";
 import { PlaylistPage } from "./pages/PlaylistPage";
 import PlayBack from "./components/Playback";
+import { AudioProvider } from "./components/AudioContext";
 
 type AppProps = {
   children?: JSX.Element;
@@ -28,21 +29,23 @@ const App = (props: AppProps) => {
   
   return (
     <>
-      <ColorModeProvider initialColorMode="dark">
-        <div class="flex flex-col h-screen">
-          <div class="flex flex-row flex-1 overflow-hidden">
-            <div class="flex-shrink-0 w-48">
-              <SideNavigation />
+      <AudioProvider>
+        <ColorModeProvider initialColorMode="dark">
+          <div class="flex flex-col h-screen">
+            <div class="flex flex-row flex-1 overflow-hidden">
+              <div class="flex-shrink-0 w-48">
+                <SideNavigation />
+              </div>
+              <div class="flex-1 max-h-screen overflow-auto" ref={scrollContainerRef}>
+                {props.children}
+              </div>
             </div>
-            <div class="flex-1 max-h-screen overflow-auto" ref={scrollContainerRef}>
-              {props.children}
+            <div class="flex-shrink-0">
+              <PlayBack />
             </div>
           </div>
-          <div class="flex-shrink-0">
-            <PlayBack />
-          </div>
-        </div>
-      </ColorModeProvider>
+        </ColorModeProvider>
+      </AudioProvider>
     </>
   );
 }
