@@ -11,6 +11,10 @@ pub mod models {
   pub mod playlist_music_model;
 }
 
+pub mod audio {
+    pub mod audio_handler;
+}
+
 pub mod operations {
     pub mod playlist_operations;
     pub mod music_operations;

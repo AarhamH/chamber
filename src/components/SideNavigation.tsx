@@ -29,7 +29,6 @@ export const SideNavigation = () => {
   
   onMount(fetchPlaylists);
 
-
   const handleInput = (e: InputEvent) => {
     const newInput = e.target as HTMLInputElement;
     setPlaylistTitle(newInput.value); // Just set the local state without invoking update
@@ -51,7 +50,7 @@ export const SideNavigation = () => {
   }
 
   return (
-    <div class="bg-zinc-900 w-64 h-screen flex flex-col">
+    <div class="bg-zinc-900 h-full w-full flex flex-col">
       <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
         <span>Palm</span>
       </div>

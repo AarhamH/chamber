@@ -20,25 +20,23 @@ import {
 } from "~/components/Dropdown"
 
 import { Music } from "~/utils/types";
-import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic } from "~/store/store";
+import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic, activeAudio, setActiveAudio } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import Modal from "~/components/Modal";
-import { BiRegularPlay } from "solid-icons/bi"
+import { BiRegularPause, BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
 
-
 export const PlaylistPage = () => {
   const params = useParams();
-  const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(
-    playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
+  const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
   const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
   const closeModal = () => setIsAddModalOpen(false);
   const closeDeleteModal = () => setIsDeleteModalOpen(false);
   let playlistPageRef!: HTMLDivElement;
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   createEffect(() => {
     if (params.id) {
@@ -169,7 +167,11 @@ export const PlaylistPage = () => {
           {musicInPlaylist.map((song:Music, index: number) => (
             <TableRow>
               <TableCell class="flex justify-end hover:cursor-pointer">
-                <BiRegularPlay size={36} />
+                {song.id === activeAudio.id ? (
+                  <BiRegularPause size={36} class="text-green" />
+                ) : (
+                  <BiRegularPlay size={36} onClick={() => setActiveAudio(song)} />
+                )}
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
