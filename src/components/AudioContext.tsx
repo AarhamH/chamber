@@ -1,8 +1,10 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { createContext, createEffect, createSignal, ParentProps, useContext } from "solid-js";
-import { activeAudio } from "~/store/store";
+import { musicInPlaylist } from "~/store/store";
+import { Music } from "~/utils/types";
 
 interface AudioContextType {
+  activeAudio: () => Music;
   loading: () => boolean; 
   audioUrl: () => string;
   trackProgress: () => number;
@@ -15,6 +17,8 @@ interface AudioContextType {
   handleTrackChange: (event: Event) => void;
   // eslint-disable-next-line no-unused-vars
   handleVolumeChange: (event: Event) => void;
+  // eslint-disable-next-line no-unused-vars
+  setActiveAudio: (audio: Music) => void;
 }
 
 const AudioContext = createContext<AudioContextType>();
@@ -27,50 +31,58 @@ export const AudioProvider  = (props: ParentProps) => {
   const [isAudioPlaying, setIsAudioPlaying] = createSignal(false);
   const [audioDuration, setAudioDuration] = createSignal(0);
   const [loading, setLoading] = createSignal(false);
+  const [activeAudio, setActiveAudio] = createSignal<Music>({} as Music);
+  const [activePlaylist, setActivePlaylist] = createSignal<Music[]>([]);
 
   createEffect(async () => {
-    try {
-      setLoading(true);
-      const audioData: string = await invoke("get_audio_data", { filePath: activeAudio?.path });
-      // Decode the base64 string to binary
-      const byteCharacters = atob(audioData);
-      const byteNumbers = new Array(byteCharacters.length);
+    if(activeAudio) {
+      try {
+        setLoading(true);
+        setActivePlaylist(() => musicInPlaylist);
+        const audioData: string = await invoke("get_audio_data", { filePath: activeAudio()?.path });
+        // Decode the base64 string to binary
+        const byteCharacters = atob(audioData);
+        const byteNumbers = new Array(byteCharacters.length);
       
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      
-      const byteArray = new Uint8Array(byteNumbers);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
   
-      // Create a Blob from the Uint8Array
-      const audioBlob = new Blob([byteArray], { type: "audio/mp3" }); // Adjust the type according to your audio format
-      const url = URL.createObjectURL(audioBlob);
-      setAudioUrl(url);
+        // Create a Blob from the Uint8Array
+        const audioBlob = new Blob([byteArray], { type: "audio/mp3" }); // Adjust the type according to your audio format
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
   
-      if (audioRef) {
-        audioRef.addEventListener("loadedmetadata", () => {
-          setAudioDuration(audioRef.duration);
-        });
-  
-        audioRef.addEventListener("timeupdate", () => {
-          setTrackProgress(audioRef.currentTime);
-        });
+        if (audioRef) {
+          audioRef.addEventListener("loadedmetadata", () => {
+            setAudioDuration(audioRef.duration);
+          });
+          
+          audioRef.addEventListener("ended", () => {
+            handleSkipForward();
+          });
+          
+          audioRef.addEventListener("timeupdate", () => {
+            setTrackProgress(audioRef.currentTime);
+          });
         
-        audioRef.play();
-        audioRef.addEventListener("play", () => {
-          setIsAudioPlaying(true);
-        });
+          audioRef.play();
+          audioRef.addEventListener("play", () => {
+            setIsAudioPlaying(true);
+          });
   
-        audioRef.addEventListener("pause", () => {
-          setIsAudioPlaying(false);
-        });
+          audioRef.addEventListener("pause", () => {
+            setIsAudioPlaying(false);
+          });
+        }
+      } catch (error) {
+        return error;
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      return error;
-    } finally {
-      setLoading(false);
     }
-  }, audioUrl);
+  }, activeAudio);
 
   const togglePlay = () => {
     if(audioRef) {
@@ -84,14 +96,18 @@ export const AudioProvider  = (props: ParentProps) => {
   };
 
   const handleSkipForward = () => {
-    if (audioRef) {
-      audioRef.currentTime += 10;
+    if (audioRef && activeAudio && activePlaylist) {
+      let index = activePlaylist().findIndex((audio) => audio.id === activeAudio()?.id);
+      index = (index + 1) % activePlaylist().length;
+      setActiveAudio(activePlaylist()[index]); 
     }
   };
 
   const handleSkipBackward = () => {
-    if (audioRef) {
-      audioRef.currentTime -= 10;
+    if (audioRef && activeAudio && activePlaylist) {
+      let index = activePlaylist().findIndex((audio) => audio.id === activeAudio()?.id);
+      index = (index - 1 + activePlaylist().length) % activePlaylist().length;
+      setActiveAudio(activePlaylist()[index]); 
     }
   };
 
@@ -110,7 +126,7 @@ export const AudioProvider  = (props: ParentProps) => {
   };
 
   return (
-    <AudioContext.Provider value={{ loading, audioUrl, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange}}>
+    <AudioContext.Provider value={{ activeAudio, loading, audioUrl, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange, setActiveAudio}}>
       <audio ref={audioRef} src={audioUrl()} id="audio"/>
       {props.children}
     </AudioContext.Provider>

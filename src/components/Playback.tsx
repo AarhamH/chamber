@@ -1,11 +1,10 @@
 import { BiRegularPlay, BiRegularPause } from "solid-icons/bi";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
 import { BiRegularVolumeFull } from "solid-icons/bi";
-import { activeAudio } from "~/store/store";
 import { useAudio } from "./AudioContext";
 
 const PlayBack = () => {
-  const { loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
+  const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -18,12 +17,12 @@ const PlayBack = () => {
       <div class="w-1/5 ml-16 h-full p-2 flex flex-col items-center justify-center text-center">
         <div class="truncate w-full mb-1">
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center">
-            {loading() ? "Loading..." : `${activeAudio?.title ?? "n/A"}`}
+            {loading() ? "Loading..." : `${activeAudio()?.title ?? "n/A"}`}
           </span>
         </div>
         <div class="truncate w-full" style={{ width: "200px" }}>
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center text-sm font-thin">
-            {loading() ? "Hold on!" : activeAudio?.path ?? "n/A"}
+            {loading() ? "Hold on!" : activeAudio()?.path ?? "n/A"}
           </span>
         </div>
       </div>
