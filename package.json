@@ -10,7 +10,8 @@
     "serve": "vite preview",
     "tauri": "tauri",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "palm-dev": "tauri dev --no-watch"
   },
   "license": "MIT",
   "dependencies": {

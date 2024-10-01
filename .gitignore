@@ -10,7 +10,7 @@ node_modules/
 **/*.rs.bk
 *.sqlite
 *.env
-
+src-tauri/audio_store/*
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 

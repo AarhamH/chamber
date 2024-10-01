@@ -13,7 +13,6 @@ pub fn init() {
     if !db_file_exists() {
         create_db_file();
     }
-
     run_migrations();
 }
 
