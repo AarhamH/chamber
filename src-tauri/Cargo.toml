@@ -22,7 +22,7 @@ mp3-metadata = "0.3.4"
 hound = "3.4.0"
 mime_guess = "2.0"
 base64 = "0.13.0"
-mime = "0.3.17"
+mime = { version = "0.3", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
 once_cell = "1.8.0"
 regex = "1.5.4"

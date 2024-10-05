@@ -2,9 +2,39 @@ use mime::Mime;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use reqwest::header::{HeaderMap, USER_AGENT};
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, str::FromStr};
 
-use crate::youtube::structs::{MimeType, StaticFormat};
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct MimeType {
+    pub mime: Mime,
+    /// Mime container
+    pub container: String,
+    /**
+     * Mime codec parameters
+
+     **Mime type:** [`mime::AUDIO`] or [`mime::VIDEO`] => contains 1 element and its audio/video codec
+
+     **Mime type:** [`mime::VIDEO`] => if contains 2 element, first is video and second is audio codec
+    */
+    pub codecs: Vec<String>,
+    /// Video codec parameter
+    pub video_codec: Option<String>,
+    /// Audio codec parameter
+    pub audio_codec: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StaticFormat {
+    #[serde(rename = "mimeType")]
+    pub mime_type: MimeType,
+    #[serde(rename = "qualityLabel")]
+    pub quality_label: Option<String>,
+    pub bitrate: Option<u64>,
+    #[serde(rename = "audioBitrate")]
+    pub audio_bitrate: Option<u64>,
+}
+
 
 pub const BASE_URL: &str = "https://www.youtube.com/watch?v=";
 
