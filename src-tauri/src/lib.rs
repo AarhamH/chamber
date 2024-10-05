@@ -4,6 +4,7 @@ pub mod helper {
     pub mod time;
     pub mod files;
     pub mod constants;
+    pub mod parser;
 }
 
 pub mod models {
