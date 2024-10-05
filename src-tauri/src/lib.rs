@@ -16,6 +16,10 @@ pub mod audio {
     pub mod audio_handler;
 }
 
+pub mod youtube {
+    pub mod constants;
+}
+
 pub mod operations {
     pub mod playlist_operations;
     pub mod music_operations;
