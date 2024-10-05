@@ -5,6 +5,7 @@ use palm_player::operations::music_operations::*;
 use palm_player::operations::playlist_music_operations::*;
 use palm_player::db;
 use palm_player::audio::audio_handler::*;
+use palm_player::youtube::youtube_handler::*;
 
 fn main() {
     tauri::Builder::default()
@@ -26,6 +27,7 @@ fn main() {
          ])
         .setup(|_app| {
             db::init();
+            youtube_search("chef jean pierre".to_string());
             Ok(())
         })
         .run(tauri::generate_context!())
