@@ -1,16 +1,83 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/Table"
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "~/components/Table"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxControl,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxItemIndicator,
+  ComboboxItemLabel,
+} from "~/components/Combobox"
+import { invoke } from "@tauri-apps/api/tauri"
+import { createSignal, createEffect } from "solid-js"
+import { IoSearchOutline } from "solid-icons/io"
+
+interface SearchSuggestion {
+  label: string
+  value: string
+}
 
 export const SearchPage = () => {
+  const [searchInput, setSearchInput] = createSignal<string>("")
+  const [searchSuggestions, setSearchSuggestions] = createSignal<SearchSuggestion[]>([])
 
-  return(
+  const cache = new Map();
+  
+  createEffect(() => {
+    const input = searchInput();
+    if (cache.has(input)) {
+      setSearchSuggestions(cache.get(input));
+    } else {
+      autoComplete(input);
+    }
+  });
+  
+  async function autoComplete(input: string) {
+    try {
+      if (!input) return;
+      const suggestions = await invoke<string[]>("youtube_suggestion", { input })
+        .then((result) =>
+          result.map((suggestion) => ({
+            label: suggestion.replace(/"/g, ""),
+            value: suggestion.replace(/"/g, "")
+          }))
+        );
+  
+      cache.set(input, suggestions);
+      setSearchSuggestions(suggestions);
+    } catch (error) {
+      return error;
+    }
+  }
+
+  return (
     <div>
-      <div class="pt-10 pb-3 flex items-end justify-start">
-        <div class="flex flex-col w-1/2 m-2">
-          <input
-            type="text"
-            class="font-medium bg-zinc-900 p-2 text-lg rounded-3xl w-full"
-          />
-        </div>
+      <div>
+        <Combobox
+          options={searchSuggestions()}
+          optionValue="value"
+          optionTextValue="label"
+          optionLabel="label"
+          placeholder="Search for an audio..."
+          itemComponent={(props) => (
+            <ComboboxItem item={props.item}>
+              <ComboboxItemLabel>{props.item.rawValue.label}</ComboboxItemLabel>
+              <ComboboxItemIndicator />
+            </ComboboxItem>
+          )}
+          class="w-1/2 mx-auto p-2"
+        >
+          <ComboboxControl aria-label="SearchSuggestions">
+            <IoSearchOutline class="mr-2 opacity-50 hover:cursor-pointer" size={24} />
+            <ComboboxInput onInput={(e) => {
+              const value = (e.target as HTMLInputElement).value;
+              setSearchInput(value);
+              autoComplete(value);
+            }} />
+          </ComboboxControl>
+          <ComboboxContent />
+        
+        </Combobox>
       </div>
       <Table>
         <TableHeader>

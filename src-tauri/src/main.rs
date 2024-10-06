@@ -24,7 +24,8 @@ fn main() {
             delete_playlist,
             destroy_song_from_playlist,
             get_audio_data,
-            youtube_search
+            youtube_search,
+            youtube_suggestion
          ])
         .setup(|_app| {
             db::init();

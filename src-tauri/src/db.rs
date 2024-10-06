@@ -2,7 +2,6 @@ use std::fs;
 use std::path::Path;
 use std::env;
 
-
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
