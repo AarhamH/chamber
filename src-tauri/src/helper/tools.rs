@@ -23,3 +23,16 @@ pub fn meta_duration_to_minutes(meta_dur: String) -> String {
 
     format!("{:02}:{:02}", minutes, seconds)
 }
+
+pub fn trim_number(input: &str) -> String {
+    // turn a number like 2123213123 to 2.12B
+    let num: f64 = input.parse().unwrap();
+    let res: String = match num {
+        n if n > 1_000_000_000.0 => format!("{:.2}B", n / 1_000_000_000.0),
+        n if n > 1_000_000.0 => format!("{:.2}M", n / 1_000_000.0),
+        n if n > 1_000.0 => format!("{:.2}K", n / 1_000.0),
+        _ => input.to_string(),
+    };
+
+    res.to_string()
+}
