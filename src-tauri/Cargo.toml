@@ -24,7 +24,9 @@ mime_guess = "2.0"
 base64 = "0.13.0"
 tokio = { version = "1", features = ["full"] }
 rusty_ytdl = "0.7.4"
-
+reqwest = { version = "0.12.8", features = ["blocking", "json"] }
+scraper = "0.12"
+regex = "1.5.4"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
