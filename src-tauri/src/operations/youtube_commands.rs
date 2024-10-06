@@ -5,6 +5,7 @@ use crate::models::youtube_model::YouTubeAudio;
 
 use crate::helper::parser::{extract_channel, extract_views};
 
+#[tauri::command]
 pub async fn youtube_suggestion() {
     let youtube = YouTube::new().unwrap();
 
@@ -13,6 +14,7 @@ pub async fn youtube_suggestion() {
     println!("{:?}", res.await);
 }
 
+#[tauri::command(async)]
 pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> {
     let youtube = YouTube::new().map_err(|e| e.to_string())?;
 
@@ -42,6 +44,7 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
     Ok(structured_res)
 }           
 
+#[tauri::command]
 pub async fn get_video_metadata(url: String) -> Result<YouTubeAudio, String> {
     use crate::helper::parser::{extract_duration, extract_thumbnail, extract_title};
     let response: reqwest::Response = reqwest::get(url).await.map_err(|e| e.to_string())?;
@@ -55,7 +58,7 @@ pub async fn get_video_metadata(url: String) -> Result<YouTubeAudio, String> {
     let channel: String = extract_channel(&document).map_err(|e| e.to_string())?;
     let views: String = extract_views(&document).map_err(|e| e.to_string())?;
     
-    let youtube_audio = YouTubeAudio{
+    let youtube_audio: YouTubeAudio = YouTubeAudio{
         title: Some(title),
         thumbnail: Some(thumbnail),
         duration: Some(duration),

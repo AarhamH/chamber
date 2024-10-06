@@ -5,7 +5,7 @@ use palm_player::operations::music_operations::*;
 use palm_player::operations::playlist_music_operations::*;
 use palm_player::db;
 use palm_player::audio::audio_handler::*;
-use palm_player::youtube::youtube_handler::*;
+use palm_player::operations::youtube_commands::*;
 
 fn main() {
     tauri::Builder::default()
@@ -20,14 +20,14 @@ fn main() {
             get_playlist,
             get_music,
             delete_music,
-            insert_song_into_playlist,
+            insert_song_into_playlist,  
             delete_playlist,
             destroy_song_from_playlist,
-            get_audio_data
+            get_audio_data,
+            youtube_search
          ])
         .setup(|_app| {
             db::init();
-            youtube_search("chef jean pierre".to_string());
             Ok(())
         })
         .run(tauri::generate_context!())
