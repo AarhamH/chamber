@@ -12,6 +12,8 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { createSignal, createEffect } from "solid-js"
 import { IoSearchOutline } from "solid-icons/io"
 import { YoutubeQuery } from "~/utils/types"
+import { BiRegularDownload } from "solid-icons/bi"
+import { BiRegularLink } from "solid-icons/bi"
 
 interface SearchSuggestion {
   label: string
@@ -120,7 +122,7 @@ export const SearchPage = () => {
           {youtubeQuery().map((query, index) => (
             <TableRow>
               <TableCell class="flex justify-end mt-3">
-                <IoSearchOutline size={24} />
+                <BiRegularDownload size={24} />
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index + 1}</TableCell>  
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
@@ -131,7 +133,7 @@ export const SearchPage = () => {
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.views}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.duration}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
-                <IoSearchOutline size={24}/>  
+                <BiRegularLink size={24}/>  
               </TableCell>  
             </TableRow>
           ))}
