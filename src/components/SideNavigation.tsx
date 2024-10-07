@@ -51,8 +51,8 @@ export const SideNavigation = () => {
 
   return (
     <div class="bg-zinc-900 h-full w-full flex flex-col">
-      <div class="font-title flex items-center justify-center mt-10 mb-4 text-4xl font-bold">
-        <span>Palm</span>
+      <div class="flex items-center justify-center mt-10 mb-4 text-4xl">
+        <span>chamber</span>
       </div>
       <div>
         <Button class="flex space-x-2 px-10" onClick={() => navigate("/")}>

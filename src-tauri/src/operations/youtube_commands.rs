@@ -32,7 +32,7 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
             match result {
                 SearchResult::Video(video) => Some(YouTubeAudio{
                     title: Some(video.title.clone()),
-                    thumbnail: Some(video.url.clone()),
+                    thumbnail: video.thumbnails.first().map(|thumb| thumb.url.clone()),
                     duration: Some(video.duration_raw.clone()),
                     channel: Some(video.channel.name.clone()),
                     views: Some(video.views.clone().to_string()),
