@@ -45,5 +45,5 @@ fn db_file_exists() -> bool {
 
 fn get_db_path() -> String {
     let repo_dir: std::path::PathBuf = env::current_dir().unwrap();
-    repo_dir.to_str().unwrap().to_string() + "/palmdb.sqlite"
+    repo_dir.to_str().unwrap().to_string() + "/chamberdb.sqlite"
 }
