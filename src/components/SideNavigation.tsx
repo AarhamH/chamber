@@ -7,6 +7,7 @@ import { playlists, setPlaylists } from "~/store/store"
 import { BiRegularHomeAlt2 } from "solid-icons/bi"
 import { FaRegularFolderOpen } from "solid-icons/fa"
 import { IoSearchOutline } from "solid-icons/io"
+import chamberWhite from "~/assets/chamber_logo_white.svg"
 import Modal from "./Modal"
 
 export const SideNavigation = () => {
@@ -51,7 +52,8 @@ export const SideNavigation = () => {
 
   return (
     <div class="bg-zinc-900 h-full w-full flex flex-col">
-      <div class="flex items-center justify-center mt-10 mb-4 text-4xl">
+      <div class="flex items-center justify-center mt-10 mb-4 text-3xl font-thin">
+        <img src={chamberWhite} class="w-7 h-7 m-1" />
         <span>chamber</span>
       </div>
       <div>
