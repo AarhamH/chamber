@@ -7,3 +7,4 @@ custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
 dir = "/home/ahaider/repos/palm-player/src-tauri/migrations"
+
