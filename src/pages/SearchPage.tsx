@@ -126,7 +126,7 @@ export const SearchPage = () => {
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index + 1}</TableCell>  
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
-                <img src={query.thumbnail} />
+                <img src={query.thumbnail} class="rounded-md" />
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.title}</TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.channel}</TableCell>
