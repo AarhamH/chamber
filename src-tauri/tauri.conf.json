@@ -38,6 +38,9 @@
       "csp": null
     },
     "bundle": {
+      "appimage": {
+        "bundleMediaFramework": true
+      },
       "active": true,
       "targets": "all",
       "identifier": "com.chamber.app",
