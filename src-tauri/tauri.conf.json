@@ -39,10 +39,10 @@
     },
     "bundle": {
       "appimage": {
-        "bundleMediaFramework": true
+        "bundleMediaFramework": false
       },
       "active": true,
-      "targets": "all",
+      "targets": ["deb", "nsis", "msi", "app", "dmg", "updater"],      
       "identifier": "com.chamber.app",
       "icon": [
         "icons/32x32.png",
