@@ -11,7 +11,7 @@ edition = "2021"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "dialog-all", "shell-open"] }
+tauri = { version = "1", features = [ "fs-copy-file", "fs-create-dir", "fs-read-file", "fs-write-file", "fs-remove-file", "dialog-all", "shell-open"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 diesel = { version = "2.2.0", features = ["sqlite"] }
@@ -27,6 +27,7 @@ rusty_ytdl = "0.7.4"
 reqwest = { version = "0.12.8", features = ["blocking", "json"] }
 scraper = "0.12"
 regex = "1.5.4"
+rusty_dl = "1.0.8"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

@@ -16,6 +16,13 @@
         "all": false,
         "open": true
       },
+      "fs": {
+        "readFile": true,
+        "writeFile": true,
+        "copyFile": true,
+        "removeFile": true,
+        "createDir": true
+      },
       "dialog": {
         "all": true,
         "ask": true,
@@ -42,7 +49,7 @@
         "bundleMediaFramework": false
       },
       "active": true,
-      "targets": ["deb", "nsis", "msi", "app", "dmg", "updater"],      
+      "targets": ["deb", "rpm", "nsis", "msi", "app", "dmg", "updater"],      
       "identifier": "com.chamber.app",
       "icon": [
         "icons/32x32.png",

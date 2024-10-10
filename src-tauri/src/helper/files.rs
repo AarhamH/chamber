@@ -62,7 +62,7 @@ fn extract_audio_duration(buffer: &[u8]) -> Result<String, String> {
     Ok(seconds_to_minutes(duration_secs))
 }
 
-fn create_audio_store_directory() -> Result<(), String> {
+pub fn create_audio_store_directory() -> Result<(), String> {
     let audio_store_path: &Path = Path::new(AUDIO_STORE);
     if !audio_store_path.exists() {
         fs::create_dir(audio_store_path).map_err(|err| {
