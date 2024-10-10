@@ -16,6 +16,13 @@
         "all": false,
         "open": true
       },
+      "fs": {
+        "readFile": true,
+        "writeFile": true,
+        "copyFile": true,
+        "removeFile": true,
+        "createDir": true
+      },
       "dialog": {
         "all": true,
         "ask": true,
