@@ -1,6 +1,11 @@
+use std::process::Command;
+
+use rusty_dl::youtube::YoutubeDownloader;
+use rusty_dl::Downloader;
 use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
+use crate::helper::constants::AUDIO_STORE;
 use crate::models::youtube_model::YouTubeAudio;
 
 use crate::helper::parser::{extract_channel, extract_views};
@@ -36,6 +41,7 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
                     duration: Some(video.duration_raw.clone()),
                     channel: Some(video.channel.name.clone()),
                     views: Some(video.views.clone().to_string()),
+                    url: video.url.clone().to_string(),
                 }),
                 _ => None,
             }
@@ -49,16 +55,18 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
 #[tauri::command]
 pub async fn get_video_metadata(url: String) -> Result<YouTubeAudio, String> {
     use crate::helper::parser::{extract_duration, extract_thumbnail, extract_title};
-    let response: reqwest::Response = reqwest::get(url).await.map_err(|e| e.to_string())?;
+    let response: reqwest::Response = reqwest::get(url.clone()).await.map_err(|e| e.to_string())?;
     
     let body: String = response.text().await.map_err(|e| e.to_string())?;
     let document: Html = Html::parse_document(&body);
 
-    let title: String = extract_title(&document).map_err(|e| e.to_string())?;
-    let thumbnail: String = extract_thumbnail(&document).map_err(|e| e.to_string())?;
-    let duration: String = extract_duration(&document).map_err(|e| e.to_string())?;
-    let channel: String = extract_channel(&document).map_err(|e| e.to_string())?;
-    let views: String = extract_views(&document).map_err(|e| e.to_string())?;
+    let (title, thumbnail, duration, channel, views) = (
+        extract_title(&document).map_err(|e| e.to_string())?,
+        extract_thumbnail(&document).map_err(|e| e.to_string())?,
+        extract_duration(&document).map_err(|e| e.to_string())?,
+        extract_channel(&document).map_err(|e| e.to_string())?,
+        extract_views(&document).map_err(|e| e.to_string())?,
+    );
     
     let youtube_audio: YouTubeAudio = YouTubeAudio{
         title: Some(title),
@@ -66,7 +74,48 @@ pub async fn get_video_metadata(url: String) -> Result<YouTubeAudio, String> {
         duration: Some(duration),
         channel: Some(channel),
         views: Some(views),
+        url,
     };
 
     Ok(youtube_audio)
+}
+
+#[tauri::command]
+pub async fn download_audio(url: String, title: String) -> Result<(), String> {
+    pub use crate::helper::files::create_audio_store_directory;
+    create_audio_store_directory()?;
+    let (video_path_with_extension, 
+        audio_path_with_extension) = format_audio_file_path(&title);
+
+    let mut downloader = YoutubeDownloader::new(&url).map_err(|e| e.to_string())?;
+    downloader.with_name(title.to_owned());
+
+    match downloader.download_to(AUDIO_STORE).await {
+        Ok(_) => println!("Video downloaded successfully."),
+        Err(e) => return Err(format!("Download failed: {}", e)),
+    }
+
+    let status = Command::new("ffmpeg")
+        .args(&["-i", &video_path_with_extension, "-q:a", "0", "-map", "a", "-y", &audio_path_with_extension])
+        .status()
+        .map_err(|e| e.to_string())?;
+
+    match status.success() {
+        true => {
+            println!("Conversion to audio completed successfully.");
+            // Remove the video file after conversion
+            std::fs::remove_file(&video_path_with_extension).map_err(|e| e.to_string())?;
+            Ok(())
+        },
+        false => {
+            std::fs::remove_file(&video_path_with_extension).map_err(|e| e.to_string())?;
+            Err("Conversion to audio failed".to_string())
+        }
+    }
+}
+
+fn format_audio_file_path(title: &str) -> (String, String) {
+    let video_path_with_extension = format!("{}/{}.mp4", AUDIO_STORE, title);
+    let audio_path_with_extension = format!("{}/{}.mp3", AUDIO_STORE, title);
+    (video_path_with_extension, audio_path_with_extension)
 }

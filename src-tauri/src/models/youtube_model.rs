@@ -7,4 +7,5 @@ pub struct YouTubeAudio{
   pub views: Option<String>,
   pub duration:Option<String>,
   pub thumbnail: Option<String>,
+  pub url: String
 }
