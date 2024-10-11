@@ -4,7 +4,6 @@ pub mod helper {
     pub mod tools;
     pub mod files;
     pub mod constants;
-    pub mod parser;
 }
 
 pub mod models {
@@ -21,6 +20,9 @@ pub mod commands {
     pub mod playlist_commands;
     pub mod music_commands;
     pub mod playlist_music_commands;
-    pub mod youtube_commands;
     pub mod audio_buffer;
+    pub mod youtube {
+      pub mod yt_web_parser;
+      pub mod youtube_commands;
+    }
 }

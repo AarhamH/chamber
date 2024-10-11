@@ -4,7 +4,7 @@ use chamber::commands::audio_buffer::*;
 use chamber::commands::music_commands::*;
 use chamber::commands::playlist_commands::*;
 use chamber::commands::playlist_music_commands::*;
-use chamber::commands::youtube_commands::*;
+use chamber::commands::youtube::youtube_commands::*;
 use chamber::db;
 fn main() {
     tauri::Builder::default()
