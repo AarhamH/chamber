@@ -39,7 +39,7 @@ export const AudioProvider  = (props: ParentProps) => {
       try {
         setLoading(true);
         setActivePlaylist(() => musicInPlaylist);
-        const audioData: string = await invoke("get_audio_data", { filePath: activeAudio()?.path });
+        const audioData: string = await invoke("read_audio_buffer", { filePath: activeAudio()?.path });
         // Decode the base64 string to binary
         const byteCharacters = atob(audioData);
         const byteNumbers = new Array(byteCharacters.length);
