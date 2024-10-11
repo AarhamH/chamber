@@ -8,8 +8,6 @@ use scraper::Html;
 use crate::helper::constants::AUDIO_STORE;
 use crate::models::youtube_model::YouTubeAudio;
 
-use crate::helper::parser::{extract_channel, extract_views};
-
 #[tauri::command]
 pub async fn youtube_suggestion(input: String) -> Result<Vec<String>, String> {
     let youtube: YouTube = YouTube::new().map_err(|e| e.to_string())?;
@@ -54,7 +52,12 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
 
 #[tauri::command]
 pub async fn get_video_metadata(url: String) -> Result<YouTubeAudio, String> {
-    use crate::helper::parser::{extract_duration, extract_thumbnail, extract_title};
+    use crate::commands::youtube::yt_web_parser::{
+        extract_channel, 
+        extract_views,
+        extract_duration, 
+        extract_thumbnail, 
+        extract_title};
     let response: reqwest::Response = reqwest::get(url.clone()).await.map_err(|e| e.to_string())?;
     
     let body: String = response.text().await.map_err(|e| e.to_string())?;
