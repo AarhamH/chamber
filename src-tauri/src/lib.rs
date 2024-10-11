@@ -15,7 +15,6 @@ pub mod models {
 }
 
 pub mod audio {
-    pub mod audio_handler;
 }
 
 pub mod commands {
@@ -23,4 +22,5 @@ pub mod commands {
     pub mod music_commands;
     pub mod playlist_music_commands;
     pub mod youtube_commands;
+    pub mod audio_buffer;
 }
