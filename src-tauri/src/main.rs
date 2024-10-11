@@ -1,11 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use chamber::operations::playlist_operations::*;
-use chamber::operations::music_operations::*;
-use chamber::operations::playlist_music_operations::*;
+use chamber::commands::music_commands::*;
+use chamber::commands::playlist_commands::*;
+use chamber::commands::playlist_music_commands::*;
+use chamber::commands::youtube_commands::*;
 use chamber::db;
 use chamber::audio::audio_handler::*;
-use chamber::operations::youtube_commands::*;
 
 fn main() {
     tauri::Builder::default()

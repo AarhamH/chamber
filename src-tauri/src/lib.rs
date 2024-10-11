@@ -18,9 +18,9 @@ pub mod audio {
     pub mod audio_handler;
 }
 
-pub mod operations {
-    pub mod playlist_operations;
-    pub mod music_operations;
-    pub mod playlist_music_operations;
+pub mod commands {
+    pub mod playlist_commands;
+    pub mod music_commands;
+    pub mod playlist_music_commands;
     pub mod youtube_commands;
 }
