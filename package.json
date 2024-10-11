@@ -11,7 +11,8 @@
     "tauri": "tauri",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "chamber": "tauri dev --no-watch"
+    "chamber": "tauri dev --no-watch",
+    "generate-toml": "python set_diesel_toml.py"
   },
   "license": "MIT",
   "dependencies": {

@@ -3,7 +3,7 @@ import os
 current_directory = os.getcwd()
 
 # Read the TOML file
-with open('diesel.toml', 'r') as file:
+with open('src-tauri/diesel.toml', 'r') as file:
     config_content = file.readlines()
 
 # Modify the specific line containing the migrations directory
@@ -15,5 +15,5 @@ for i, line in enumerate(config_content):
 # Optionally, print the modified content or save it back to a file
 print(''.join(config_content))
 
-with open('diesel.toml', 'w') as file:
+with open('src-tauri/diesel.toml', 'w') as file:
     file.writelines(config_content)
