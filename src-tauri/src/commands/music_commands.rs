@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use crate::helper::tools::seconds_to_minutes;
 use crate::schema::music::dsl::*;
 
 use crate::models::music_model:: {
@@ -6,11 +7,50 @@ use crate::models::music_model:: {
 };
 use crate::db::establish_connection;
 
+fn read_file_metadata(file_path: String) -> Result<MusicArg, String> {
+  use crate::helper::files::{
+      get_file_type,
+      extract_file_name,
+      read_file_to_buffer,
+      create_audio_store_directory,
+      copy_file_to_store
+  };
+  let file_type: String = get_file_type(&file_path)?;
+  if file_type != "audio/mpeg" && file_type != "audio/wav" {
+      return Err("Unsupported file type: not an mp3 or wav".to_string());
+  }
+
+  let file_name: String = extract_file_name(&file_path)?;
+  let buffer: Vec<u8> = read_file_to_buffer(&file_path)?;
+
+  let duration_secs = match file_type.as_str() {
+      "audio/mpeg" => {
+        let mp3_metadata: mp3_metadata::MP3Metadata = mp3_metadata::read_from_slice(&buffer)
+        .map_err(|e| format!("Unable to read mp3 metadata: {}", e))?;
+        
+        mp3_metadata.duration.as_secs()
+        },
+      "audio/wav" => {
+        let wav_reader = hound::WavReader::new(std::io::Cursor::new(buffer)).unwrap();
+        (wav_reader.duration() as u64 / wav_reader.spec().sample_rate as u64).into()
+      },
+      _ => 0,
+  };
+
+  create_audio_store_directory()?;
+  let destination_path = copy_file_to_store(&file_path, &file_name)?;
+
+  Ok(MusicArg {
+      title: Some(file_name),
+      artist: Some("Unknown".to_string()),
+      path: Some(destination_path.to_string()),
+      duration: Some(seconds_to_minutes(duration_secs)),
+  })
+}
+
 #[tauri::command]
 pub fn create_music(file_path: String) -> Result<(), String> {
-  use crate::helper::files::process_audio_file;
-
-  let music_arg: MusicArg = match process_audio_file(file_path) {
+  let music_arg: MusicArg = match read_file_metadata(file_path) {
       Ok(arg) => arg,
       Err(err) => return Err(err),
   };
