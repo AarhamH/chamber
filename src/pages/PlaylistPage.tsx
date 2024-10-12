@@ -23,20 +23,16 @@ import { Music } from "~/utils/types";
 import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic, activeAudio } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
-import Modal from "~/components/Modal";
 import { BiRegularPause, BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
 import { useAudio } from "~/components/AudioContext";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "~/components/Dialog";
 
 export const PlaylistPage = () => {
   const params = useParams();
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
-  const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = createSignal(false);
   const { setActiveAudio } = useAudio();
-  const closeModal = () => setIsAddModalOpen(false);
-  const closeDeleteModal = () => setIsDeleteModalOpen(false);
   let playlistPageRef!: HTMLDivElement;
   const navigate = useNavigate();
 
@@ -130,10 +126,6 @@ export const PlaylistPage = () => {
     } 
   }
 
-  const headerButtons = [
-    <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>,
-  ]
-
   return(
     <div ref={playlistPageRef}>
       <div class="pt-10 pb-5 flex items-end justify-start">
@@ -148,11 +140,59 @@ export const PlaylistPage = () => {
             class="font-medium bg-transparent text-7xl"
           />
           <div class="flex flex-row mt-6 space-x-4">
-            <Button class="w-32" onClick={() => setIsAddModalOpen(true)} variant={"filled"} size={"sm"}>Add Music</Button> 
-            <Button class="w-32" onClick={() => setIsDeleteModalOpen(true)} variant={"destructive"} size={"sm"}>Delete Playlist</Button> 
+            {/* Modals for Add Audio/Delete Group */}
+            <Dialog>
+              <DialogTrigger class="w-32" as={Button} variant={"filled"} size={"sm"}>Add Audio</DialogTrigger>
+              <DialogContent class="w-2/3 h-2/3">
+                <DialogHeader>
+                  <DialogTitle class="flex items-center justify-center">Add to Playlist</DialogTitle>
+                  <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>                  
+                  <DialogDescription>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead class="w-2 truncate">ID</TableHead>
+                          <TableHead class="w-1/4 truncate">Title</TableHead>
+                          <TableHead class="w-2/12 truncate">Artist</TableHead>
+                          <TableHead class="w-1/2 truncate">Path</TableHead>
+                          <TableHead class="w-10 truncate">Duration</TableHead>
+                          <TableHead class="w-16 text-right truncate"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {music.map((song:Music,index:number) => (
+                          <TableRow>
+                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
+                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
+                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
+                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
+                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
+                            <TableCell>
+                              <IoAdd class="flex justify-end hover:cursor-pointer" size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
+                            </TableCell>  
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger class="w-32" as={Button} variant={"destructive"} size={"sm"}>Delete Playlist</DialogTrigger>
+              <DialogContent class="max-w-sm h-1/6 flex items-center justify-center">
+                <DialogHeader>
+                  <DialogTitle>Are you sure you want to delete?</DialogTitle>
+                  <div class="flex flex-row justify-center gap-2 pt-5">
+                    <Button class="w-32" onClick={deleteCurrentPlaylist} variant={"destructive"} size={"sm"}>Yes, Delete</Button>
+                  </div>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
+      {/* Table for Group  */}
       <Table>
         <TableHeader>
           <TableRow>
@@ -194,47 +234,6 @@ export const PlaylistPage = () => {
           ))}
         </TableBody>
       </Table>
-      {isDeleteModalOpen() && (
-        <Modal size="sm" isShown={isDeleteModalOpen()} closeModal={closeDeleteModal}>
-          <div class="flex flex-col items-center justify-center mt-5 ">
-            <div class="text-xl font-semibold mb-4">Are you sure you want to delete?</div>
-            <div class="flex flex-row space-x-4">
-              <Button class="w-16" onClick={closeDeleteModal} variant={"default"} size={"sm"}>Cancel</Button>
-              <Button class="w-16" onClick={deleteCurrentPlaylist} variant={"destructive"} size={"sm"}>Delete</Button>
-            </div>
-          </div>  
-        </Modal>
-      )}
-      {isAddModalOpen() && (
-        <Modal size="lg" title="Add Audio To Playlist" isShown={isAddModalOpen()} closeModal={closeModal} headerButtons={headerButtons}>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead class="w-2 truncate">ID</TableHead>
-                <TableHead class="w-1/4 truncate">Title</TableHead>
-                <TableHead class="w-2/12 truncate">Artist</TableHead>
-                <TableHead class="w-1/2 truncate">Path</TableHead>
-                <TableHead class="w-10 truncate">Duration</TableHead>
-                <TableHead class="w-16 text-right truncate"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {music.map((song:Music,index:number) => (
-                <TableRow>
-                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
-                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
-                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
-                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
-                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
-                  <TableCell>
-                    <IoAdd class="flex justify-end hover:cursor-pointer" size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
-                  </TableCell>  
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Modal>
-      )}
     </div>
   )
 }
