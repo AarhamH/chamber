@@ -8,7 +8,8 @@ import { BiRegularHomeAlt2 } from "solid-icons/bi"
 import { FaRegularFolderOpen } from "solid-icons/fa"
 import { IoSearchOutline } from "solid-icons/io"
 import chamberWhite from "~/assets/chamber_logo_white.svg"
-import Modal from "./Modal"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
+import { TextField, TextFieldInput } from "./TextField"
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
@@ -50,6 +51,9 @@ export const SideNavigation = () => {
     playlistRef.scrollTop = playlistRef.scrollHeight; 
   }
 
+  function triggerModal() {
+    setIsAddPlaylistModalOpen(!isAddPlaylistModalOpen());
+  }
   return (
     <div class="bg-zinc-900 h-full w-full flex flex-col">
       <div class="flex items-center justify-center mt-10 mb-4 text-3xl font-thin">
@@ -66,7 +70,31 @@ export const SideNavigation = () => {
           <p>Search</p>
         </Button>
         <div class="mt-10">
-          <Button class="w-full" variant={"filled"} onClick={() => setIsAddPlaylistModalOpen(true)}>(+) Add Playlist</Button>
+          <Dialog open={isAddPlaylistModalOpen()} onOpenChange={setIsAddPlaylistModalOpen}>
+            <DialogTrigger class="w-full" as={Button} variant={"filled"}>(+) Add Playlist</DialogTrigger>
+            <DialogContent class="w-96 h-48">
+              <DialogHeader class="flex items-center justify-center gap-2">
+                <DialogTitle>Enter Group Title</DialogTitle>
+                <TextField>
+                  <TextFieldInput 
+                    class="w-full" 
+                    type="text"
+                    onInput={handleInput}   
+                    placeholder="Group name"
+                    onKeyPress={(e: KeyboardEvent) => e.key === "Enter" && playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal()) : null} 
+                  />
+                </TextField>
+                <Button 
+                  class="w-20 mt-5" size={"sm"} 
+                  onClick={() => playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal) : triggerModal()}
+                  disabled={playlistTitle().trim() === ""}
+                  variant={"filled"} 
+                >
+                  Insert
+                </Button>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <div class="border-t border-white-500 max-h-screen overflow-y-auto mt-5 flex-1" ref={playlistRef}>
@@ -74,7 +102,7 @@ export const SideNavigation = () => {
           playlists.map((playlist, index) => (
             <Button class="flex justify-between w-full" onClick={() => navigate(`/playlist/${playlist.id}`)}>
               <span class="p-2">{index + 1}.</span>
-              <span class="flex-grow text-left truncate"  >{playlist.title}</span>
+              <span class="flex-grow text-left truncate">{playlist.title}</span>
               <i class="fas fa-icon-class p-2">(i)</i>
             </Button>
           ))
@@ -85,20 +113,6 @@ export const SideNavigation = () => {
           </div>
         )}
       </div>
-      {isAddPlaylistModalOpen() && (
-        <Modal size="sm" isShown={isAddPlaylistModalOpen()} closeModal={closePlaylistModal}>
-          <div class="flex flex-col items-center justify-center mt-5">
-            <div class="mb-2 text-center">Enter Playlist Title</div>
-            <input
-              type="text"
-              onInput={handleInput}  
-              onKeyPress={(e) => e.key === "Enter" && playlistTitle().trim() !== "" ? addPlaylist(playlistTitle()) : null}
-              class="font-medium text-2xl rounded-sm border border-white-500"
-            />
-            <Button class="w-20 mt-5" size={"sm"} onClick={() => playlistTitle().trim() !== "" ? addPlaylist(playlistTitle()) : null} variant={"filled"}>Insert</Button>
-          </div>  
-        </Modal>
-      )}
     </div>
   );
 }
