@@ -13,7 +13,6 @@ import { TextField, TextFieldInput } from "./TextField"
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
-  const closePlaylistModal = () => setIsAddPlaylistModalOpen(false);
   const [playlistTitle, setPlaylistTitle] = createSignal("");
   
   let playlistRef!: HTMLDivElement;
@@ -44,7 +43,7 @@ export const SideNavigation = () => {
     await invoke("create_playlist", { playlistArg });
     fetchPlaylists();
     scrollToBottom();
-    closePlaylistModal();
+    setPlaylistTitle("");
   }
 
   function scrollToBottom() {
