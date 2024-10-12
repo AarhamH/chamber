@@ -1,1 +1,8 @@
+*.py linguist-language=Python
+*.rs linguist-language=Rust
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
 *.bb linguist-language=Rust
+*.js linguist-language=JavaScript
+*.css linguist-language=CSS
+*.html linguist-language=HTML
