@@ -55,7 +55,7 @@ pub async fn youtube_search_by_url(url: String) -> Result<YouTubeAudio, String> 
 }
 
 #[tauri::command]
-pub async fn download_audio(url: String, audio_title: String) -> Result<(), String> {
+pub async fn download_audio(url: String) -> Result<(), String> {
     pub use crate::helper::files::create_audio_store_directory;
     use crate::models::music_model::NewMusic;
     use crate::db::establish_connection;
@@ -64,12 +64,45 @@ pub async fn download_audio(url: String, audio_title: String) -> Result<(), Stri
     use crate::schema::music::dsl::*;
 
     create_audio_store_directory()?;
-    let output_path = format!("{}/{}", AUDIO_STORE, audio_title);
 
-    let download_result = yt_dlp_download(url.clone(), output_path.clone()).await;
+    let path_to_binary: &Path;
+
+    if cfg!(target_os = "windows") {
+        path_to_binary = Path::new(YT_DLP_EXE);
+    } else {
+        path_to_binary = Path::new(YT_DLP);
+    }
+
+    let audio_title_output = Command::new(path_to_binary)
+        .arg("--get-title")
+        .arg(&url)
+        .output()
+        .expect("Failed to execute command");
+
+    if !audio_title_output.status.success() {
+        let stderr = String::from_utf8_lossy(&audio_title_output.stderr);
+        return Err(format!("Error: {}", stderr));
+    }
+
+    let audio_title = String::from_utf8_lossy(&audio_title_output.stdout).trim().to_string().replace(" ", "_");
+
+    let output_path = format!("{}/{}.mp3", AUDIO_STORE, audio_title);    
+    let args = vec![
+        "-x",
+        "--audio-format", "mp3",
+        "-o", &output_path,
+        "--cookies", "cookies.txt",
+        &url,
+    ];
     
-    if download_result.is_err() {
-        return Err(download_result.unwrap_err());
+    let output = Command::new(path_to_binary)
+    .args(&args)
+    .output()
+    .expect("Failed to execute command");
+    
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Error: {}", stderr))
     }
 
     let download_result = fetch_metadata(url).await.unwrap();
@@ -96,40 +129,6 @@ pub async fn download_audio(url: String, audio_title: String) -> Result<(), Stri
             Err(format!("Error: {}", err))
         }
       }
-}
-
-pub async fn yt_dlp_download(url: String, output_path: String) -> Result<(), String> {
-    let path_to_binary: &Path;
-
-    if cfg!(target_os = "windows") {
-        path_to_binary = Path::new(YT_DLP_EXE);
-    } else {
-        path_to_binary = Path::new(YT_DLP);
-    }
-
-    let args = vec![
-        "-x",
-        "--audio-format", "mp3",
-        "-o", &output_path,
-        "--cookies", "cookies.txt",
-        &url,
-    ];
-    let output = Command::new(path_to_binary)
-    .args(&args)
-    .output()
-    .expect("Failed to execute command");
-    
-    match output.status.success() {
-        true => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            println!("Output: {}", stdout);
-            Ok(())
-        }
-        false => {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            Err(format!("Error: {}", stderr))
-        }
-    }
 }
 
 pub async fn fetch_metadata(url: String) -> Result<YouTubeAudio, String> {
