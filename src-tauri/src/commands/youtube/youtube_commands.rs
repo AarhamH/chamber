@@ -4,7 +4,7 @@ use std::process::Command;
 use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
-use crate::helper::constants::{ YT_DLP, YT_DLP_EXE};
+use crate::helper::constants::{ AUDIO_STORE, YT_DLP, YT_DLP_EXE};
 use crate::models::youtube_model::YouTubeAudio;
 
 #[tauri::command]
@@ -50,7 +50,89 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
 }           
 
 #[tauri::command]
-pub async fn get_video_metadata(url: String) -> Result<YouTubeAudio, String> {
+pub async fn youtube_search_by_url(url: String) -> Result<YouTubeAudio, String> {
+    fetch_metadata(url).await
+}
+
+#[tauri::command]
+pub async fn download_audio(url: String, audio_title: String) -> Result<(), String> {
+    pub use crate::helper::files::create_audio_store_directory;
+    use crate::models::music_model::NewMusic;
+    use crate::db::establish_connection;
+    use diesel::SqliteConnection;
+    use diesel::prelude::*;
+    use crate::schema::music::dsl::*;
+
+    create_audio_store_directory()?;
+    let output_path = format!("{}/{}", AUDIO_STORE, audio_title);
+
+    let download_result = yt_dlp_download(url.clone(), output_path.clone()).await;
+    
+    if download_result.is_err() {
+        return Err(download_result.unwrap_err());
+    }
+
+    let download_result = fetch_metadata(url).await.unwrap();
+
+    let mut connection: SqliteConnection = establish_connection();
+    let new_music: NewMusic<'_> = NewMusic {
+        title: &download_result.title.unwrap_or_default().to_string(),
+        artist: &download_result.channel.unwrap_or_default().to_string(),
+        path: &output_path,
+        duration: &download_result.duration.unwrap_or_default().to_string()
+      };
+      
+    let result: Result<usize, diesel::result::Error> = diesel::insert_into(music)
+      .values(&new_music)
+      .execute(&mut connection);
+
+    match result {
+        Ok(_) => Ok(()),
+    
+        Err(diesel::result::Error::DatabaseError(diesel::result::DatabaseErrorKind::UniqueViolation, _)) => {
+            Err("Error: Could not add music entry to database".to_string()) // Return error to the client
+        }
+        Err(err) => {
+            Err(format!("Error: {}", err))
+        }
+      }
+}
+
+pub async fn yt_dlp_download(url: String, output_path: String) -> Result<(), String> {
+    let path_to_binary: &Path;
+
+    if cfg!(target_os = "windows") {
+        path_to_binary = Path::new(YT_DLP_EXE);
+    } else {
+        path_to_binary = Path::new(YT_DLP);
+    }
+
+    let args = vec![
+        "-x",
+        "--audio-format", "mp3",
+        "-o", &output_path,
+        "--cookies", "cookies.txt",
+        &url,
+    ];
+    let output = Command::new(path_to_binary)
+    .args(&args)
+    .output()
+    .expect("Failed to execute command");
+    
+    match output.status.success() {
+        true => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            println!("Output: {}", stdout);
+            Ok(())
+        }
+        false => {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            Err(format!("Error: {}", stderr))
+        }
+    }
+}
+
+pub async fn fetch_metadata(url: String) -> Result<YouTubeAudio, String> {
     use crate::commands::youtube::yt_web_parser::{
         extract_channel, 
         extract_views,
@@ -80,56 +162,4 @@ pub async fn get_video_metadata(url: String) -> Result<YouTubeAudio, String> {
     };
 
     Ok(youtube_audio)
-}
-
-#[tauri::command]
-pub async fn download_audio(url: String) -> Result<(), String> {
-    pub use crate::helper::files::create_audio_store_directory;
-    create_audio_store_directory()?;
-
-    let download_result = yt_dlp_download(url).await;
-    
-    match download_result {
-        Ok(_) => {
-            println!("Conversion to audio completed successfully.");
-            Ok(())
-        },
-        Err(e) => {
-            Err(format!("Conversion to audio failed: {}", e))
-        }
-    }
-}
-
-pub async fn yt_dlp_download(url: String) -> Result<(), String> {
-    let path_to_binary: &Path;
-
-    if cfg!(target_os = "windows") {
-        path_to_binary = Path::new(YT_DLP_EXE);
-    } else {
-        path_to_binary = Path::new(YT_DLP);
-    }
-    
-    let args = vec![
-        "-x",
-        "--audio-format", "mp3",
-        "-o", "%(title)s",
-        "--cookies", "cookies.txt",
-        &url,
-    ];
-    let output = Command::new(path_to_binary)
-    .args(&args)
-    .output()
-    .expect("Failed to execute command");
-    
-    match output.status.success() {
-        true => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            println!("Output: {}", stdout);
-            Ok(())
-        }
-        false => {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            Err(format!("Error: {}", stderr))
-        }
-    }
 }

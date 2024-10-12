@@ -1,4 +1,7 @@
+use std::path::Path;
+
 use diesel::prelude::*;
+use crate::helper::constants::AUDIO_STORE;
 use crate::helper::tools::seconds_to_minutes;
 use crate::schema::music::dsl::*;
 
@@ -51,9 +54,13 @@ fn read_file_metadata(file_path: String) -> Result<MusicArg, String> {
 #[tauri::command]
 pub fn create_music(file_path: String) -> Result<(), String> {
   let music_arg: MusicArg = match read_file_metadata(file_path) {
-      Ok(arg) => arg,
-      Err(err) => return Err(err),
-  };
+    Ok(arg) => arg,
+    Err(err) => return Err(err),
+};
+  let destination_path: std::path::PathBuf = Path::new(AUDIO_STORE).join(music_arg.title.as_ref().unwrap());
+  if destination_path.exists() {
+      return Err("File already exists".to_string());
+  }
 
   let mut connection: SqliteConnection = establish_connection();
 

@@ -11,5 +11,5 @@ custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 #   npm run generate-toml   or   python set_diesel_toml
 #
 [migrations_directory]
-dir = "/home/ahaider/repos/chamber/migrations"
+dir = "/home/ahaider/repos/chamber/src-tauri/migrations"
 
