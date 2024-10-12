@@ -145,8 +145,10 @@ export const PlaylistPage = () => {
               <DialogTrigger class="w-32" as={Button} variant={"filled"} size={"sm"}>Add Audio</DialogTrigger>
               <DialogContent class="w-2/3 h-2/3">
                 <DialogHeader>
-                  <DialogTitle class="flex items-center justify-center">Add to Playlist</DialogTitle>
-                  <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>                  
+                  <div class="flex flex-col items-center justify-center">
+                    <DialogTitle>Add to Playlist</DialogTitle>
+                    <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>      
+                  </div>
                   <DialogDescription>
                     <Table>
                       <TableHeader>
