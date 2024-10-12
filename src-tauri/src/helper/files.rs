@@ -39,6 +39,9 @@ pub fn create_audio_store_directory() -> Result<(), String> {
 
 pub fn copy_file_to_store(file_path: &str, file_name: &str) -> Result<String, String> {
     let destination_path: std::path::PathBuf = Path::new(AUDIO_STORE).join(file_name);
+    if destination_path.exists() {
+        return Err("File already exists".to_string());
+    }
     fs::copy(file_path, &destination_path)
         .map_err(|e| format!("Unable to copy file: {}", e))?;
     Ok(destination_path.to_str().unwrap().to_string())

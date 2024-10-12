@@ -56,12 +56,8 @@ pub fn create_music(file_path: String) -> Result<(), String> {
   let music_arg: MusicArg = match read_file_metadata(file_path) {
     Ok(arg) => arg,
     Err(err) => return Err(err),
-};
-  let destination_path: std::path::PathBuf = Path::new(AUDIO_STORE).join(music_arg.title.as_ref().unwrap());
-  if destination_path.exists() {
-      return Err("File already exists".to_string());
-  }
-
+  };
+  
   let mut connection: SqliteConnection = establish_connection();
 
   let new_music: NewMusic<'_> = NewMusic {
