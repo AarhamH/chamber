@@ -5,7 +5,7 @@ use rusty_dl::Downloader;
 use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
-use crate::helper::constants::AUDIO_STORE;
+use crate::helper::constants::{ YT_DLP, YT_DLP_EXE};
 use crate::models::youtube_model::YouTubeAudio;
 
 #[tauri::command]
@@ -117,8 +117,36 @@ pub async fn download_audio(url: String, title: String) -> Result<(), String> {
     }
 }
 
-fn format_audio_file_path(title: &str) -> (String, String) {
-    let video_path_with_extension = format!("{}/{}.mp4", AUDIO_STORE, title);
-    let audio_path_with_extension = format!("{}/{}.mp3", AUDIO_STORE, title);
-    (video_path_with_extension, audio_path_with_extension)
+pub async fn yt_dlp_download(url: String) -> Result<(), String> {
+    let path_to_binary: &Path;
+
+    if cfg!(target_os = "windows") {
+        path_to_binary = Path::new(YT_DLP_EXE);
+    } else {
+        path_to_binary = Path::new(YT_DLP);
+    }
+    
+    let args = vec![
+        "-x",
+        "--audio-format", "mp3",
+        "-o", "%(title)s",
+        "--cookies", "cookies.txt",
+        &url,
+    ];
+    let output = Command::new(path_to_binary)
+    .args(&args)
+    .output()
+    .expect("Failed to execute command");
+    
+    match output.status.success() {
+        true => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            println!("Output: {}", stdout);
+            Ok(())
+        }
+        false => {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            Err(format!("Error: {}", stderr))
+        }
+    }
 }
