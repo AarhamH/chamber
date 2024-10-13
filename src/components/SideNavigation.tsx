@@ -13,7 +13,6 @@ import { TextField, TextFieldInput } from "./TextField"
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
-  const closePlaylistModal = () => setIsAddPlaylistModalOpen(false);
   const [playlistTitle, setPlaylistTitle] = createSignal("");
   
   let playlistRef!: HTMLDivElement;
@@ -44,7 +43,7 @@ export const SideNavigation = () => {
     await invoke("create_playlist", { playlistArg });
     fetchPlaylists();
     scrollToBottom();
-    closePlaylistModal();
+    setPlaylistTitle("");
   }
 
   function scrollToBottom() {
@@ -86,7 +85,7 @@ export const SideNavigation = () => {
                 </TextField>
                 <Button 
                   class="w-20 mt-5" size={"sm"} 
-                  onClick={() => playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal) : triggerModal()}
+                  onClick={() => playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal()) : triggerModal()}
                   disabled={playlistTitle().trim() === ""}
                   variant={"filled"} 
                 >
