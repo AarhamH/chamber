@@ -85,7 +85,7 @@ export const SideNavigation = () => {
                 </TextField>
                 <Button 
                   class="w-20 mt-5" size={"sm"} 
-                  onClick={() => playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal) : triggerModal()}
+                  onClick={() => playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal()) : triggerModal()}
                   disabled={playlistTitle().trim() === ""}
                   variant={"filled"} 
                 >
