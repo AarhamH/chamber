@@ -16,7 +16,7 @@ fn read_file_metadata(file_path: String) -> Result<MusicArg, String> {
       extract_file_name,
       read_file_to_buffer,
       create_audio_store_directory,
-      copy_file_to_store
+      copy_file_to_destination
   };
   let file_type: String = get_file_type(&file_path)?;
   if file_type != "audio/mpeg" && file_type != "audio/wav" {
@@ -39,14 +39,26 @@ fn read_file_metadata(file_path: String) -> Result<MusicArg, String> {
       },
       _ => 0,
   };
-
+  
   create_audio_store_directory()?;
-  let destination_path = copy_file_to_store(&file_path, &file_name)?;
+
+  // create destination path based on file_name, if there is a duplicate, add a suffix -1, -2, etc.
+  let mut destination_path = Path::new(AUDIO_STORE).join(&file_name);
+  let mut counter = 1;
+        
+  while destination_path.exists() {
+      // Create a new destination path with a counter suffix
+      let new_file_name = format!("{}-{}", file_name, counter);
+      destination_path = Path::new(AUDIO_STORE).join(new_file_name);
+      counter += 1;
+  }
+
+  copy_file_to_destination(&file_path, destination_path.to_str().unwrap()).map_err(|e| format!("Unable to copy file: {}", e))?;
 
   Ok(MusicArg {
       title: Some(file_name),
       artist: Some("Unknown".to_string()),
-      path: Some(destination_path.to_string()),
+      path: Some((&destination_path.to_str().unwrap()).to_string()),
       duration: Some(seconds_to_minutes(duration_secs)),
   })
 }
