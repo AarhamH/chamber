@@ -1,8 +1,7 @@
-use std::path::Path;
 use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
-use crate::helper::constants::{ AUDIO_STORE, YT_DLP, YT_DLP_EXE};
+use crate::helper::constants::AUDIO_STORE;
 use crate::models::youtube_model::YouTubeAudio;
 
 #[tauri::command]
@@ -66,17 +65,16 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
 
     create_audio_store_directory()?;
 
-    let path_to_binary: &Path = if cfg!(target_os = "windows") {
-        Path::new(YT_DLP_EXE)
+    let command = if cfg!(target_os = "windows") {
+        "yt-dlp.exe"
     } else {
-        Path::new(YT_DLP)
+        "yt-dlp"
     };
-
     let (tx, mut rx) = mpsc::channel(32);
     let mut handles = vec![];
 
     for audio in audio_list {
-        let path_to_binary = path_to_binary.to_path_buf();
+
         let tx = tx.clone();
 
         // Spawn a task for each audio download
@@ -90,7 +88,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 &audio.url,
             ];
 
-            let output = Command::new(path_to_binary)
+            let output = Command::new(command)
                 .args(&args)
                 .output()
                 .expect("Failed to execute command");
