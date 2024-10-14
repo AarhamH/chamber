@@ -18,6 +18,7 @@ export type YoutubeQuery = {
   views: string;
   duration: string;
   thumbnail: string;
+  url: string;
 }
 
 export type PlaylistArg = Partial<Playlist>;
