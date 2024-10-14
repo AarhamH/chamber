@@ -143,7 +143,7 @@ export const PlaylistPage = () => {
             {/* Modals for Add Audio/Delete Group */}
             <Dialog>
               <DialogTrigger class="w-32" as={Button} variant={"filled"} size={"sm"}>Add Audio</DialogTrigger>
-              <DialogContent class="w-2/3 h-2/3">
+              <DialogContent class="w-5/6 h-2/3">
                 <DialogHeader>
                   <div class="flex flex-col items-center justify-center">
                     <DialogTitle>Add to Playlist</DialogTitle>
