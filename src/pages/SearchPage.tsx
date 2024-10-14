@@ -18,6 +18,7 @@ import { Button } from "~/components/Button"
 import { youtubeQueue, setYoutubeQueue } from "~/store/store"
 import { IoRemoveCircleOutline } from "solid-icons/io"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "~/components/Sheet"
+import { BiRegularLoaderCircle } from "solid-icons/bi"
 
 interface SearchSuggestion {
   label: string
@@ -28,6 +29,7 @@ export const SearchPage = () => {
   const [searchInput, setSearchInput] = createSignal<string>("")
   const [searchSuggestions, setSearchSuggestions] = createSignal<SearchSuggestion[]>([])
   const [youtubeQuery, setYoutubeQuery] = createSignal<YoutubeQuery[]>([])
+  const [isDownloading, setIsDownloading] = createSignal<boolean>(false)
 
   const cache = new Map();
 
@@ -67,6 +69,18 @@ export const SearchPage = () => {
     }
   }
 
+  async function download(audioList: YoutubeQuery[]) {
+    try {
+      setIsDownloading(true);
+      await invoke("download_audio", { audioList });
+    } catch (error) {
+      return error;
+    } finally {
+      setIsDownloading(false);
+      setYoutubeQueue([]);
+    }
+  }
+
   const addToQueue = (query: YoutubeQuery) => {
     setYoutubeQueue((prevQueue) => [...prevQueue, query]);
   }
@@ -90,7 +104,7 @@ export const SearchPage = () => {
             <ComboboxItemIndicator />
           </ComboboxItem>
         )}
-        class="w-1/2 mx-auto p-2"
+        class="w-1/3 mx-auto p-5"
         onChange={(selectedItem) => {
           if (selectedItem) {
             setSearchInput(selectedItem.value);
@@ -112,28 +126,37 @@ export const SearchPage = () => {
               autoComplete(value);
             }}
             onChange={(e) => setSearchInput((e.target as HTMLInputElement).value)} 
-          />
+          />  
           <Sheet>
             <SheetTrigger class="opacity-50 text-sm">Queue</SheetTrigger>
-            <SheetContent class="overflow-y-hidden">
+            <SheetContent class="flex flex-col h-full overflow-y-hidden">
               <SheetHeader>
                 <SheetTitle class="sticky top-0 bg-zinc-950 z-10 pt-10">Download Queue</SheetTitle>
-                <SheetDescription>
+                <SheetDescription class="flex-grow overflow-auto">
+                  {isDownloading() &&
+                    <div class="absolute inset-0 flex flex-col items-center justify-center z-20 backdrop-blur-sm bg-black bg-opacity-50">
+                      Downloading
+                      <BiRegularLoaderCircle class="animate-spin" size={32} />
+                    </div>            
+                  }
                   {youtubeQueue.map((query) => (
                     <div class="flex items-center p-4">
                       <img src={query.thumbnail} class="rounded-md" width={120} height={90} />
-                      <div class="flex flex-col ml-2"> {/* Added margin-left for spacing */}
+                      <div class="flex flex-col ml-2">
                         <span class="text-sm">{query.title}</span>
                         <span class="text-xs">{query.channel}</span>
                       </div>
-                      <Button variant={"link"} size={"icon"} class="flex items-center justify-center ml-auto" onClick={() => removeFromQueue(query)}>
-                        <IoRemoveCircleOutline size={24}/>
-                      </Button> 
+                      <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" onClick={() => removeFromQueue(query)}>
+                        <IoRemoveCircleOutline size={24} />
+                      </Button>
                     </div>
                   ))}
                 </SheetDescription>
               </SheetHeader>
-            </SheetContent>
+              <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5 bg-zinc-950">
+                <Button class="w-32" variant="filled" disabled={youtubeQueue.length === 0} onClick={() => download(youtubeQueue)} size="sm">Download</Button>
+              </div>
+            </SheetContent>      
           </Sheet>
         </ComboboxControl>
         <ComboboxContent />
