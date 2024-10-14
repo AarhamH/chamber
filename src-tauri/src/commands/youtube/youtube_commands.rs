@@ -63,26 +63,25 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
     use tokio::sync::mpsc;
     use std::process::Command;
     use tokio::task;
-    
+
     create_audio_store_directory()?;
 
-    let path_to_binary: &Path;
-
-    if cfg!(target_os = "windows") {
-        path_to_binary = Path::new(YT_DLP_EXE);
+    let path_to_binary: &Path = if cfg!(target_os = "windows") {
+        Path::new(YT_DLP_EXE)
     } else {
-        path_to_binary = Path::new(YT_DLP);
-    }
-    
-    let (tx, mut rx) = mpsc::channel(32);
+        Path::new(YT_DLP)
+    };
 
+    let (tx, mut rx) = mpsc::channel(32);
+    let mut handles = vec![];
 
     for audio in audio_list {
         let path_to_binary = path_to_binary.to_path_buf();
         let tx = tx.clone();
 
-        task::spawn(async move {
-            let output_path = format!("{}/{}.mp3", AUDIO_STORE, audio.title.unwrap_or_default().replace(" ", "_"));    
+        // Spawn a task for each audio download
+        let handle = task::spawn(async move {
+            let output_path = format!("{}/{}.mp3", AUDIO_STORE, audio.title.unwrap_or_default().replace(" ", "_"));
             let args = vec![
                 "-x",
                 "--audio-format", "mp3",
@@ -102,18 +101,19 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 return;
             }
 
+            // Fetch metadata and insert into the database
             let download_result = fetch_metadata(audio.url).await.unwrap();
             let mut connection: SqliteConnection = establish_connection();
             let new_music: NewMusic<'_> = NewMusic {
-                title: &download_result.title.unwrap_or_default().to_string(),
-                artist: &download_result.channel.unwrap_or_default().to_string(),
+                title: &download_result.title.unwrap_or_default(),
+                artist: &download_result.channel.unwrap_or_default(),
                 path: &output_path,
-                duration: &download_result.duration.unwrap_or_default().to_string()
+                duration: &download_result.duration.unwrap_or_default(),
             };
 
             let result: Result<usize, diesel::result::Error> = diesel::insert_into(music)
-            .values(&new_music)
-            .execute(&mut connection);
+                .values(&new_music)
+                .execute(&mut connection);
 
             if result.is_err() {
                 let _ = tx.send(Err("Error: Could not add music entry to database".to_string())).await;
@@ -121,7 +121,11 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 let _ = tx.send(Ok(())).await;
             }
         });
+
+        handles.push(handle);
     }
+
+    drop(tx);
 
     while let Some(result) = rx.recv().await {
         if let Err(e) = result {
@@ -129,9 +133,12 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         }
     }
 
+    for handle in handles {
+        let _ = handle.await;
+    }
+
     Ok(())
 }
-
 pub async fn fetch_metadata(url: String) -> Result<YouTubeAudio, String> {
     use crate::commands::youtube::yt_web_parser::{
         extract_channel, 
