@@ -19,6 +19,7 @@ import { youtubeQueue, setYoutubeQueue } from "~/store/store"
 import { IoRemoveCircleOutline } from "solid-icons/io"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "~/components/Sheet"
 import { BiRegularLoaderCircle } from "solid-icons/bi"
+import { toast, Toaster } from "solid-sonner"
 
 interface SearchSuggestion {
   label: string
@@ -82,14 +83,17 @@ export const SearchPage = () => {
   }
 
   const addToQueue = (query: YoutubeQuery) => {
+    if (youtubeQueue.some((queueItem) => queueItem.url === query.url)) return false;
     setYoutubeQueue((prevQueue) => [...prevQueue, query]);
-  }
+    return true;
+  };
 
   const removeFromQueue = (itemToRemove: YoutubeQuery) => {
     setYoutubeQueue((prevQueue) => 
       prevQueue.filter((queueItem) => queueItem.url !== itemToRemove.url)
     );
   };
+
   return (
     <div>
       <Combobox
@@ -189,15 +193,41 @@ export const SearchPage = () => {
                   <a href={query.url} target="_blank">
                     <BiRegularLink size={24}/>
                   </a> 
-                  <Button variant={"link"} size={"icon"} class="flex items-center justify-center" onClick={() => addToQueue(query)}>
+                  <Button 
+                    variant="link" 
+                    size="icon" 
+                    class="flex items-center justify-center" 
+                    onClick={() => {
+                      const success = addToQueue(query);
+                      toast(
+                        success ? (
+                          <div class="flex flex-col">
+                            <span class="text-success">Added to queue</span>
+                            <span class="font-general text-white">{query.title}</span>
+                            <span class="font-extralight text-white mb-3">{query.channel}</span>
+                            <Button class="w-16 h-5 text-xs" variant="destructive" onClick={() => { removeFromQueue(query); toast.dismiss(); }} size="sm">Remove</Button>
+                          </div>
+                        ) : (
+                          <div class="flex flex-col">
+                            <span class="text-red-500 mb-3">Already in queue</span>
+                            <Button class="w-16 h-5 text-xs" variant="destructive" onClick={() => { removeFromQueue(query); toast.dismiss(); }} size="sm">Remove</Button>
+                          </div>
+                        ), 
+                        {
+                          classes: {toast: "bg-zinc-950"},
+                        }
+                      );
+                    }}
+                  >
                     <BiRegularAddToQueue size={24}/>  
-                  </Button>  
+                  </Button>
                 </div>
               </TableCell>    
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <Toaster />
     </div>
   )
 }
