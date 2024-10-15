@@ -199,24 +199,18 @@ export const SearchPage = () => {
                     class="flex items-center justify-center" 
                     onClick={() => {
                       const success = addToQueue(query);
-                      toast(
-                        success ? (
+                      toast(success ? "Added entry to queue!" : "Already in queue", {
+                        description: 
                           <div class="flex flex-col">
-                            <span class="text-success">Added to queue</span>
-                            <span class="font-general text-white">{query.title}</span>
-                            <span class="font-extralight text-white mb-3">{query.channel}</span>
-                            <Button class="w-16 h-5 text-xs" variant="destructive" onClick={() => { removeFromQueue(query); toast.dismiss(); }} size="sm">Remove</Button>
-                          </div>
-                        ) : (
-                          <div class="flex flex-col">
-                            <span class="text-red-500 mb-3">Already in queue</span>
-                            <Button class="w-16 h-5 text-xs" variant="destructive" onClick={() => { removeFromQueue(query); toast.dismiss(); }} size="sm">Remove</Button>
-                          </div>
-                        ), 
-                        {
-                          classes: {toast: "bg-zinc-950"},
-                        }
-                      );
+                            <span>{query.title}</span>
+                            <span class="font-thin">{query.channel}</span>
+                          </div>,
+                        classes: {
+                          toast: "bg-zinc-950",
+                          title: success ? "text-green-500" : "text-red-500",
+                          description: "text-white",
+                        },
+                      })
                     }}
                   >
                     <BiRegularAddToQueue size={24}/>  
