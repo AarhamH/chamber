@@ -13,7 +13,7 @@ node_modules/
 src-tauri/audio_store/*
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
-
+/dist/*
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
