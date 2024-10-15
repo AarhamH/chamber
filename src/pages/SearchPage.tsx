@@ -116,6 +116,13 @@ export const SearchPage = () => {
             search(selectedItem.value);
           }
         }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            const value = (e.target as HTMLInputElement).value;
+            setSearchInput(setSearchInput(value));
+            search(searchInput());
+          }
+        }}
       >
         <ComboboxControl aria-label="SearchSuggestions">
           <IoSearchOutline
@@ -129,14 +136,6 @@ export const SearchPage = () => {
               const value = (e.target as HTMLInputElement).value;
               setSearchInput(value);
               autoComplete(value);
-            }}
-            onChange={(e) => setSearchInput((e.target as HTMLInputElement).value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const value = (e.target as HTMLInputElement).value;
-                setSearchInput(setSearchInput(value));
-                search(searchInput());
-              }
             }}
           />  
           <Sheet>
