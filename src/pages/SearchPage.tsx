@@ -136,14 +136,17 @@ export const SearchPage = () => {
             <SheetTrigger class="opacity-50 text-sm">Queue</SheetTrigger>
             <SheetContent class="flex flex-col h-full overflow-y-hidden">
               <SheetHeader>
-                <SheetTitle class="sticky top-0 bg-zinc-950 z-10 pt-10">Download Queue</SheetTitle>
-                <SheetDescription class="flex-grow overflow-auto">
-                  {isDownloading() &&
-                    <div class="absolute inset-0 flex flex-col items-center justify-center z-20 backdrop-blur-sm bg-black bg-opacity-50">
-                      Downloading
-                      <BiRegularLoaderCircle class="animate-spin" size={32} />
-                    </div>            
+                <SheetTitle class="sticky top-0 bg-zinc-950 z-10 pt-10">
+                  {isDownloading() ? 
+                    (
+                      <div class="flex flex-row gap-2 items-center">
+                        <BiRegularLoaderCircle class="animate-spin" size={32} />
+                        Downloading...
+                      </div>
+                    ): "Download Queue"
                   }
+                </SheetTitle>
+                <SheetDescription class="flex-grow overflow-auto">
                   {youtubeQueue.map((query) => (
                     <div class="flex items-center p-4">
                       <img src={query.thumbnail} class="rounded-md" width={120} height={90} />
@@ -151,7 +154,8 @@ export const SearchPage = () => {
                         <span class="text-sm">{query.title}</span>
                         <span class="text-xs">{query.channel}</span>
                       </div>
-                      <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" onClick={() => removeFromQueue(query)}>
+                      <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" 
+                        onClick={() => {removeFromQueue(query)}}>
                         <IoRemoveCircleOutline size={24} />
                       </Button>
                     </div>
@@ -159,7 +163,19 @@ export const SearchPage = () => {
                 </SheetDescription>
               </SheetHeader>
               <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5 bg-zinc-950">
-                <Button class="w-32" variant="filled" disabled={youtubeQueue.length === 0} onClick={() => download(youtubeQueue)} size="sm">Download</Button>
+                <Button 
+                  class="w-32" 
+                  variant="filled" 
+                  disabled={youtubeQueue.length === 0} 
+                  onClick={() => {
+                    download(youtubeQueue).then((result) => {
+                      const isError = result instanceof Error;
+                      (() => isError ? toast.error(result.message) : toast.success("Download was successful"))();
+                    })
+                  }} 
+                  size="sm">
+                  Download
+                </Button>
               </div>
             </SheetContent>      
           </Sheet>

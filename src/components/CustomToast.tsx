@@ -12,7 +12,7 @@ const CustomToast = () => {
         },
       }}
       position="top-center"
-      duration={3000}
+      duration={1500}
     />
   )
 }
