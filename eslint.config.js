@@ -26,4 +26,7 @@ export default [
     "@stylistic/jsx/jsx-curly-spacing": [2, {"when": "never", "allowMultiline": false}],
   }
   },
+  {
+    ignores: ["dist/*", "src-tauri/target/*"],
+  }
 ];
