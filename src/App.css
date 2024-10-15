@@ -3,8 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  .container {
+    overflow-y: hidden;
+  }
   body {
     font-family: "Urbanist", sans-serif;
+    overflow-y: hidden;
   }
   ::-webkit-scrollbar {
     width: 6px;
