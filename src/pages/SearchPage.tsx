@@ -130,7 +130,14 @@ export const SearchPage = () => {
               setSearchInput(value);
               autoComplete(value);
             }}
-            onChange={(e) => setSearchInput((e.target as HTMLInputElement).value)} 
+            onChange={(e) => setSearchInput((e.target as HTMLInputElement).value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const value = (e.target as HTMLInputElement).value;
+                setSearchInput(setSearchInput(value));
+                search(searchInput());
+              }
+            }}
           />  
           <Sheet>
             <SheetTrigger class="opacity-50 text-sm">Queue</SheetTrigger>
