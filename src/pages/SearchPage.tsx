@@ -19,7 +19,8 @@ import { youtubeQueue, setYoutubeQueue } from "~/store/store"
 import { IoRemoveCircleOutline } from "solid-icons/io"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "~/components/Sheet"
 import { BiRegularLoaderCircle } from "solid-icons/bi"
-import { toast, Toaster } from "solid-sonner"
+import { toast } from "solid-sonner"
+import CustomToast from "~/components/CustomToast"
 
 interface SearchSuggestion {
   label: string
@@ -199,18 +200,7 @@ export const SearchPage = () => {
                     class="flex items-center justify-center" 
                     onClick={() => {
                       const success = addToQueue(query);
-                      toast(success ? "Added entry to queue!" : "Already in queue", {
-                        description: 
-                          <div class="flex flex-col">
-                            <span>{query.title}</span>
-                            <span class="font-thin">{query.channel}</span>
-                          </div>,
-                        classes: {
-                          toast: "bg-zinc-950",
-                          title: success ? "text-green-500" : "text-red-500",
-                          description: "text-white",
-                        },
-                      })
+                      (() => !success ? toast.error("Already in queue") : toast.success("Successfully added to queue", { description: query.title }))();
                     }}
                   >
                     <BiRegularAddToQueue size={24}/>  
@@ -221,7 +211,7 @@ export const SearchPage = () => {
           ))}
         </TableBody>
       </Table>
-      <Toaster />
+      <CustomToast />
     </div>
   )
 }

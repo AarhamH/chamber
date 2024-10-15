@@ -28,6 +28,8 @@ import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
 import { useAudio } from "~/components/AudioContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "~/components/Dialog";
+import { toast } from "solid-sonner";
+import CustomToast from "~/components/CustomToast";
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -84,7 +86,7 @@ export const PlaylistPage = () => {
       await invoke("insert_song_into_playlist", { playlistIdArg: parseInt(params.id), musicIdArg: id });
       fetchMusicFromPlaylist();
     } catch (error) {
-      return error
+      return new Error(String(error));
     }
   };
 
@@ -113,7 +115,7 @@ export const PlaylistPage = () => {
       setPlaylists(result);
       navigate("/search");
     } catch (error) {
-      return error
+      return new Error(String(error));
     } 
   }
 
@@ -122,7 +124,7 @@ export const PlaylistPage = () => {
       await invoke("destroy_song_from_playlist", { playlistIdArg: parseInt(params.id), musicIdArg: id });
       fetchMusicFromPlaylist();
     } catch (error) {
-      return error
+      return new Error(String(error));
     } 
   }
 
@@ -170,7 +172,16 @@ export const PlaylistPage = () => {
                             <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
                             <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
                             <TableCell>
-                              <IoAdd class="flex justify-end hover:cursor-pointer" size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
+                              <IoAdd 
+                                class="flex justify-end hover:cursor-pointer" 
+                                size={24} 
+                                onClick={() => {
+                                  insertMusicToPlaylist(song.id).then(result => {
+                                    const isError = result instanceof Error;
+                                    (() => isError ? toast.error(result.message) : toast.success(`Successfully added to playlist: ${playlistTitle()}`))();
+                                  });
+                                }}
+                              />
                             </TableCell>  
                           </TableRow>
                         ))}
@@ -225,10 +236,20 @@ export const PlaylistPage = () => {
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger>
-                    <BiRegularDotsVerticalRounded size={24} onClick={() => insertMusicToPlaylist(song.id)}/>
+                    <BiRegularDotsVerticalRounded size={24}/>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem class="text-red-500 hover:cursor-pointer" onClick={() => {removeFromPlaylist(song.id)}}>Delete</DropdownMenuItem>
+                    <DropdownMenuItem 
+                      class="text-red-500 hover:cursor-pointer" 
+                      onClick={() => {
+                        removeFromPlaylist(song.id).then(result => {
+                          const isError = result instanceof Error;
+                          (() => isError ? toast.error(result.message) : toast.success(`Successfully removed from playlist: ${playlistTitle()}`))();
+                        });
+                      }}
+                    >
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>                    
               </TableCell>  
@@ -236,6 +257,7 @@ export const PlaylistPage = () => {
           ))}
         </TableBody>
       </Table>
+      <CustomToast/>
     </div>
   )
 }
