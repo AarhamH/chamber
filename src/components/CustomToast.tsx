@@ -9,11 +9,10 @@ const CustomToast = () => {
           success: "text-green-500",
           toast: "bg-zinc-950",
           description: "text-white",
-          closeButton: "bg-zinc-950 hover:text-zinc-950",
         },
       }}
-      closeButton={true}
-      icons={{}}
+      position="top-center"
+      duration={3000}
     />
   )
 }

@@ -10,6 +10,8 @@ import { IoSearchOutline } from "solid-icons/io"
 import chamberWhite from "~/assets/chamber_logo_white.svg"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
 import { TextField, TextFieldInput } from "./TextField"
+import { toast } from "solid-sonner"
+import CustomToast from "./CustomToast"
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
@@ -36,14 +38,18 @@ export const SideNavigation = () => {
   };
 
   async function addPlaylist(title: string) {
-    const playlistArg = {
-      title: title,
-      created_on: new Date().toISOString(),
-    };
-    await invoke("create_playlist", { playlistArg });
-    fetchPlaylists();
-    scrollToBottom();
-    setPlaylistTitle("");
+    try {
+      const playlistArg = {
+        title: title,
+        created_on: new Date().toISOString(),
+      };
+      await invoke("create_playlist", { playlistArg });
+      fetchPlaylists();
+      scrollToBottom();
+      setPlaylistTitle("");
+    } catch (error) {
+      return new Error(String(error));
+    }
   }
 
   function scrollToBottom() {
@@ -80,14 +86,30 @@ export const SideNavigation = () => {
                     type="text"
                     onInput={handleInput}   
                     placeholder="Group name"
-                    onKeyPress={(e: KeyboardEvent) => e.key === "Enter" && playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal()) : null} 
+                    onKeyPress={(e: KeyboardEvent) => {
+                      if (e.key == "Enter" &&playlistTitle().trim() !== "") {
+                        addPlaylist(playlistTitle()).then((result) => {
+                          const isError = result instanceof Error;
+                          (() => isError ? toast.error(result.message) : toast.success("Successfully created playlist"))();
+                          triggerModal();
+                        });
+                      }
+                    }}
                   />
                 </TextField>
                 <Button 
                   class="w-20 mt-5" size={"sm"} 
-                  onClick={() => playlistTitle().trim() !== "" ? (addPlaylist(playlistTitle()), triggerModal()) : triggerModal()}
                   disabled={playlistTitle().trim() === ""}
                   variant={"filled"} 
+                  onClick={() => {
+                    if (playlistTitle().trim() !== "") {
+                      addPlaylist(playlistTitle()).then((result) => {
+                        const isError = result instanceof Error;
+                        (() => isError ? toast.error(result.message) : toast.success("Successfully created playlist"))();
+                        triggerModal();
+                      });
+                    }
+                  }}
                 >
                   Insert
                 </Button>
@@ -112,6 +134,7 @@ export const SideNavigation = () => {
           </div>
         )}
       </div>
+      <CustomToast />
     </div>
   );
 }
