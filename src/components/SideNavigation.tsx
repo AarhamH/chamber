@@ -66,12 +66,12 @@ export const SideNavigation = () => {
         <span>chamber</span>
       </div>
       <div>
-        <Button class="flex space-x-2 px-10" onClick={() => navigate("/")}>
-          <BiRegularHomeAlt2 size={"1.3em"} />
+        <Button class="flex gap-3 px-10" onClick={() => navigate("/")}>
+          <BiRegularHomeAlt2 size={"1.4em"} />
           <p>Home</p>
         </Button>
-        <Button class="flex space-x-2 px-10" onClick={() => navigate("/search")}>
-          <IoSearchOutline size={"1.3em"}/>
+        <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/search")}>
+          <IoSearchOutline size={"1.4em"}/>
           <p>Search</p>
         </Button>
         <div class="mt-10">

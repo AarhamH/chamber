@@ -30,7 +30,7 @@ const PlayBack = () => {
         <div class="flex flex-row items-center justify-center space-x-4">
           <AiFillStepBackward size={"1.5em"} onClick={handleSkipBackward} />
           {isAudioPlaying() ? (
-            <BiRegularPause size={"2  em"} onClick={togglePlay} />
+            <BiRegularPause size={"2em"} onClick={togglePlay} />
           ) : (
             <BiRegularPlay size={"2em"} onClick={togglePlay} />
           )}
