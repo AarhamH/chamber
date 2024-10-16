@@ -146,7 +146,7 @@ export const SearchPage = () => {
                   {isDownloading() ? 
                     (
                       <div class="flex flex-row gap-2 items-center">
-                        <BiRegularLoaderCircle class="animate-spin" size={32} />
+                        <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} />
                         Downloading...
                       </div>
                     ): "Download Queue"
@@ -162,7 +162,7 @@ export const SearchPage = () => {
                       </div>
                       <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" 
                         onClick={() => {removeFromQueue(query)}}>
-                        <IoRemoveCircleOutline size={24} />
+                        <IoRemoveCircleOutline size={"1.5em"} />
                       </Button>
                     </div>
                   ))}
@@ -214,7 +214,7 @@ export const SearchPage = () => {
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
                 <div class="flex items-center justify-center gap-5">
                   <a href={query.url} target="_blank">
-                    <BiRegularLink size={24}/>
+                    <BiRegularLink size={"1.5em"} />
                   </a> 
                   <Button 
                     variant="link" 
@@ -225,7 +225,7 @@ export const SearchPage = () => {
                       (() => !success ? toast.error("Already in queue") : toast.success("Successfully added to queue", { description: query.title }))();
                     }}
                   >
-                    <BiRegularAddToQueue size={24}/>  
+                    <BiRegularAddToQueue size={"1.5em"}/>  
                   </Button>
                 </div>
               </TableCell>    
