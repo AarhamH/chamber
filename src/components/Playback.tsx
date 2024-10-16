@@ -28,13 +28,13 @@ const PlayBack = () => {
       </div>
       <div class="w-3/5 p-2 flex flex-col items-center justify-center">
         <div class="flex flex-row items-center justify-center space-x-4">
-          <AiFillStepBackward size={36} onClick={handleSkipBackward} />
+          <AiFillStepBackward size={"1.5em"} onClick={handleSkipBackward} />
           {isAudioPlaying() ? (
-            <BiRegularPause size={50} onClick={togglePlay} />
+            <BiRegularPause size={"2  em"} onClick={togglePlay} />
           ) : (
-            <BiRegularPlay size={50} onClick={togglePlay} />
+            <BiRegularPlay size={"2em"} onClick={togglePlay} />
           )}
-          <AiFillStepForward size={36} onClick={handleSkipForward} />
+          <AiFillStepForward size={"1.5em"} onClick={handleSkipForward} />
         </div>
         <div class="flex items-center w-full">
           <span class="text-sm mr-2 w-12 text-right">
@@ -54,7 +54,7 @@ const PlayBack = () => {
         </div>
       </div>
       <div class="w-1/5 p-2 flex flex-row justify-start">
-        <BiRegularVolumeFull size={28} class="mr-2" />
+        <BiRegularVolumeFull size={"1.2em"} class="mr-2" />
         <input type="range" min="0" max="1" step="0.01"onInput={handleVolumeChange} class="w-1/2" />
       </div>
     </div>

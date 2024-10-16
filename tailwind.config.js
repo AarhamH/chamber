@@ -1,7 +1,7 @@
 /**@type {import("tailwindcss").Config} */
 import tailwindcssAnimate from "tailwindcss-animate";
 export const darkMode = ["class", "[data-kb-theme=\"dark\"]"];
-export const content = ["./src/**/*.{ts,tsx}"];
+export const content = ["./index.html","./src/**/*.{js,ts,jsx,tsx}"];
 export const theme = {
   container: {
     center: true,

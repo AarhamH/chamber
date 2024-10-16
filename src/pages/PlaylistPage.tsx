@@ -174,7 +174,7 @@ export const PlaylistPage = () => {
                             <TableCell>
                               <IoAdd 
                                 class="flex justify-end hover:cursor-pointer" 
-                                size={24} 
+                                size={"1.5em"} 
                                 onClick={() => {
                                   insertMusicToPlaylist(song.id).then(result => {
                                     const isError = result instanceof Error;
@@ -223,9 +223,9 @@ export const PlaylistPage = () => {
             <TableRow>
               <TableCell class="flex justify-end hover:cursor-pointer">
                 {song.id === activeAudio.id ? (
-                  <BiRegularPause size={36} class="text-green" />
+                  <BiRegularPause size={"2em"} class="text-green" />
                 ) : (
-                  <BiRegularPlay size={36} onClick={() => setActiveAudio(song)} />
+                  <BiRegularPlay size={"2em"} onClick={() => setActiveAudio(song)} />
                 )}
               </TableCell>
               <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
@@ -236,7 +236,7 @@ export const PlaylistPage = () => {
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger>
-                    <BiRegularDotsVerticalRounded size={24}/>
+                    <BiRegularDotsVerticalRounded size={"1.5em"}  />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem 
