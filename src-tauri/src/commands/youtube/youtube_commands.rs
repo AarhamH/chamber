@@ -61,15 +61,18 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
     use crate::schema::music::dsl::*;
     use tokio::sync::mpsc;
     use std::process::Command;
+    use std::env;
     use tokio::task;
 
     create_audio_store_directory()?;
-
-    let command = if cfg!(target_os = "windows") {
+    let binary_dir = env::current_dir().expect("Failed to get current directory").join("static").join("bin");
+    let binary = if cfg!(target_os = "windows") {
         "yt-dlp.exe"
     } else {
         "yt-dlp"
     };
+    let command = binary_dir.join(binary).to_str().expect("Failed to convert binary path to string").to_string();
+
     let (tx, mut rx) = mpsc::channel(32);
     let mut handles = vec![];
 
@@ -78,6 +81,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         let tx = tx.clone();
 
         // Spawn a task for each audio download
+        let command_clone = command.clone();
         let handle = task::spawn(async move {
             let output_path = format!("{}/{}.mp3", AUDIO_STORE, audio.title.unwrap_or_default().replace(" ", "_"));
             let args = vec![
@@ -88,7 +92,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 &audio.url,
             ];
 
-            let output = Command::new(command)
+            let output = Command::new(command_clone)
                 .args(&args)
                 .output()
                 .expect("Failed to execute command");
