@@ -17,10 +17,10 @@
         "open": true,
         "sidecar": true,
         "scope": [
-          {"name":  "static/bin/ffmpeg", "sidecar": true},
-          {"name":  "static/bin/ffmpeg.exe", "sidecar": true},
-          {"name":  "static/bin/yt-dlp", "sidecar": true},
-          {"name":  "static/bin/yt-dlp.exe", "sidecar": true}
+          {"name":  "release_sidecar/ffmpeg", "sidecar": true},
+          {"name":  "release_sidecar/ffmpeg.exe", "sidecar": true},
+          {"name":  "release_sidecar/yt-dlp", "sidecar": true},
+          {"name":  "release_sidecar/yt-dlp.exe", "sidecar": true}
         ]
       },
       "fs": {
@@ -53,10 +53,10 @@
     },
     "bundle": {
       "externalBin": [
-        "static/bin/ffmpeg",
-        "static/bin/ffmpeg.exe",
-        "static/bin/yt-dlp",
-        "static/bin/yt-dlp.exe"
+        "release_sidecar/ffmpeg",
+        "release_sidecar/ffmpeg.exe",
+        "release_sidecar/yt-dlp",
+        "release_sidecar/yt-dlp.exe"
       ],
       "appimage": {
         "bundleMediaFramework": false
