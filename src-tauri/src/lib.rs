@@ -1,5 +1,6 @@
 pub mod db;
 pub mod schema;
+pub mod binary_path_gen;
 pub mod helper {
     pub mod tools;
     pub mod files;

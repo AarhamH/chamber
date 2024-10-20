@@ -22,6 +22,7 @@
     "@tauri-apps/api": "^1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "execa": "^9.4.1",
     "solid-icons": "^1.1.0",
     "solid-js": "^1.7.8",
     "solid-sonner": "^0.2.8",

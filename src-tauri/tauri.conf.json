@@ -14,7 +14,14 @@
       "all": false,
       "shell": {
         "all": false,
-        "open": true
+        "open": true,
+        "sidecar": true,
+        "scope": [
+          {"name":  "release_sidecar/ffmpeg", "sidecar": true},
+          {"name":  "release_sidecar/ffmpeg.exe", "sidecar": true},
+          {"name":  "release_sidecar/yt-dlp", "sidecar": true},
+          {"name":  "release_sidecar/yt-dlp.exe", "sidecar": true}
+        ]
       },
       "fs": {
         "readFile": true,
@@ -45,6 +52,12 @@
       "csp": null
     },
     "bundle": {
+      "externalBin": [
+        "release_sidecar/ffmpeg",
+        "release_sidecar/ffmpeg.exe",
+        "release_sidecar/yt-dlp",
+        "release_sidecar/yt-dlp.exe"
+      ],
       "appimage": {
         "bundleMediaFramework": false
       },
