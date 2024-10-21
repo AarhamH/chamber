@@ -1,7 +1,7 @@
 use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
-use crate::binary_path_gen::{YT_DLP_EXE_PATH, YT_DLP_PATH};
+use crate::binary_path_gen::{FFMPEG_NO_EXT_PATH, FFMPEG_PATH, YT_DLP_NO_EXT_PATH, YT_DLP_PATH};
 use crate::helper::constants::AUDIO_STORE;
 use crate::models::youtube_model::YouTubeAudio;
 
@@ -70,12 +70,10 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
     let mut handles = vec![];
 
     for audio in audio_list {
+        let command = if cfg!(target_os = "windows") { YT_DLP_PATH } else { YT_DLP_NO_EXT_PATH };
+        let ffmpeg = if cfg!(target_os = "windows") { FFMPEG_PATH } else { FFMPEG_NO_EXT_PATH };
+
         let tx = tx.clone();
-        let command = if cfg!(target_os = "windows") {
-            YT_DLP_EXE_PATH
-        } else {
-            YT_DLP_PATH
-        };
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
             let output_path = format!("{}/{}.mp3", AUDIO_STORE, audio.title.unwrap_or_default().replace(" ", "_"));
@@ -84,6 +82,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 "--audio-format", "mp3",
                 "-o", &output_path,
                 "--cookies", "cookies.txt",
+                "--ffmpeg-location", ffmpeg,
                 &audio.url,
             ];
 
