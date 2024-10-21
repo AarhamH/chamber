@@ -67,6 +67,25 @@ async function main() {
 
     // Update or add the constant in the map
     constantsMap.set(constantBaseName, path.resolve(newPath));
+
+    // If the file is ffmpeg or yt-dlp, also add the non-exe version
+    if (file === "ffmpeg" || file === "yt-dlp") {
+      const nonExeNewFileName = `${path.basename(file)}-${targetTriple}`;
+      const nonExeNewPath = path.join(outputDir, nonExeNewFileName);
+      
+      // Check if the non-exe version exists and copy if needed
+      try {
+        await fs.access(nonExeNewPath);
+      } catch (err) {
+        if (err.code === "ENOENT") {
+          await fs.copyFile(oldPath, nonExeNewPath);
+        } else {
+          throw err; // Re-throw unexpected errors
+        }
+      }
+
+      constantsMap.set(`${constantBaseName}_NO_EXT`, path.resolve(nonExeNewPath));
+    }
   }
 
   // Build the new content for binary_path_gen.rs
