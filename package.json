@@ -12,7 +12,9 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "chamber": "tauri dev --no-watch",
-    "generate-toml": "python set_diesel_toml.py"
+    "generate-toml": "node set_diesel_toml.mjs",
+    "set-ytdl": "node target_triple_rename.mjs",
+    "setup": "npm run generate-toml && npm run set-ytdl"
   },
   "license": "MIT",
   "dependencies": {
