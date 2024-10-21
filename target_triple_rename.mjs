@@ -2,14 +2,10 @@ import { execa } from "execa";
 import fs from "fs/promises";
 import path from "path";
 
-let extension = "";
-if (process.platform === "win32") {
-  extension = ".exe";
-}
-
 async function main() {
   let targetTriple;
 
+  // Get Rust target triple
   const rustInfo = (await execa("rustc", ["-vV"])).stdout;
   const match = /host: (\S+)/.exec(rustInfo);
 
@@ -19,23 +15,24 @@ async function main() {
     throw new Error("Failed to determine platform target triple");
   }
 
-  // List of files to copy
-  const filesToCopy = [
-    "src-tauri/static/bin/ffmpeg.exe",
-    "src-tauri/static/bin/yt-dlp.exe",
-    "src-tauri/static/bin/ffmpeg", // Non-executable version
-    "src-tauri/static/bin/yt-dlp"    // Non-executable version
-  ];
+  const binDir = "src-tauri/static/bin";
+  const outputDir = "src-tauri/release_sidecar";
 
-  // Prepare a string to write to constants.rs
+  // Create the target directory if it doesn't exist
+  await fs.mkdir(outputDir, { recursive: true });
+
+  // Read the contents of the bin directory
+  const files = await fs.readdir(binDir);
+
+  // Prepare the content for binary_path_gen.rs
   let constantsContent = "// Auto-generated constants for copied binaries\n\n";
   const constantsMap = new Map();
 
-  // Read existing constants.rs if it exists
+  // Check existing binary_path_gen.rs for existing constants
   try {
-    const existingContent = await fs.readFile("src/constants.rs", "utf-8");
+    const existingContent = await fs.readFile("src-tauri/src/binary_path_gen.rs", "utf-8");
     const lines = existingContent.split("\n");
-    
+
     for (const line of lines) {
       const line_match = line.match(/pub const (\w+)_PATH: &str = "(.+)";/);
       if (line_match) {
@@ -48,41 +45,46 @@ async function main() {
     }
   }
 
-  // Create the target directory if it doesn't exist
-  const outputDir = "src-tauri/release_sidecar";
-  await fs.mkdir(outputDir, { recursive: true });
+  // Copy each file and generate constants
+  for (const file of files) {
+    const oldPath = path.join(binDir, file);
+    const newFileName = `${path.basename(file)}-${targetTriple}${process.platform === "win32" ? ".exe" : ""}`;
+    const newPath = path.join(outputDir, newFileName);
 
-  // Check for each file's existence and copy if necessary
-  for (const oldPath of filesToCopy) {
-    const newFileName = `${outputDir}/${path.basename(oldPath, extension)}-${targetTriple}${extension}`;
-    
+    // Copy the file to the new location if it doesn't exist
     try {
-      await fs.access(newFileName);
+      await fs.access(newPath);
     } catch (err) {
       if (err.code === "ENOENT") {
-        // Copy the file to the new location
-        await fs.copyFile(oldPath, newFileName);
+        await fs.copyFile(oldPath, newPath);
       } else {
         throw err; // Re-throw unexpected errors
       }
     }
 
     // Determine the constant name
-    const constantName = path.basename(oldPath, extension).toUpperCase().replace(/[-.]/g, "_");
+    const constantBaseName = path.basename(file, path.extname(file)).toUpperCase().replace(/[-.]/g, "_");
 
     // Update or add the constant in the map
-    constantsMap.set(constantName, path.resolve(newFileName));
+    constantsMap.set(constantBaseName, path.resolve(newPath));
   }
 
-  // Build the new content for constants.rs
-  for (const [name, value] of constantsMap) {
-    constantsContent += `pub const ${name}_PATH: &str = "${value}";\n`;
+  // Build the new content for binary_path_gen.rs
+  for (const [name, value] of constantsMap) {    
+    // Format the value for Windows paths
+    let formattedValue = value;
+    if (process.platform === "win32") {
+      formattedValue = value.replace(/\\/g, "\\\\");
+    }
+
+    // Add the constant path to the content
+    constantsContent += `pub const ${name}_PATH: &str = "${formattedValue}";\n`;
   }
 
-  // Write the constants.rs file, overwriting existing content
+  // Write the binary_path_gen.rs file, overwriting existing content
   await fs.writeFile("src-tauri/src/binary_path_gen.rs", constantsContent);
 }
 
 main().catch((e) => { 
-  throw e; 
+  throw e.message;
 });
