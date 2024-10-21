@@ -1,5 +1,5 @@
 # THIS IS THE TOML FILE FOR DIESEL CLI
-# TO USE THIS, SIMPLY REMOVE THE .example EXTENSION
+# TO USE THIS, SIMPLY COPY THIS FILE AND REMOVE THE .example EXTENSION
 # REPLACE 'dir' with your path to the migrations directory in src-tauri/migrations
 # YOU CAN ALSO RUN npm run generate-toml AFTER REMOVING THE .example EXTENSION, WHICH 
 # SET THE dir FOR YOU
