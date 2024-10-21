@@ -18,6 +18,7 @@ log.txt
 src-tauri/release_sidecar/*
 src-tauri/src/binary_path_gen.rs
 src-tauri/diesel.toml
+src-tauri/cookies.txt
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
