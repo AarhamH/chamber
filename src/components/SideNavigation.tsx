@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { TextField, TextFieldInput } from "./TextField"
 import { toast } from "solid-sonner"
 import CustomToast from "./CustomToast"
+import { TbRotate2 } from "solid-icons/tb"
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
@@ -73,6 +74,10 @@ export const SideNavigation = () => {
         <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/search")}>
           <IoSearchOutline size={"1.4em"}/>
           <p>Search</p>
+        </Button>
+        <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/encoding")}>
+          <TbRotate2 size={"1.4em"}/>
+          <p>Encoding</p>
         </Button>
         <div class="mt-10">
           <Dialog open={isAddPlaylistModalOpen()} onOpenChange={setIsAddPlaylistModalOpen}>
