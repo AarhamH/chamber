@@ -11,6 +11,7 @@ import { PlaylistPage } from "./pages/PlaylistPage";
 import PlayBack from "./components/Playback";
 import { AudioProvider } from "./components/AudioContext";
 import { Encoding } from "./pages/Encoding";
+import CustomToast from "./components/CustomToast";
 
 type AppProps = {
   children?: JSX.Element;
@@ -46,6 +47,7 @@ const App = (props: AppProps) => {
             </div>
           </div>
         </ColorModeProvider>
+        <CustomToast />
       </AudioProvider>
     </>
   );

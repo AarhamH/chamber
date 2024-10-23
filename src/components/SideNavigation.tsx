@@ -11,7 +11,6 @@ import chamberWhite from "~/assets/chamber_logo_white.svg"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
 import { TextField, TextFieldInput } from "./TextField"
 import { toast } from "solid-sonner"
-import CustomToast from "./CustomToast"
 import { TbRotate2 } from "solid-icons/tb"
 
 export const SideNavigation = () => {
@@ -139,7 +138,6 @@ export const SideNavigation = () => {
           </div>
         )}
       </div>
-      <CustomToast />
     </div>
   );
 }

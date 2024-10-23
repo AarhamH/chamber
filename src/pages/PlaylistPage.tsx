@@ -28,7 +28,6 @@ import { IoAdd } from "solid-icons/io"
 import { useAudio } from "~/components/AudioContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/Dialog";
 import { toast } from "solid-sonner";
-import CustomToast from "~/components/CustomToast";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
 
 export const PlaylistPage = () => {
@@ -186,7 +185,6 @@ export const PlaylistPage = () => {
           ))}
         </TableBody>
       </Table>
-      <CustomToast/>
     </div>
   )
 }
