@@ -6,21 +6,25 @@ import { open } from "@tauri-apps/api/dialog";
 import { invoke } from "@tauri-apps/api/tauri";
 import { setMusic, music } from "~/store/store";
 import { IconTypes } from "solid-icons";
+import { toast } from "solid-sonner";
+import { createEffect } from "solid-js";
 
 interface AllAudioModalProps {
   title: string;
-  modalAction: {icon: IconTypes, onClick: () => void};
+  modalAction?: {icon: IconTypes, onClick: (_id:number) => Promise<string | Error>};
 }
 
 export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
-  const fetchAllAudio = async () => {
-    try {
-      const result = await invoke<Music[]>("get_all_music");
-      setMusic(result);
-    } catch (error) {
-      return error
-    }
+  const fetchAllAudio = async () => { try {
+    const result = await invoke<Music[]>("get_all_music");
+    setMusic(result);
+  } catch (error) {
+    return error
   }
+  }
+  createEffect(() => {
+    fetchAllAudio();
+  },[music])
   const addAudio= async () => {
     const filePaths = await open({
       multiple: true,
@@ -67,11 +71,18 @@ export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
                   <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
                   <TableCell>
                     {}
-                    <modalAction.icon 
-                      class="flex justify-end hover:cursor-pointer" 
-                      size={"1.5em"} 
-                      onClick={modalAction.onClick}
-                    />
+                    {modalAction && (
+                      <modalAction.icon 
+                        class="flex justify-end hover:cursor-pointer" 
+                        size={"1.5em"} 
+                        onClick={() => {
+                          modalAction.onClick(song.id).then(result => {
+                            const isError = result instanceof Error;
+                            (() => isError ? toast.error(result.message) : toast.success(result))();
+                          });
+                        }}
+                      />
+                    )}
                   </TableCell>  
                 </TableRow>
               ))}
