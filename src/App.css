@@ -9,6 +9,7 @@
   body {
     font-family: "Urbanist", sans-serif;
     overflow-y: hidden;
+    overflow-x: hidden;
   }
   ::-webkit-scrollbar {
     width: 6px;

@@ -38,7 +38,7 @@ const App = (props: AppProps) => {
               <div class="flex-shrink-0 w-48">
                 <SideNavigation />
               </div>
-              <div class="flex-1 max-h-screen overflow-auto" ref={scrollContainerRef}>
+              <div class="flex-1 max-h-screen overflow-x-hidden overflow-y-auto" ref={scrollContainerRef}>
                 {props.children}
               </div>
             </div>
