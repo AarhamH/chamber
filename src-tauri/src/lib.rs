@@ -17,7 +17,7 @@ pub mod models {
 pub mod commands {
     pub mod playlist_commands;
     pub mod audio_commands;
-    pub mod playlist_music_commands;
+    pub mod playlist_audio_commands;
     pub mod audio_buffer;
     pub mod youtube {
       pub mod yt_web_parser;
