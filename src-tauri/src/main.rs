@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use chamber::commands::audio_buffer::*;
-use chamber::commands::music_commands::*;
+use chamber::commands::audio_commands::*;
 use chamber::commands::playlist_commands::*;
 use chamber::commands::playlist_music_commands::*;
 use chamber::commands::youtube::youtube_commands::*;

@@ -8,18 +8,15 @@ pub mod helper {
 }
 
 pub mod models {
-  pub mod music_model;
+  pub mod audio_model;
   pub mod playlist_model;
-  pub mod playlist_music_model;
+  pub mod playlist_audio_model;
   pub mod youtube_model;
-}
-
-pub mod audio {
 }
 
 pub mod commands {
     pub mod playlist_commands;
-    pub mod music_commands;
+    pub mod audio_commands;
     pub mod playlist_music_commands;
     pub mod audio_buffer;
     pub mod youtube {
