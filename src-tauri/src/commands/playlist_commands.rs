@@ -59,8 +59,8 @@ pub fn get_playlist(playlist_id_arg: i32) -> Result<Vec<Playlist>, String> {
     .load::<Playlist>(&mut connection) {
       Ok(result) => result,
       Err(err) => {
-        eprintln!("Error loading music from playlist: {}", err);
-        return Err(format!("Error querying playlist music entries: {}", err));
+        eprintln!("Error loading audio from playlist: {}", err);
+        return Err(format!("Error querying playlist audio entries: {}", err));
       }
   };
 
@@ -96,34 +96,34 @@ pub fn update_playlist(id_arg: i32, playlist_arg: PlaylistArg) -> Result<(), Str
 
 
 #[tauri::command]
-pub fn get_all_music_from_playlist(playlist_id_arg: i32) -> Result<Vec<Audio>, String> {
+pub fn get_all_audio_from_playlist(playlist_id_arg: i32) -> Result<Vec<Audio>, String> {
   use crate::schema::playlist_audio::dsl::*;
   use crate::schema::audio::dsl::*;
 
   let mut connection: SqliteConnection = establish_connection();
 
-  let music_id_list: Vec<i32> = match playlist_audio
+  let audio_id_list: Vec<i32> = match playlist_audio
   .filter(playlist_id.eq(playlist_id_arg))
   .select(audio_id) 
   .load::<i32>(&mut connection) {
       Ok(ids) => ids,
       Err(err) => {
-        eprintln!("Error loading music IDs from playlist: {}", err);
-        return Err(format!("Error querying playlist music entries: {}", err));
+        eprintln!("Error loading audio IDs from playlist: {}", err);
+        return Err(format!("Error querying playlist audio entries: {}", err));
       }
   };
 
-  let music_list: Vec<Audio> = match audio
-  .filter(id.eq_any(music_id_list)) // Filter by the list of music_ids
+  let audio_list: Vec<Audio> = match audio
+  .filter(id.eq_any(audio_id_list)) // Filter by the list of audio_ids
   .load::<Audio>(&mut connection) {
       Ok(result) => result,
       Err(err) => {
-          eprintln!("Error loading music: {}", err);
-          return Err(format!("Error querying music: {}", err));
+          eprintln!("Error loading audio: {}", err);
+          return Err(format!("Error querying audio: {}", err));
       }
   };
 
-  Ok(music_list)
+  Ok(audio_list)
 }
 
 #[tauri::command]
@@ -133,13 +133,13 @@ pub fn delete_playlist(playlist_id_arg: i32) -> Result<(), String> {
   
   let mut connection: SqliteConnection = establish_connection();
 
-  // Delete playlist entries from playlist_music first to maintain referential integrity
-  let result_playlist_music: Result<usize, diesel::result::Error> = diesel::delete(playlist_audio.filter(playlist_id.eq(playlist_id_arg)))
+  // Delete playlist entries from playlist_audio first to maintain referential integrity
+  let result_playlist_audio: Result<usize, diesel::result::Error> = diesel::delete(playlist_audio.filter(playlist_id.eq(playlist_id_arg)))
     .execute(&mut connection);
 
-  match result_playlist_music {
+  match result_playlist_audio {
     Ok(_) => (),
-    Err(err) => return Err(format!("Error deleting playlist music entries: {}", err)), // Return error to the client
+    Err(err) => return Err(format!("Error deleting playlist audio entries: {}", err)), // Return error to the client
   }
 
   // Delete the playlist entry

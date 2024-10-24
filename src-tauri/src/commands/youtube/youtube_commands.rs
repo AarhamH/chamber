@@ -100,7 +100,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             // Fetch metadata and insert into the database
             let download_result = fetch_metadata(yt_audio.url).await.unwrap();
             let mut connection: SqliteConnection = establish_connection();
-            let new_music: NewAudio<'_> = NewAudio{
+            let new_audio: NewAudio<'_> = NewAudio{
                 title: &download_result.title.unwrap_or_default(),
                 author: &download_result.channel.unwrap_or_default(),
                 path: &output_path,
@@ -109,11 +109,11 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             };
 
             let result: Result<usize, diesel::result::Error> = diesel::insert_into(audio)
-                .values(&new_music)
+                .values(&new_audio)
                 .execute(&mut connection);
 
             if result.is_err() {
-                let _ = tx.send(Err("Error: Could not add music entry to database".to_string())).await;
+                let _ = tx.send(Err("Error: Could not add audio entry to database".to_string())).await;
             } else {
                 let _ = tx.send(Ok(())).await;
             }

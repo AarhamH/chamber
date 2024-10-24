@@ -2,8 +2,8 @@ import { Button } from "~/components/Button"
 import { open } from "@tauri-apps/api/dialog";
 import { Dialog, DialogTrigger } from "~/components/Dialog";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
-import { audioCodecQueue, setAudioCodecQueue, music } from "~/store/store";
-import { Music } from "~/utils/types";
+import { audioCodecQueue, setAudioCodecQueue, audio } from "~/store/store";
+import { Audio } from "~/utils/types";
 import { IoAdd } from "solid-icons/io";
 import { Table, TableBody, TableCell, TableRow } from "~/components/Table";
 import {
@@ -25,7 +25,7 @@ export const Encoding = () => {
 
   const insertFromAllAudios = async (id:number) => {
     try{
-      setAudioCodecQueue([...audioCodecQueue, ...music.filter((audio: Music) => audio.id === id)]);
+      setAudioCodecQueue([...audioCodecQueue, ...audio.filter((audio_item: Audio) => audio_item.id === id)]);
       return "Successfully added to transcoding queue";
     } catch (error) {
       return new Error(String(error));
@@ -56,10 +56,10 @@ export const Encoding = () => {
           <div class="max-h-96 border border-zinc-900 rounded-lg overflow-y-auto">
             <Table>
               <TableBody>
-                {audioCodecQueue.map((audio: Music) => (
+                {audioCodecQueue.map((audio_item: Audio) => (
                   <TableRow>
-                    <TableCell class="max-w-sm">{audio.title}</TableCell>
-                    <TableCell class="max-w-sm ">{audio.path}</TableCell>
+                    <TableCell class="max-w-sm">{audio_item.title}</TableCell>
+                    <TableCell class="max-w-sm ">{audio_item.path}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger as={Button} variant={"link"}>
