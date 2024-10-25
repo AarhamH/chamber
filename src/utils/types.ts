@@ -13,6 +13,10 @@ export type Audio = {
   audio_type: string;
 }
 
+export type AudioCodec = Audio & {
+  converted_type: string;
+}
+
 export type YoutubeQuery = {
   title: string;
   channel: string;
