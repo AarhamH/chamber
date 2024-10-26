@@ -2,7 +2,7 @@ import { Button } from "~/components/Button"
 import { open } from "@tauri-apps/api/dialog";
 import { Dialog, DialogTrigger } from "~/components/Dialog";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
-import { audioCodecQueue, setAudioCodecQueue, audio } from "~/store/store";
+import { audioCodecQueue, setAudioCodecQueue, audio, isAudioTranscodeLoading, setIsAudioTranscodeLoading } from "~/store/store";
 import { Audio, AudioCodec } from "~/utils/types";
 import { IoAdd } from "solid-icons/io";
 import { Table, TableBody, TableCell, TableRow } from "~/components/Table";
@@ -13,6 +13,9 @@ import {
   DropdownMenuTrigger
 } from "~/components/Dropdown"
 import { AiOutlineMinusCircle } from "solid-icons/ai";
+import { invoke } from "@tauri-apps/api/tauri";
+import { BiRegularLoaderCircle } from "solid-icons/bi";
+import { toast } from "solid-sonner";
 export const Encoding = () => {
   const addAudio= async () => {
     const filePaths = await open({
@@ -23,22 +26,21 @@ export const Encoding = () => {
       }],
     });
   };
-  const supportedAudioTypes = ["mp3", "wav", "aiff", "flac"];
+  const supportedAudioTypes = ["mp3", "wav", "aif", "flac"];
 
   const insertFromAllAudios = async (id:number) => {
     try{
-      if(audioCodecQueue.find((audio_item: AudioCodec) => audio_item.id === id)) {
-        return new Error(String("Audio already in transcoding queue"));
-      }
       setAudioCodecQueue([
         ...audioCodecQueue,
         ...audio
           .filter((audio_item: Audio) => audio_item.id === id)
-          .map(audio_item => ({
+          .map((audio_item, index) => ({
             ...audio_item,
+            id: audioCodecQueue.length + index,
             converted_type: supportedAudioTypes.find((supAudioType: string) => supAudioType !== audio_item.audio_type) || ""
           }))
       ]);
+      console.log(audioCodecQueue)
       return "Successfully added to transcoding queue";
     } catch (error) {
       return new Error(String(error));
@@ -53,6 +55,25 @@ export const Encoding = () => {
     setAudioCodecQueue(audioCodecQueue.map(audio_item => 
       audio_item.id === id ? { ...audio_item, converted_type: convertType } : audio_item
     ));
+  }
+
+  const transcodeAudio = async () => {
+    try {
+      setIsAudioTranscodeLoading(true);
+      const queueItems = audioCodecQueue.map((audio_item: AudioCodec) => ({
+        id: audio_item.id,
+        title: audio_item.title,
+        path: audio_item.path,
+        converted_type: audio_item.converted_type,
+      }));
+      await invoke("transcode_audio", { queueItems });
+      setAudioCodecQueue([]);
+    } catch(err) {
+      return Error(String(err));
+    } finally {
+      setIsAudioTranscodeLoading(false);
+    }
+    return "Transcoding complete";
   }
 
   return(
@@ -71,7 +92,8 @@ export const Encoding = () => {
       ):(
         <div>
           <div class="flex items-center justify-center gap-5 pb-5">
-            <Button class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"} onClick={addAudio}>From Machine</Button> <Dialog>
+            <Button class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"} onClick={addAudio}>From Machine</Button> 
+            <Dialog>
               <DialogTrigger as={Button} class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"}>All Audios</DialogTrigger>
               <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
             </Dialog>
@@ -103,6 +125,18 @@ export const Encoding = () => {
                 ))}
               </TableBody>
             </Table>
+          </div>
+          <div class="flex items-center justify-end">
+            <Button class="mt-5 w-32 flex items-center justify-center" variant={"filled"} disabled={isAudioTranscodeLoading()} size={"sm"} 
+              onClick={() => {
+                transcodeAudio().then(result => {
+                  const isError = result instanceof Error;
+                  (() => isError ? toast.error(result.message) : toast.success(result))();
+                })
+              
+              }}>
+              {isAudioTranscodeLoading() ? <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} /> : "Transcode"}
+            </Button> 
           </div>
         </div>
       )}
