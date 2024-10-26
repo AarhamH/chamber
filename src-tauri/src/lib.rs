@@ -7,6 +7,7 @@ pub mod helper {
     pub mod constants;
 }
 
+
 pub mod models {
   pub mod audio_model;
   pub mod playlist_model;
@@ -22,5 +23,8 @@ pub mod commands {
     pub mod youtube {
       pub mod yt_web_parser;
       pub mod youtube_commands;
+    }
+    pub mod processing {
+      pub mod transcode;
     }
 }
