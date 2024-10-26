@@ -141,7 +141,7 @@ export const SearchPage = () => {
             <SheetTrigger class="opacity-50 text-sm">Queue</SheetTrigger>
             <SheetContent class="flex flex-col h-full overflow-y-hidden">
               <SheetHeader>
-                <SheetTitle class="sticky top-0 bg-zinc-950 z-10 pt-10">
+                <SheetTitle class="sticky top-0 z-10 pt-10">
                   {isDownloading() ? 
                     (
                       <div class="flex flex-row gap-2 items-center">
@@ -167,7 +167,7 @@ export const SearchPage = () => {
                   ))}
                 </SheetDescription>
               </SheetHeader>
-              <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5 bg-zinc-950">
+              <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5">
                 <Button 
                   class="w-32" 
                   variant="filled" 

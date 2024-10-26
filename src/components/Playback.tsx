@@ -2,6 +2,10 @@ import { BiRegularPlay, BiRegularPause } from "solid-icons/bi";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
 import { BiRegularVolumeFull } from "solid-icons/bi";
 import { useAudio } from "./AudioContext";
+import { TbMoon } from "solid-icons/tb"
+import { TbSun } from "solid-icons/tb"
+import { useColorMode } from "@kobalte/core";
+import { Button } from "./Button";
 
 const PlayBack = () => {
   const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
@@ -12,8 +16,10 @@ const PlayBack = () => {
     return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
+  const { colorMode, setColorMode } = useColorMode();
+
   return (
-    <div class="h-20 bg-zinc-800 flex items-center">
+    <div class="bg-playback h-20 flex items-center">
       <div class="w-1/5 ml-16 h-full p-2 flex flex-col items-center justify-center text-center">
         <div class="truncate w-full mb-1">
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center">
@@ -53,9 +59,19 @@ const PlayBack = () => {
           </span>
         </div>
       </div>
-      <div class="w-1/5 p-2 flex flex-row justify-start">
+      <div class="w-1/5 p-2 flex flex-row justify-start items-center">
         <BiRegularVolumeFull size={"1.2em"} class="mr-2" />
-        <input type="range" min="0" max="1" step="0.01"onInput={handleVolumeChange} class="w-1/2" />
+        <input type="range" min="0" max="1" step="0.01" onInput={handleVolumeChange} class="w-1/2" />
+        <Button 
+          class="m-auto hover:cursor-pointer w-fit rounded-full" 
+          onClick={() => setColorMode(colorMode() === "dark" ? "light" : "dark")}
+        >
+          {colorMode() === "dark" ? (
+            <TbMoon size={"1.2em"} />
+          ) : (
+            <TbSun size={"1.2em"} />
+          )}
+        </Button>
       </div>
     </div>
   );
