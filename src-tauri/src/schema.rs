@@ -1,12 +1,13 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    music (id) {
+    audio (id) {
         id -> Integer,
         title -> Text,
-        artist -> Text,
+        author -> Text,
         path -> Text,
         duration -> Text,
+        audio_type -> Text,
     }
 }
 
@@ -19,17 +20,17 @@ diesel::table! {
 }
 
 diesel::table! {
-    playlist_music (playlist_id, music_id) {
+    playlist_audio (playlist_id, audio_id) {
         playlist_id -> Integer,
-        music_id -> Integer,
+        audio_id -> Integer,
     }
 }
 
-diesel::joinable!(playlist_music -> music (music_id));
-diesel::joinable!(playlist_music -> playlist (playlist_id));
+diesel::joinable!(playlist_audio -> audio (audio_id));
+diesel::joinable!(playlist_audio -> playlist (playlist_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    music,
+    audio,
     playlist,
-    playlist_music,
+    playlist_audio,
 );

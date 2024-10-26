@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/dialog";
 import { createEffect, createSignal} from "solid-js";
 import { Playlist, PlaylistArg } from "~/utils/types";
 import {
@@ -19,17 +18,17 @@ import {
   DropdownMenuTrigger
 } from "~/components/Dropdown"
 
-import { Music } from "~/utils/types";
-import { playlists, setPlaylists, musicInPlaylist, setMusicInPlaylist, music, setMusic, activeAudio } from "~/store/store";
+import { Audio } from "~/utils/types";
+import { playlists, setPlaylists, audioInPlaylist, setAudioInPlaylist, activeAudio } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import { BiRegularPause, BiRegularPlay } from "solid-icons/bi"
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
 import { useAudio } from "~/components/AudioContext";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "~/components/Dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/Dialog";
 import { toast } from "solid-sonner";
-import CustomToast from "~/components/CustomToast";
+import { AllAudioModal } from "~/components/table/AllAudioModal";
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -40,26 +39,16 @@ export const PlaylistPage = () => {
 
   createEffect(() => {
     if (params.id) {
-      fetchMusicFromPlaylist();
-      fetchAllAudio();
+      fetchAudioFromPlaylist();
       const playlist = playlists.find((playlistItem) => playlistItem.id === parseInt(params.id));
       setPlaylistTitle(playlist?.title || "");
     }
   });
 
-  const fetchMusicFromPlaylist = async () => {
+  const fetchAudioFromPlaylist = async () => {
     try {
-      const result = await invoke<Music[]>("get_all_music_from_playlist", {playlistIdArg: parseInt(params.id)});
-      setMusicInPlaylist(result);
-    } catch (error) {
-      return error
-    }
-  }
-
-  const fetchAllAudio = async () => {
-    try {
-      const result = await invoke<Music[]>("get_all_music");
-      setMusic(result);
+      const result = await invoke<Audio[]>("get_all_audio_from_playlist", {playlistIdArg: parseInt(params.id)});
+      setAudioInPlaylist(result);
     } catch (error) {
       return error
     }
@@ -81,33 +70,16 @@ export const PlaylistPage = () => {
     setPlaylistTitle(newInput.value); // Just set the local state without invoking update
   };
   
-  const insertMusicToPlaylist = async (id:number) => {
+  const insertAudioToPlaylist = async (id:number) => {
     try{
-      await invoke("insert_song_into_playlist", { playlistIdArg: parseInt(params.id), musicIdArg: id });
-      fetchMusicFromPlaylist();
+      await invoke("insert_audio_into_playlist", { playlistIdArg: parseInt(params.id), audioIdArg: id });
+      fetchAudioFromPlaylist();
+      return `Successfully added to playlist: ${playlistTitle()}`;
     } catch (error) {
       return new Error(String(error));
     }
   };
 
-  const addAudio= async () => {
-    const filePaths = await open({
-      multiple: true,
-      filters: [{
-        name: "Audio Files",
-        extensions: ["mp3", "wav"],
-      }],
-    });
-    
-    // Check if any files were selected
-    if (filePaths && Array.isArray(filePaths)) {
-      for (const filePath of filePaths) {
-        await invoke("create_music", { filePath });
-      }
-      fetchAllAudio();
-    }
-  };
- 
   const deleteCurrentPlaylist = async () => {
     try {
       await invoke("delete_playlist", { playlistIdArg: parseInt(params.id) });
@@ -121,8 +93,8 @@ export const PlaylistPage = () => {
 
   const removeFromPlaylist = async (id: number) => {
     try {
-      await invoke("destroy_song_from_playlist", { playlistIdArg: parseInt(params.id), musicIdArg: id });
-      fetchMusicFromPlaylist();
+      await invoke("destroy_audio_from_playlist", { playlistIdArg: parseInt(params.id), audioIdArg: id });
+      fetchAudioFromPlaylist();
     } catch (error) {
       return new Error(String(error));
     } 
@@ -145,51 +117,7 @@ export const PlaylistPage = () => {
             {/* Modals for Add Audio/Delete Group */}
             <Dialog>
               <DialogTrigger class="w-32" as={Button} variant={"filled"} size={"sm"}>Add Audio</DialogTrigger>
-              <DialogContent class="w-5/6 h-2/3">
-                <DialogHeader>
-                  <div class="flex flex-col items-center justify-center">
-                    <DialogTitle>Add to Playlist</DialogTitle>
-                    <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>      
-                  </div>
-                  <DialogDescription>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead class="w-2 truncate">ID</TableHead>
-                          <TableHead class="w-1/4 truncate">Title</TableHead>
-                          <TableHead class="w-2/12 truncate">Artist</TableHead>
-                          <TableHead class="w-1/2 truncate">Path</TableHead>
-                          <TableHead class="w-10 truncate">Duration</TableHead>
-                          <TableHead class="w-16 text-right truncate"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {music.map((song:Music,index:number) => (
-                          <TableRow>
-                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
-                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
-                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
-                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
-                            <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
-                            <TableCell>
-                              <IoAdd 
-                                class="flex justify-end hover:cursor-pointer" 
-                                size={"1.5em"} 
-                                onClick={() => {
-                                  insertMusicToPlaylist(song.id).then(result => {
-                                    const isError = result instanceof Error;
-                                    (() => isError ? toast.error(result.message) : toast.success(`Successfully added to playlist: ${playlistTitle()}`))();
-                                  });
-                                }}
-                              />
-                            </TableCell>  
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
+              <AllAudioModal title="Add to playlist" modalAction={{icon: IoAdd, onClick: insertAudioToPlaylist}} />
             </Dialog>
             <Dialog>
               <DialogTrigger class="w-32" as={Button} variant={"destructive"} size={"sm"}>Delete Playlist</DialogTrigger>
@@ -209,30 +137,32 @@ export const PlaylistPage = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead class="ml-5 w-16 text-left"></TableHead>
-            <TableHead class="w-2 truncate">ID</TableHead>
-            <TableHead class="w-1/4 truncate">Title</TableHead>
-            <TableHead class="w-2/12 truncate">Artist</TableHead>
-            <TableHead class="w-1/4 truncate">Path</TableHead>
-            <TableHead class="w-10 truncate">Duration</TableHead>
-            <TableHead class="w-16 text-right truncate"></TableHead>
+            <TableHead></TableHead>
+            <TableHead>ID</TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Author</TableHead>
+            <TableHead>Path</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Duration</TableHead>
+            <TableHead></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {musicInPlaylist.map((song:Music, index: number) => (
+          {audioInPlaylist.map((audio_item:Audio, index: number) => (
             <TableRow>
               <TableCell class="flex justify-end hover:cursor-pointer">
-                {song.id === activeAudio.id ? (
+                {audio_item.id === activeAudio.id ? (
                   <BiRegularPause size={"2em"} class="text-green" />
                 ) : (
-                  <BiRegularPlay size={"2em"} onClick={() => setActiveAudio(song)} />
+                  <BiRegularPlay size={"2em"} onClick={() => setActiveAudio(audio_item)} />
                 )}
               </TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.title}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.artist}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.path}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{song.duration}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.title}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.author}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.path}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.audio_type}</TableCell>
+              <TableCell class=" truncate overflow-hidden whitespace-nowrap">{audio_item.duration}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger>
@@ -242,7 +172,7 @@ export const PlaylistPage = () => {
                     <DropdownMenuItem 
                       class="text-red-500 hover:cursor-pointer" 
                       onClick={() => {
-                        removeFromPlaylist(song.id).then(result => {
+                        removeFromPlaylist(audio_item.id).then(result => {
                           const isError = result instanceof Error;
                           (() => isError ? toast.error(result.message) : toast.success(`Successfully removed from playlist: ${playlistTitle()}`))();
                         });
@@ -257,7 +187,6 @@ export const PlaylistPage = () => {
           ))}
         </TableBody>
       </Table>
-      <CustomToast/>
     </div>
   )
 }

@@ -11,7 +11,7 @@ import chamberWhite from "~/assets/chamber_logo_white.svg"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
 import { TextField, TextFieldInput } from "./TextField"
 import { toast } from "solid-sonner"
-import CustomToast from "./CustomToast"
+import { TbRotate2 } from "solid-icons/tb"
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
@@ -74,6 +74,10 @@ export const SideNavigation = () => {
           <IoSearchOutline size={"1.4em"}/>
           <p>Search</p>
         </Button>
+        <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/transcoding")}>
+          <TbRotate2 size={"1.4em"}/>
+          <p>Transcoding</p>
+        </Button>
         <div class="mt-10">
           <Dialog open={isAddPlaylistModalOpen()} onOpenChange={setIsAddPlaylistModalOpen}>
             <DialogTrigger class="w-full" as={Button} variant={"filled"}>(+) Add Playlist</DialogTrigger>
@@ -134,7 +138,6 @@ export const SideNavigation = () => {
           </div>
         )}
       </div>
-      <CustomToast />
     </div>
   );
 }

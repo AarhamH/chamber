@@ -10,6 +10,8 @@ import { createEffect, createSignal, JSX } from "solid-js";
 import { PlaylistPage } from "./pages/PlaylistPage";
 import PlayBack from "./components/Playback";
 import { AudioProvider } from "./components/AudioContext";
+import { Transcoding } from "./pages/Transcoding";
+import CustomToast from "./components/CustomToast";
 
 type AppProps = {
   children?: JSX.Element;
@@ -36,7 +38,7 @@ const App = (props: AppProps) => {
               <div class="flex-shrink-0 w-48">
                 <SideNavigation />
               </div>
-              <div class="flex-1 max-h-screen overflow-auto" ref={scrollContainerRef}>
+              <div class="flex-1 max-h-screen overflow-x-hidden overflow-y-auto" ref={scrollContainerRef}>
                 {props.children}
               </div>
             </div>
@@ -45,6 +47,7 @@ const App = (props: AppProps) => {
             </div>
           </div>
         </ColorModeProvider>
+        <CustomToast />
       </AudioProvider>
     </>
   );
@@ -55,6 +58,7 @@ render(
     <Router root={App}>
       <Route path="/" component={HomePage} />
       <Route path="/search" component={SearchPage} />
+      <Route path="/transcoding" component={Transcoding} />
       <Route path="/playlist/:id" component={PlaylistPage} />
     </Router>), 
   document.getElementById("root") as HTMLElement);

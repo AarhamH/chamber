@@ -1,3 +1,3 @@
-DROP TABLE playlist_music;
+DROP TABLE playlist_audio;
 DROP TABLE playlist;
-DROP TABLE music; 
+DROP TABLE audio; 

@@ -55,11 +55,11 @@ pub async fn youtube_search_by_url(url: String) -> Result<YouTubeAudio, String> 
 #[tauri::command(async)]
 pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String> {
     pub use crate::helper::files::create_audio_store_directory;
-    use crate::models::music_model::NewMusic;
+    use crate::models::audio_model::NewAudio;
     use crate::db::establish_connection;
     use diesel::SqliteConnection;
     use diesel::prelude::*;
-    use crate::schema::music::dsl::*;
+    use crate::schema::audio::dsl::*;
     use tokio::sync::mpsc;
     use std::process::Command;
     use tokio::task;
@@ -69,21 +69,21 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
     let (tx, mut rx) = mpsc::channel(32);
     let mut handles = vec![];
 
-    for audio in audio_list {
+    for yt_audio in audio_list {
         let command = if cfg!(target_os = "windows") { YT_DLP_PATH } else { YT_DLP_NO_EXT_PATH };
         let ffmpeg = if cfg!(target_os = "windows") { FFMPEG_PATH } else { FFMPEG_NO_EXT_PATH };
 
         let tx = tx.clone();
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
-            let output_path = format!("{}/{}.mp3", AUDIO_STORE, audio.title.unwrap_or_default().replace(" ", "_"));
+            let output_path = format!("{}/{}.mp3", AUDIO_STORE, yt_audio.title.unwrap_or_default().replace(" ", "_"));
             let args = vec![
                 "-x",
                 "--audio-format", "mp3",
                 "-o", &output_path,
                 "--cookies", "cookies.txt",
                 "--ffmpeg-location", ffmpeg,
-                &audio.url,
+                &yt_audio.url,
             ];
 
             let output = Command::new(command)
@@ -98,21 +98,22 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             }
 
             // Fetch metadata and insert into the database
-            let download_result = fetch_metadata(audio.url).await.unwrap();
+            let download_result = fetch_metadata(yt_audio.url).await.unwrap();
             let mut connection: SqliteConnection = establish_connection();
-            let new_music: NewMusic<'_> = NewMusic {
+            let new_audio: NewAudio<'_> = NewAudio{
                 title: &download_result.title.unwrap_or_default(),
-                artist: &download_result.channel.unwrap_or_default(),
+                author: &download_result.channel.unwrap_or_default(),
                 path: &output_path,
                 duration: &download_result.duration.unwrap_or_default(),
+                audio_type: "mp3",
             };
 
-            let result: Result<usize, diesel::result::Error> = diesel::insert_into(music)
-                .values(&new_music)
+            let result: Result<usize, diesel::result::Error> = diesel::insert_into(audio)
+                .values(&new_audio)
                 .execute(&mut connection);
 
             if result.is_err() {
-                let _ = tx.send(Err("Error: Could not add music entry to database".to_string())).await;
+                let _ = tx.send(Err("Error: Could not add audio entry to database".to_string())).await;
             } else {
                 let _ = tx.send(Ok(())).await;
             }

@@ -4,12 +4,18 @@ export type Playlist = {
   created_on: string;
 }
 
-export type Music = {
+export type Audio = {
   id: number;
   title: string;
-  artist: string;
+  author: string;
   path: string;
   duration: string;
+  audio_type: string;
+}
+
+export type AudioCodec = Audio & {
+  converted_type: string;
+  is_added_to_list: boolean;
 }
 
 export type YoutubeQuery = {
@@ -22,4 +28,4 @@ export type YoutubeQuery = {
 }
 
 export type PlaylistArg = Partial<Playlist>;
-export type MusicArg = Partial<Music>;
+export type AudioArg = Partial<Audio>;

@@ -20,7 +20,6 @@ import { IoRemoveCircleOutline } from "solid-icons/io"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "~/components/Sheet"
 import { BiRegularLoaderCircle } from "solid-icons/bi"
 import { toast } from "solid-sonner"
-import CustomToast from "~/components/CustomToast"
 
 interface SearchSuggestion {
   label: string
@@ -233,7 +232,6 @@ export const SearchPage = () => {
           ))}
         </TableBody>
       </Table>
-      <CustomToast />
     </div>
   )
 }

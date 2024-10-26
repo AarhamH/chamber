@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { createContext, createEffect, createSignal, ParentProps, useContext } from "solid-js";
-import { musicInPlaylist } from "~/store/store";
-import { Music } from "~/utils/types";
+import { audioInPlaylist } from "~/store/store";
+import { Audio } from "~/utils/types";
 
 interface AudioContextType {
-  activeAudio: () => Music;
+  activeAudio: () => Audio;
   loading: () => boolean; 
   audioUrl: () => string;
   trackProgress: () => number;
@@ -18,7 +18,7 @@ interface AudioContextType {
   // eslint-disable-next-line no-unused-vars
   handleVolumeChange: (event: Event) => void;
   // eslint-disable-next-line no-unused-vars
-  setActiveAudio: (audio: Music) => void;
+  setActiveAudio: (audio_item: Audio) => void;
 }
 
 const AudioContext = createContext<AudioContextType>();
@@ -31,14 +31,14 @@ export const AudioProvider  = (props: ParentProps) => {
   const [isAudioPlaying, setIsAudioPlaying] = createSignal(false);
   const [audioDuration, setAudioDuration] = createSignal(0);
   const [loading, setLoading] = createSignal(false);
-  const [activeAudio, setActiveAudio] = createSignal<Music>({} as Music);
-  const [activePlaylist, setActivePlaylist] = createSignal<Music[]>([]);
+  const [activeAudio, setActiveAudio] = createSignal<Audio>({} as Audio);
+  const [activePlaylist, setActivePlaylist] = createSignal<Audio[]>([]);
 
   createEffect(async () => {
     if(activeAudio) {
       try {
         setLoading(true);
-        setActivePlaylist(() => musicInPlaylist);
+        setActivePlaylist(() => audioInPlaylist);
         const audioData: string = await invoke("read_audio_buffer", { filePath: activeAudio()?.path });
         // Decode the base64 string to binary
         const byteCharacters = atob(audioData);
@@ -97,7 +97,7 @@ export const AudioProvider  = (props: ParentProps) => {
 
   const handleSkipForward = () => {
     if (audioRef && activeAudio && activePlaylist) {
-      let index = activePlaylist().findIndex((audio) => audio.id === activeAudio()?.id);
+      let index = activePlaylist().findIndex((audio_item) => audio_item.id === activeAudio()?.id);
       index = (index + 1) % activePlaylist().length;
       setActiveAudio(activePlaylist()[index]); 
     }
@@ -105,7 +105,7 @@ export const AudioProvider  = (props: ParentProps) => {
 
   const handleSkipBackward = () => {
     if (audioRef && activeAudio && activePlaylist) {
-      let index = activePlaylist().findIndex((audio) => audio.id === activeAudio()?.id);
+      let index = activePlaylist().findIndex((audio_item) => audio_item.id === activeAudio()?.id);
       index = (index - 1 + activePlaylist().length) % activePlaylist().length;
       setActiveAudio(activePlaylist()[index]); 
     }
