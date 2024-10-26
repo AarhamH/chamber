@@ -74,9 +74,9 @@ export const SideNavigation = () => {
           <IoSearchOutline size={"1.4em"}/>
           <p>Search</p>
         </Button>
-        <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/encoding")}>
+        <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/transcoding")}>
           <TbRotate2 size={"1.4em"}/>
-          <p>Encoding</p>
+          <p>Transcoding</p>
         </Button>
         <div class="mt-10">
           <Dialog open={isAddPlaylistModalOpen()} onOpenChange={setIsAddPlaylistModalOpen}>

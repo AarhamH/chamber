@@ -16,7 +16,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { BiRegularLoaderCircle } from "solid-icons/bi";
 import { toast } from "solid-sonner";
 
-export const Encoding = () => {
+export const Transcoding = () => {
   const supportedAudioTypes = ["mp3", "wav", "aif", "flac"];
 
   const insertFromAllAudios = async (id:number) => {
@@ -79,9 +79,9 @@ export const Encoding = () => {
   return(
     <div class="w-full h-full flex flex-col items-center justify-center">
       <div class="flex flex-col items-center justify-center">
-        <div class="text-3xl font-thin">Transcoding Queue</div>
+        <div class="text-3xl font-thin pb-5">Transcoding Queue</div>
       </div>
-      <div class="min-h-20 max-h-96 w-3/4 border border-zinc-900 rounded-lg overflow-auto">
+      <div class="min-h-96 max-h-96 w-3/4 border border-zinc-900 rounded-lg overflow-auto">
         <Table class="min-w-5xl">
           <TableBody>
             {audioCodecQueue.map((audio_item: AudioCodec) => (
@@ -122,7 +122,7 @@ export const Encoding = () => {
       </div>
       <div class="flex items-center gap-2">
         <Dialog>
-          <DialogTrigger as={Button} class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"}>All Audios</DialogTrigger>
+          <DialogTrigger as={Button} class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"}>(+) Add to queue</DialogTrigger>
           <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
         </Dialog>
         <Button class="mt-5 w-32 flex items-center justify-center" variant={"filled"} disabled={isAudioTranscodeLoading()} size={"sm"} 

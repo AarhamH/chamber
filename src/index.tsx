@@ -10,7 +10,7 @@ import { createEffect, createSignal, JSX } from "solid-js";
 import { PlaylistPage } from "./pages/PlaylistPage";
 import PlayBack from "./components/Playback";
 import { AudioProvider } from "./components/AudioContext";
-import { Encoding } from "./pages/Encoding";
+import { Transcoding } from "./pages/Transcoding";
 import CustomToast from "./components/CustomToast";
 
 type AppProps = {
@@ -58,7 +58,7 @@ render(
     <Router root={App}>
       <Route path="/" component={HomePage} />
       <Route path="/search" component={SearchPage} />
-      <Route path="/encoding" component={Encoding} />
+      <Route path="/transcoding" component={Transcoding} />
       <Route path="/playlist/:id" component={PlaylistPage} />
     </Router>), 
   document.getElementById("root") as HTMLElement);
