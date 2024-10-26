@@ -7,7 +7,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { setAudio, audio } from "~/store/store";
 import { IconTypes } from "solid-icons";
 import { toast } from "solid-sonner";
-import { createEffect, onMount } from "solid-js";
+import { createEffect } from "solid-js";
 
 interface AllAudioModalProps {
   title: string;

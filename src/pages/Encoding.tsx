@@ -1,5 +1,4 @@
 import { Button } from "~/components/Button"
-import { open } from "@tauri-apps/api/dialog";
 import { Dialog, DialogTrigger } from "~/components/Dialog";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
 import { audioCodecQueue, setAudioCodecQueue, audio, isAudioTranscodeLoading, setIsAudioTranscodeLoading } from "~/store/store";
@@ -16,22 +15,9 @@ import { AiOutlineMinusCircle } from "solid-icons/ai";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BiRegularLoaderCircle } from "solid-icons/bi";
 import { toast } from "solid-sonner";
-import { createSignal } from "solid-js";
-export const Encoding = () => {
-  const addAudio= async () => {
-    const filePaths = await open({
-      multiple: true,
-      filters: [{
-        name: "Audio Files",
-        extensions: ["mp3", "wav"],
-      }],
-    });
-  };
-  const supportedAudioTypes = ["mp3", "wav", "aif", "flac"];
 
-  createSignal(() => {
-    console.log(audioCodecQueue);
-  })
+export const Encoding = () => {
+  const supportedAudioTypes = ["mp3", "wav", "aif", "flac"];
 
   const insertFromAllAudios = async (id:number) => {
     try{
@@ -46,7 +32,6 @@ export const Encoding = () => {
             is_added_to_list: false
           }))
       ]);
-      console.log(audioCodecQueue)
       return "Successfully added to transcoding queue";
     } catch (error) {
       return new Error(String(error));
@@ -96,13 +81,6 @@ export const Encoding = () => {
       <div class="flex flex-col items-center justify-center">
         <div class="text-3xl font-thin">Transcoding Queue</div>
       </div>
-      <div class="flex items-center justify-center gap-5 pb-5">
-        <Button class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"} onClick={addAudio}>From Machine</Button> 
-        <Dialog>
-          <DialogTrigger as={Button} class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"}>All Audios</DialogTrigger>
-          <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
-        </Dialog>
-      </div>
       <div class="min-h-20 max-h-96 w-3/4 border border-zinc-900 rounded-lg overflow-auto">
         <Table class="min-w-5xl">
           <TableBody>
@@ -142,7 +120,11 @@ export const Encoding = () => {
           </TableBody>
         </Table>
       </div>
-      <div class="flex items-center justify-end">
+      <div class="flex items-center gap-2">
+        <Dialog>
+          <DialogTrigger as={Button} class="mt-5 w-32 border-2 border-zinc-600 hover:bg-transparent hover:border-opacity-60" size={"sm"}>All Audios</DialogTrigger>
+          <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
+        </Dialog>
         <Button class="mt-5 w-32 flex items-center justify-center" variant={"filled"} disabled={isAudioTranscodeLoading()} size={"sm"} 
           onClick={() => {
             transcodeAudio().then(result => {
