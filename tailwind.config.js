@@ -21,6 +21,8 @@ export const theme = {
       ring: "hsl(var(--ring))",
       background: "hsl(var(--background))",
       foreground: "hsl(var(--foreground))",
+      sidenavigation: "hsl(var(--side-navigation))",
+      playback: "hsl(var(--playback))",
       primary: {
         DEFAULT: "hsl(var(--primary))",
         foreground: "hsl(var(--primary-foreground))"

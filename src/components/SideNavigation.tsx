@@ -60,7 +60,7 @@ export const SideNavigation = () => {
     setIsAddPlaylistModalOpen(!isAddPlaylistModalOpen());
   }
   return (
-    <div class="bg-zinc-900 h-full w-full flex flex-col">
+    <div class="bg-sidenavigation h-full w-full flex flex-col shadow-lg">
       <div class="flex items-center justify-center mt-10 mb-4 text-3xl font-thin">
         <img src={chamberWhite} class="w-7 h-7 m-1" />
         <span>chamber</span>

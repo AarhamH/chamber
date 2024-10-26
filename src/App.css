@@ -31,6 +31,8 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
+    --side-navigation: 31 16% 97%;
+    --playback: 31 16% 94%;
 
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
@@ -47,10 +49,10 @@
     --primary: 240 5.9% 10%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 240 4.8% 95.9%;
+    --secondary: 31 16% 83%;
     --secondary-foreground: 240 5.9% 10%;
 
-    --accent: 240 4.8% 95.9%;
+    --accent: 31 16% 83%;
     --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;
@@ -59,14 +61,14 @@
     --info: 204 94% 94%;
     --info-foreground: 199 89% 48%;
 
-    --success: 149 80% 90%;
-    --success-foreground: 160 84% 39%;
+    --success: 148 100% 48%;
+    --success-foreground: 148 100% 39%;
 
     --warning: 48 96% 89%;
     --warning-foreground: 25 95% 53%;
 
-    --error: 0 93% 94%;
-    --error-foreground: 0 84% 60%;
+    --error: 0 100% 58%;
+    --error-foreground: 0 100% 45%;
 
     --ring: 240 5.9% 10%;
 
@@ -77,7 +79,9 @@
   [data-kb-theme="dark"] {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-
+    --side-navigation: 0 0% 9%;
+    --playback: 0 0% 6%;
+    
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
@@ -105,14 +109,14 @@
     --info: 204 94% 94%;
     --info-foreground: 199 89% 48%;
 
-    --success: 149 80% 90%;
-    --success-foreground: 160 84% 39%;
+    --success: 148 100% 48%;
+    --success-foreground: 148 100% 39%;
 
     --warning: 48 96% 89%;
     --warning-foreground: 25 95% 53%;
 
-    --error: 0 93% 94%;
-    --error-foreground: 0 84% 60%;
+    --error: 0 100% 58%;
+    --error-foreground: 0 100% 45%;
 
     --ring: 240 4.9% 83.9%;
 

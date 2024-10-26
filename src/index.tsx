@@ -5,7 +5,7 @@ import { Route, Router, useParams } from "@solidjs/router"
 import { SideNavigation } from "./components/SideNavigation";
 import { HomePage } from "./pages/HomePage";
 import { SearchPage } from "./pages/SearchPage";
-import {ColorModeProvider} from "@kobalte/core"
+import { ColorModeProvider, ColorModeScript, createLocalStorageManager } from "@kobalte/core"
 import { createEffect, createSignal, JSX } from "solid-js";
 import { PlaylistPage } from "./pages/PlaylistPage";
 import PlayBack from "./components/Playback";
@@ -21,7 +21,8 @@ const App = (props: AppProps) => {
   const params = useParams();
   let scrollContainerRef!: HTMLDivElement;
   const [id, setId] = createSignal("");
-  
+  const storageManager = createLocalStorageManager("vite-ui-theme")
+ 
   createEffect(() => {
     if(`${params.id}` !== id()) {
       setId(`${params.id}`);
@@ -32,7 +33,8 @@ const App = (props: AppProps) => {
   return (
     <>
       <AudioProvider>
-        <ColorModeProvider initialColorMode="dark">
+        <ColorModeScript storageType={storageManager.type} />
+        <ColorModeProvider initialColorMode="dark" storageManager={storageManager}>
           <div class="flex flex-col h-screen">
             <div class="flex flex-row flex-1 overflow-hidden">
               <div class="flex-shrink-0 w-48">
@@ -46,8 +48,9 @@ const App = (props: AppProps) => {
               <PlayBack />
             </div>
           </div>
+          <CustomToast />
+      
         </ColorModeProvider>
-        <CustomToast />
       </AudioProvider>
     </>
   );

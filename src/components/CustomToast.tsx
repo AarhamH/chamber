@@ -5,14 +5,12 @@ const CustomToast = () => {
     <Toaster
       toastOptions={{
         classes: {
-          error: "text-red-500",
-          success: "text-green-500",
-          toast: "bg-zinc-950",
-          description: "text-white",
+          error: "text-error",
+          success: "text-success",
+          toast: "bg-background",
         },
       }}
       position="top-center"
-      duration={1500}
     />
   )
 }
