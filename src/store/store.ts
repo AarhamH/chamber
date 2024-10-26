@@ -1,3 +1,4 @@
+import { createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
 import type { Audio, AudioCodec, Playlist, YoutubeQuery } from "~/utils/types";
 
@@ -7,3 +8,7 @@ export const [audioInPlaylist, setAudioInPlaylist] = createStore<Audio[]>([]);
 export const [activeAudio, setActiveAudio] = createStore<Audio>({} as Audio);
 export const [youtubeQueue, setYoutubeQueue] = createStore<YoutubeQuery[]>([]);
 export const [audioCodecQueue, setAudioCodecQueue] = createStore<AudioCodec[]>([]);
+
+
+// loading states
+export const [isAudioTranscodeLoading, setIsAudioTranscodeLoading] = createSignal(false);
