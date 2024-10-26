@@ -1,8 +1,12 @@
 
+use diesel::prelude::*;
 use crate::binary_path_gen::FFMPEG_NO_EXT_PATH;
 use crate::binary_path_gen::FFMPEG_PATH;
+use crate::db::establish_connection;
 use crate::helper::constants::AUDIO_STORE;
 pub use crate::helper::files::create_audio_store_directory;
+use crate::models::audio_model::NewAudio;
+use crate::schema::audio::dsl::*;
 use tokio::sync::mpsc;
 use std::path::Path;
 use std::process::Command;
@@ -12,8 +16,11 @@ use serde::{Serialize, Deserialize};
 #[derive(Debug, Deserialize, Serialize)]
 pub struct QueueItem {
     pub title: String,
+    pub author: String,
     pub path: String,
+    pub duration: String,
     pub converted_type: String,
+    pub is_added_to_list: bool,
 }
 
 #[tauri::command]
@@ -51,6 +58,28 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
                 let stderr = String::from_utf8_lossy(&output.stderr);
                 let _ = tx.send(Err(format!("Error: {}", stderr))).await;
                 return;
+            }
+
+            if queue_item.is_added_to_list {
+                // Fetch metadata and insert into the database
+                let mut connection: SqliteConnection = establish_connection();
+                let new_audio: NewAudio<'_> = NewAudio{
+                    title: &queue_item.title,
+                    author: &queue_item.author,
+                    path: &destination_path.to_str().unwrap(),
+                    duration: &queue_item.duration,
+                    audio_type: &queue_item.converted_type,
+                };
+
+                let result: Result<usize, diesel::result::Error> = diesel::insert_into(audio)
+                    .values(&new_audio)
+                    .execute(&mut connection);
+
+                if result.is_err() {
+                    let _ = tx.send(Err("Error: Could not add audio entry to database".to_string())).await;
+                } else {
+                    let _ = tx.send(Ok(())).await;
+                }
             }
         });
 

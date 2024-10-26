@@ -137,13 +137,14 @@ export const PlaylistPage = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead class="ml-5 w-16 text-left"></TableHead>
-            <TableHead class="w-2 truncate">ID</TableHead>
-            <TableHead class="w-1/4 truncate">Title</TableHead>
-            <TableHead class="w-2/12 truncate">Artist</TableHead>
-            <TableHead class="w-1/4 truncate">Path</TableHead>
-            <TableHead class="w-10 truncate">Duration</TableHead>
-            <TableHead class="w-16 text-right truncate"></TableHead>
+            <TableHead></TableHead>
+            <TableHead>ID</TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Author</TableHead>
+            <TableHead>Path</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Duration</TableHead>
+            <TableHead></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -156,11 +157,12 @@ export const PlaylistPage = () => {
                   <BiRegularPlay size={"2em"} onClick={() => setActiveAudio(audio_item)} />
                 )}
               </TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{audio_item.title}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{audio_item.author}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{audio_item.path}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{audio_item.duration}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.title}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.author}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.path}</TableCell>
+              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.audio_type}</TableCell>
+              <TableCell class=" truncate overflow-hidden whitespace-nowrap">{audio_item.duration}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger>

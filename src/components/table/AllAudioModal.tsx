@@ -7,7 +7,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { setAudio, audio } from "~/store/store";
 import { IconTypes } from "solid-icons";
 import { toast } from "solid-sonner";
-import { createEffect } from "solid-js";
+import { createEffect, onMount } from "solid-js";
 
 interface AllAudioModalProps {
   title: string;
@@ -15,16 +15,18 @@ interface AllAudioModalProps {
 }
 
 export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
-  const fetchAllAudio = async () => { try {
-    const result = await invoke<Audio[]>("get_all_audio");
-    setAudio(result);
-  } catch (error) {
-    return error
-  }
-  }
   createEffect(() => {
     fetchAllAudio();
-  },[audio])
+  },[])
+
+  const fetchAllAudio = async () => { 
+    try {
+      const result = await invoke<Audio[]>("get_all_audio");
+      setAudio(result);
+    } catch (error) {
+      return error
+    }
+  }
   const addAudio= async () => {
     const filePaths = await open({
       multiple: true,

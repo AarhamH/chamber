@@ -15,6 +15,7 @@ export type Audio = {
 
 export type AudioCodec = Audio & {
   converted_type: string;
+  is_added_to_list: boolean;
 }
 
 export type YoutubeQuery = {
