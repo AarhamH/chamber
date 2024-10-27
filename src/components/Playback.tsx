@@ -6,6 +6,7 @@ import { TbMoon } from "solid-icons/tb"
 import { TbSun } from "solid-icons/tb"
 import { useColorMode } from "@kobalte/core";
 import { Button } from "./Button";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const PlayBack = () => {
   const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
@@ -17,6 +18,14 @@ const PlayBack = () => {
   };
 
   const { colorMode, setColorMode } = useColorMode();
+
+  async function playAudio() {
+    try {
+      await invoke("audio_playback");
+    } catch (error) {
+      console.error("Error playing audio:", error);
+    }
+  }
 
   return (
     <div class="bg-playback h-20 flex items-center">
@@ -32,6 +41,7 @@ const PlayBack = () => {
           </span>
         </div>
       </div>
+      <Button class="w-1/5 h-full p-2 flex items-center justify-center" onClick={playAudio}>Play</Button>
       <div class="w-3/5 p-2 flex flex-col items-center justify-center">
         <div class="flex flex-row items-center justify-center space-x-4">
           <AiFillStepBackward size={"1.5em"} onClick={handleSkipBackward} />

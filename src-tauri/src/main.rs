@@ -27,7 +27,8 @@ fn main() {
             youtube_search,
             youtube_suggestion,
             download_audio,
-            transcode_audio
+            transcode_audio,
+            audio_playback
          ])
         .setup(|_app| {
             db::init();

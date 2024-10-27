@@ -28,6 +28,8 @@ reqwest = { version = "0.12.8", features = ["blocking", "json"] }
 scraper = "0.12"
 regex = "1.5.4"
 rusty_dl = "1.0.8"
+rodio = "0.19.0"
+
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
