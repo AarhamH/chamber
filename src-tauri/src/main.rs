@@ -28,7 +28,8 @@ fn main() {
             youtube_suggestion,
             download_audio,
             transcode_audio,
-            audio_playback
+            audio_playback,
+            play,
          ])
         .setup(|_app| {
             db::init();

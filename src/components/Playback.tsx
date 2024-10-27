@@ -7,6 +7,7 @@ import { TbSun } from "solid-icons/tb"
 import { useColorMode } from "@kobalte/core";
 import { Button } from "./Button";
 import { invoke } from "@tauri-apps/api/tauri";
+import { onMount } from "solid-js";
 
 const PlayBack = () => {
   const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
@@ -19,9 +20,22 @@ const PlayBack = () => {
 
   const { colorMode, setColorMode } = useColorMode();
 
+  onMount(init);
+
+  async function init() {
+    try {
+      await invoke("intialize_sink");
+      console.log("Audio setup complete");
+    } catch (error) {
+      console.error("Error initializing audio:", error);
+    }
+  }
+
   async function playAudio() {
     try {
+      console.log("Playing audio");
       await invoke("audio_playback");
+      console.log("Audio playing");
     } catch (error) {
       console.error("Error playing audio:", error);
     }

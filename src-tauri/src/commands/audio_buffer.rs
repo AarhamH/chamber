@@ -1,6 +1,8 @@
 use std::{fs::File, io::Read};
 use std::io::BufReader;
 use rodio::{Decoder, OutputStream, Sink};
+use std::sync::{Arc, Mutex};
+use lazy_static::lazy_static;
 
 #[tauri::command(async)]
 pub fn read_audio_buffer(file_path: String) -> Result<String, String> {
@@ -20,7 +22,7 @@ pub fn read_audio_buffer(file_path: String) -> Result<String, String> {
 pub async fn audio_playback() {
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
     let sink = Sink::try_new(&stream_handle).unwrap();
-    let file = BufReader::new(File::open("/home/ahaider/repos/chamber/src-tauri/audio_store/Arctic_Monkeys_-_Do_I_Wanna_Know?_(Official_Video)-converted_to-flac-1.flac").unwrap());
+    let file = BufReader::new(File::open("C:\\Users\\aarha\\repos\\chamber\\src-tauri\\audio_store\\Opeth_-_Moonlapse_Vertigo-converted_to-flac.flac").unwrap());
     let source = Decoder::new(file).unwrap();
     sink.append(source);
     
@@ -30,7 +32,7 @@ pub async fn audio_playback() {
 }
 
 pub struct AudioBuffer {
-    pub sink: Sink
+    pub sink: Arc<Mutex<Sink>>,
 }
 
 impl AudioBuffer {
@@ -38,9 +40,30 @@ impl AudioBuffer {
         let (_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
         AudioBuffer {
-            sink
+            sink: Arc::new(Mutex::new(sink)),
         }
     }
 
-    
+    pub fn play_source(&self) {
+        let file = BufReader::new(File::open("C:\\Users\\aarha\\repos\\chamber\\src-tauri\\audio_store\\Opeth_-_Moonlapse_Vertigo-converted_to-mp3.mp3").unwrap());
+        let source = Decoder::new(file).unwrap();
+        let sink = self.sink.lock().unwrap();
+
+        sink.append(source);
+        
+        // The sound plays in a separate thread. This call will block the current thread until the sink
+        // has finished playing all its queued sounds.
+        sink.sleep_until_end();
+
+    }
+}
+
+#[tauri::command(async)]
+pub async fn play() {
+    let audio_buffer = AUDIO_BUFFER.clone();
+    audio_buffer.lock().unwrap().play_source();
+}
+
+lazy_static! {
+    static ref AUDIO_BUFFER: Arc<Mutex<AudioBuffer>> = Arc::new(Mutex::new(AudioBuffer::new()));
 }
