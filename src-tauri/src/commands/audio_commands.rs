@@ -19,15 +19,21 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
       create_audio_store_directory,
       copy_file_to_destination
   };
-  let file_type: String = get_file_type(&file_path)?;
-
   let file_name: String = extract_file_name(&file_path)?;
+  
+  if std::fs::metadata(&file_path).unwrap().len() > 200_000_000 {
+    return Err(format!("File size exceeds 100MB: {}.", file_name));
+  }
+
+  let file_type: String = get_file_type(&file_path)?;
 
   // read the file into memory for parsing metadata (duration)
   let tagged_file = Probe::open(file_path.clone())
     .expect("Error opening file")
     .read()
     .expect("Error reading file");
+
+  println!("{}", std::fs::metadata(&file_path).unwrap().len());
 
   let tag = match tagged_file.primary_tag() {
     Some(primary_tag) => primary_tag,

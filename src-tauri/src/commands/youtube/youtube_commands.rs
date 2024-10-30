@@ -89,7 +89,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 &yt_audio.url,
             ];
 
-        let output = match timeout(Duration::from_secs(30), 
+        let output = match timeout(Duration::from_secs(300), 
             Command::new(command)
             .args(&args)
             .output()).await {
