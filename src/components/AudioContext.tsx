@@ -62,8 +62,6 @@ export const AudioProvider  = (props: ParentProps) => {
               return "audio/m4a";
             case "m4b":
               return "audio/m4b";
-            case "webm":
-              return "audio/webm";
             default:
               throw new Error("Unsupported audio format");
           }

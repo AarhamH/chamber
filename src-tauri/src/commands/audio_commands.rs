@@ -52,7 +52,15 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
       author: Some("Unknown".to_string()),
       path: Some((&destination_path.to_str().unwrap()).to_string()),
       duration: Some(seconds_to_minutes(duration_secs)),
-      audio_type: if file_type == "audio/mpeg" { Some("mp3".to_string()) } else { Some("wav".to_string()) },
+      audio_type: match file_type.as_str() {
+          "audio/mpeg" => Some("mp3".to_string()),
+          "audio/wav" => Some("wav".to_string()),
+          "audio/ogg" => Some("ogg".to_string()),
+          "audio/opus" => Some("opus".to_string()),
+          "audio/m4a" => Some("m4a".to_string()),
+          "audio/m4b" => Some("m4b".to_string()),
+          _ => Some("unknown".to_string()),
+      },
   })
 }
 
