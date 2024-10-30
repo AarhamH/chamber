@@ -17,7 +17,7 @@ import { BiRegularLoaderCircle } from "solid-icons/bi";
 import { toast } from "solid-sonner";
 
 export const Transcoding = () => {
-  const supportedAudioTypes = ["mp3"  , "ogg", "aac", "opus", "m4a"];
+  const supportedAudioTypes = ["wav", "mp3", "ogg", "opus", "m4a", "m4b", "webm"];
 
   const insertFromAllAudios = async (id:number) => {
     try{

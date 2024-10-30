@@ -8,6 +8,7 @@ import { setAudio, audio } from "~/store/store";
 import { IconTypes } from "solid-icons";
 import { toast } from "solid-sonner";
 import { createEffect } from "solid-js";
+import { SUPPORTED_TYPES } from "~/utils/constants";
 
 interface AllAudioModalProps {
   title: string;
@@ -32,7 +33,7 @@ export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
       multiple: true,
       filters: [{
         name: "Audio Files",
-        extensions: ["mp3", "wav"],
+        extensions: SUPPORTED_TYPES,
       }],
     });
     
