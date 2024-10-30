@@ -1,7 +1,8 @@
 use std::path::Path;
 
 use diesel::prelude::*;
-use lofty::file::AudioFile;
+use lofty::file::{AudioFile, TaggedFileExt};
+use lofty::tag::Accessor;
 use lofty::probe::Probe;
 use crate::helper::constants::AUDIO_STORE;
 use crate::helper::tools::seconds_to_minutes;
@@ -28,9 +29,18 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
     .read()
     .expect("Error reading file");
 
+  let tag = match tagged_file.primary_tag() {
+    Some(primary_tag) => primary_tag,
+    None => tagged_file.first_tag().expect("ERROR: No tags found!"),
+  };
   let properties = tagged_file.properties();
 
   let duration_secs = properties.duration().as_secs();
+  let audio_author = if let Some(artist) = tag.artist() {
+    artist.to_string()
+  } else {
+    "Unknown".to_string()
+  };
   
   create_audio_store_directory()?;
 
@@ -49,7 +59,7 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
 
   Ok(AudioArg{
       title: Some(file_name),
-      author: Some("Unknown".to_string()),
+      author: Some(audio_author.to_string()),
       path: Some((&destination_path.to_str().unwrap()).to_string()),
       duration: Some(seconds_to_minutes(duration_secs)),
       audio_type: match file_type.as_str() {
