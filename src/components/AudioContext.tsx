@@ -48,9 +48,29 @@ export const AudioProvider  = (props: ParentProps) => {
           byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
-  
+        const getMimeType = (format: string): string => {
+          switch (format.toLowerCase()) {
+            case "mp3":
+              return "audio/mp3";
+            case "opus":
+              return "audio/opus";
+            case "ogg":
+              return "audio/ogg";
+            case "flac":
+              return "audio/flac";
+            case "m4a":
+              return "audio/m4a";
+            case "m4b":
+              return "audio/m4b";
+            case "webm":
+              return "audio/webm";
+            default:
+              throw new Error("Unsupported audio format");
+          }
+        };
+        const mimeType = getMimeType(activeAudio()?.audio_type);        
         // Create a Blob from the Uint8Array
-        const audioBlob = new Blob([byteArray], { type: "audio/mp3" }); // Adjust the type according to your audio format
+        const audioBlob = new Blob([byteArray], { type: mimeType });
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
   
