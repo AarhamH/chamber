@@ -15,9 +15,10 @@ import { AiOutlineMinusCircle } from "solid-icons/ai";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BiRegularLoaderCircle } from "solid-icons/bi";
 import { toast } from "solid-sonner";
+import { SUPPORTED_TYPES } from "~/utils/constants";
 
 export const Transcoding = () => {
-  const supportedAudioTypes = ["wav", "mp3", "ogg", "opus", "m4a", "m4b", "webm"];
+  const supportedAudioTypes = SUPPORTED_TYPES
 
   const insertFromAllAudios = async (id:number) => {
     try{
