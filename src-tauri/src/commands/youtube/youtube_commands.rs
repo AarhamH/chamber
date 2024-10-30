@@ -4,6 +4,7 @@ use scraper::Html;
 use crate::binary_path_gen::{FFMPEG_NO_EXT_PATH, FFMPEG_PATH, YT_DLP_NO_EXT_PATH, YT_DLP_PATH};
 use crate::helper::constants::AUDIO_STORE;
 use crate::models::youtube_model::YouTubeAudio;
+use tokio::time::{timeout,Duration};
 
 #[tauri::command]
 pub async fn youtube_suggestion(input: String) -> Result<Vec<String>, String> {
@@ -61,7 +62,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
     use diesel::prelude::*;
     use crate::schema::audio::dsl::*;
     use tokio::sync::mpsc;
-    use std::process::Command;
+    use tokio::process::Command;
     use tokio::task;
 
     create_audio_store_directory()?;
@@ -77,33 +78,50 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
             let output_path = format!("{}/{}.mp3", AUDIO_STORE, yt_audio.title.unwrap_or_default().replace(" ", "_"));
+            let output_path_clone = output_path.clone();
             let args = vec![
                 "-x",
                 "--audio-format", "mp3",
+                "--max-filesize", "500m",
                 "-o", &output_path,
                 "--cookies", "cookies.txt",
                 "--ffmpeg-location", ffmpeg,
                 &yt_audio.url,
             ];
 
-            let output = Command::new(command)
-                .args(&args)
-                .output()
-                .expect("Failed to execute command");
-
+        let output = match timeout(Duration::from_secs(30), 
+            Command::new(command)
+            .args(&args)
+            .output()).await {
+            Ok(Ok(output)) => output,
+            Ok(Err(e)) => {
+                let _ = tx.send(Err(format!("Error: {}",e))).await;
+                return;
+            },
+            Err(_) => {
+                let _ = tx.send(Err(format!("Error: Timed out"))).await;
+                return;
+            }
+        };
+            
             if !output.status.success() {
                 let stderr = String::from_utf8_lossy(&output.stderr);
                 let _ = tx.send(Err(format!("Error: {}", stderr))).await;
                 return;
             }
-
+            
+            if std::fs::metadata(output_path).unwrap().len() > 200_000_000 {
+                let _ = tx.send(Err(format!("Error: A downloaded file size exceeds 100MB" ))).await;
+                std::fs::remove_file(&output_path_clone).unwrap();
+                return;
+            }
             // Fetch metadata and insert into the database
             let download_result = fetch_metadata(yt_audio.url).await.unwrap();
             let mut connection: SqliteConnection = establish_connection();
             let new_audio: NewAudio<'_> = NewAudio{
                 title: &download_result.title.unwrap_or_default(),
                 author: &download_result.channel.unwrap_or_default(),
-                path: &output_path,
+                path: &output_path_clone,
                 duration: &download_result.duration.unwrap_or_default(),
                 audio_type: "mp3",
             };
