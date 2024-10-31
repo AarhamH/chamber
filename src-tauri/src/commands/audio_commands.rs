@@ -68,7 +68,6 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
       duration: Some(seconds_to_minutes(duration_secs)),
       audio_type: match file_type.as_str() {
           "audio/mpeg" => Some("mp3".to_string()),
-          "audio/wav" => Some("wav".to_string()),
           "audio/ogg" => Some("ogg".to_string()),
           "audio/opus" => Some("opus".to_string()),
           "audio/m4a" => Some("m4a".to_string()),
