@@ -75,7 +75,7 @@ export const SearchPage = () => {
       setIsDownloading(true);
       await invoke("download_audio", { audioList });
     } catch (error) {
-      return error;
+      return new Error(String(error));
     } finally {
       setIsDownloading(false);
       setYoutubeQueue([]);

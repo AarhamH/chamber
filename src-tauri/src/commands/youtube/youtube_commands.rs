@@ -55,7 +55,7 @@ pub async fn youtube_search_by_url(url: String) -> Result<YouTubeAudio, String> 
 
 #[tauri::command(async)]
 pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String> {
-    pub use crate::helper::files::create_audio_store_directory;
+    pub use crate::helper::files:: {create_audio_store_directory, delete_file_if_exists, construct_output_path};
     use crate::models::audio_model::NewAudio;
     use crate::db::establish_connection;
     use diesel::SqliteConnection;
@@ -69,7 +69,6 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
 
     let (tx, mut rx) = mpsc::channel(32);
     let mut handles = vec![];
-
     for yt_audio in audio_list {
         let command = if cfg!(target_os = "windows") { YT_DLP_PATH } else { YT_DLP_NO_EXT_PATH };
         let ffmpeg = if cfg!(target_os = "windows") { FFMPEG_PATH } else { FFMPEG_NO_EXT_PATH };
@@ -78,12 +77,15 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
             let yt_title = yt_audio.title.clone().unwrap_or_default();
-            let mut output_path = std::path::PathBuf::from(format!("{}/{}.{}", AUDIO_STORE, yt_title, "mp3"));
+            let mut output_path = construct_output_path(AUDIO_STORE, &yt_title, "mp3");
+            let mut output_path_webm = construct_output_path(AUDIO_STORE, &yt_title, "webm");
             let mut counter = 0;
 
             while output_path.exists() {
                 counter += 1;
-                output_path = std::path::PathBuf::from(format!("{}/{}-{}.{}", AUDIO_STORE, yt_title, counter, "mp3"));
+                let dup_title = format!("{}-{}", yt_title, counter);
+                output_path = construct_output_path(AUDIO_STORE, &dup_title, "mp3");
+                output_path_webm = construct_output_path(AUDIO_STORE, &dup_title, "webm");
             }
 
             let args = vec![
@@ -95,8 +97,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 "--ffmpeg-location", ffmpeg,
                 &yt_audio.url,
             ];
-
-        let output = match timeout(Duration::from_secs(300), 
+        let output = match timeout(Duration::from_secs(30), 
             Command::new(command)
             .args(&args)
             .output()).await {
@@ -106,7 +107,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 return;
             },
             Err(_) => {
-                let _ = tx.send(Err(format!("Error: Timed out"))).await;
+                let _ = tx.send(Err(format!("Error: Download timed out"))).await;
                 return;
             }
         };
@@ -118,8 +119,9 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             }
             
             if std::fs::metadata(&output_path).unwrap().len() > 200_000_000 {
-                let _ = tx.send(Err(format!("Error: A downloaded file size exceeds 100MB" ))).await;
-                std::fs::remove_file(&output_path).unwrap();
+                let _ = tx.send(Err(format!("Error: A downloaded file size exceeds 200MB" ))).await;
+                delete_file_if_exists(&output_path).unwrap();
+                delete_file_if_exists(&output_path_webm).unwrap();
                 return;
             }
             // Fetch metadata and insert into the database

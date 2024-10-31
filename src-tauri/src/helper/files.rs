@@ -42,3 +42,14 @@ pub fn copy_file_to_destination(file_path: &str, destination_path: &str) -> Resu
         .map_err(|e| format!("Unable to copy file: {}", e))?;
     Ok(())
 }
+
+pub fn construct_output_path(store: &str, title: &str, extension: &str) -> std::path::PathBuf {
+    std::path::PathBuf::from(format!("{}/{}.{}", store, title.replace(" ", "_"), extension))
+}
+
+pub fn delete_file_if_exists(path: &std::path::PathBuf) -> Result<(), String> {
+    if path.exists() {
+        fs::remove_file(path).map_err(|e| format!("Error removing file: {}", e))?;
+    }
+    Ok(())
+}

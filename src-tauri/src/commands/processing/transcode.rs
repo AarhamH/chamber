@@ -4,11 +4,10 @@ use crate::binary_path_gen::FFMPEG_NO_EXT_PATH;
 use crate::binary_path_gen::FFMPEG_PATH;
 use crate::db::establish_connection;
 use crate::helper::constants::AUDIO_STORE;
-pub use crate::helper::files::create_audio_store_directory;
+pub use crate::helper::files::{create_audio_store_directory, construct_output_path};
 use crate::models::audio_model::NewAudio;
 use crate::schema::audio::dsl::*;
 use tokio::sync::mpsc;
-use std::path::Path;
 use std::process::Command;
 use tokio::task;
 use serde::{Serialize, Deserialize};   
@@ -41,7 +40,8 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
 
         let handle = task::spawn(async move {
             let base_file_name = format!("{}-converted_to-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, queue_item.converted_type);
-            let mut destination_path = Path::new(AUDIO_STORE).join(&base_file_name);
+            
+            let mut destination_path = construct_output_path(AUDIO_STORE, &base_file_name, &queue_item.converted_type);
             let mut counter = 1;
 
             // Lock the HashSet to check for existing paths
@@ -52,9 +52,9 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
                     break; // Found a unique path
                 } else {
                     // Generate a new file name
-                    let new_file_name = format!("{}-converted_to-{}-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, counter, queue_item.converted_type);
-                    destination_path = Path::new(AUDIO_STORE).join(new_file_name);
                     counter += 1;
+                    let new_file_name = format!("{}-converted_to-{}-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, counter, queue_item.converted_type);
+                    destination_path = construct_output_path(AUDIO_STORE, &new_file_name, &queue_item.converted_type);
                 }
             }
 
