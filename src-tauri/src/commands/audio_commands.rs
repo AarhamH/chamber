@@ -19,9 +19,13 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
       create_audio_store_directory,
       copy_file_to_destination
   };
-  let file_type: String = get_file_type(&file_path)?;
-
   let file_name: String = extract_file_name(&file_path)?;
+  
+  if std::fs::metadata(&file_path).unwrap().len() > 200_000_000 {
+    return Err(format!("File size exceeds 100MB: {}.", file_name));
+  }
+
+  let file_type: String = get_file_type(&file_path)?;
 
   // read the file into memory for parsing metadata (duration)
   let tagged_file = Probe::open(file_path.clone())
@@ -64,7 +68,6 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
       duration: Some(seconds_to_minutes(duration_secs)),
       audio_type: match file_type.as_str() {
           "audio/mpeg" => Some("mp3".to_string()),
-          "audio/wav" => Some("wav".to_string()),
           "audio/ogg" => Some("ogg".to_string()),
           "audio/opus" => Some("opus".to_string()),
           "audio/m4a" => Some("m4a".to_string()),

@@ -20,19 +20,27 @@ import { SUPPORTED_TYPES } from "~/utils/constants";
 export const Transcoding = () => {
   const supportedAudioTypes = SUPPORTED_TYPES
 
-  const insertFromAllAudios = async (id:number) => {
-    try{
-      setAudioCodecQueue([
-        ...audioCodecQueue,
-        ...audio
-          .filter((audio_item: Audio) => audio_item.id === id)
-          .map((audio_item, index) => ({
+  const insertFromAllAudios = async (id: number) => {
+    try {
+      const newAudioItems = audio
+        .filter((audio_item: Audio) => audio_item.id === id)
+        .map((audio_item, index) => {
+          if (audio_item.path.includes("-converted_to-")) {
+            throw new Error("This file may have already been transcoded, which may result in corrupted metadata. Please select another audio file.");
+          }
+          return {
             ...audio_item,
             id: audioCodecQueue.length + index,
             converted_type: supportedAudioTypes.find((supAudioType: string) => supAudioType !== audio_item.audio_type) || "",
             is_added_to_list: false
-          }))
+          };
+        });
+  
+      setAudioCodecQueue([
+        ...audioCodecQueue,
+        ...newAudioItems
       ]);
+  
       return "Successfully added to transcoding queue";
     } catch (error) {
       return new Error(String(error));

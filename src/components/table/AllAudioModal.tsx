@@ -29,20 +29,24 @@ export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
     }
   }
   const addAudio= async () => {
-    const filePaths = await open({
-      multiple: true,
-      filters: [{
-        name: "Audio Files",
-        extensions: SUPPORTED_TYPES,
-      }],
-    });
+    try {
+      const filePaths = await open({
+        multiple: true,
+        filters: [{
+          name: "Audio Files",
+          extensions: SUPPORTED_TYPES,
+        }],
+      });
     
-    // Check if any files were selected
-    if (filePaths && Array.isArray(filePaths)) {
-      for (const filePath of filePaths) {
-        await invoke("create_audio", { filePath });
+      // Check if any files were selected
+      if (filePaths && Array.isArray(filePaths)) {
+        for (const filePath of filePaths) {
+          await invoke("create_audio", { filePath });
+        }
+        fetchAllAudio();
       }
-      fetchAllAudio();
+    } catch (err) {
+      return new Error(String(err));
     }
   };
   return(
@@ -50,7 +54,15 @@ export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
       <DialogHeader>
         <div class="flex flex-col items-center justify-center">
           <DialogTitle>{title}</DialogTitle>
-          <Button class="w-32" onClick={addAudio} variant={"link"}>Add Audio</Button>      
+          <Button 
+            class="w-32" 
+            onClick={() => {
+              addAudio().then(result => {
+                const isError = result instanceof Error;
+                (() => isError && toast.error(result.message))();
+              });
+            }} 
+            variant={"link"}>Add Audio</Button>      
         </div>
         <DialogDescription>
           <Table>

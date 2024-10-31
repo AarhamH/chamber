@@ -75,7 +75,7 @@ export const SearchPage = () => {
       setIsDownloading(true);
       await invoke("download_audio", { audioList });
     } catch (error) {
-      return error;
+      return new Error(String(error));
     } finally {
       setIsDownloading(false);
       setYoutubeQueue([]);
@@ -171,7 +171,7 @@ export const SearchPage = () => {
                 <Button 
                   class="w-32" 
                   variant="filled" 
-                  disabled={youtubeQueue.length === 0} 
+                  disabled={youtubeQueue.length === 0 || isDownloading()} 
                   onClick={() => {
                     download(youtubeQueue).then((result) => {
                       const isError = result instanceof Error;
@@ -179,7 +179,7 @@ export const SearchPage = () => {
                     })
                   }} 
                   size="sm">
-                  Download
+                  {isDownloading() ? <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} /> : "Download"}
                 </Button>
               </div>
             </SheetContent>      

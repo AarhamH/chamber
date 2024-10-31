@@ -24,6 +24,18 @@ pub fn meta_duration_to_minutes(meta_dur: String) -> String {
     format!("{:02}:{:02}", minutes, seconds)
 }
 
+pub fn meta_duration_to_minutes_raw(duration_str: &str) -> Option<u64> {
+    let re = regex::Regex::new(r"(?:(\d+):)?(\d+):(\d+)").unwrap();
+    if let Some(captures) = re.captures(duration_str) {
+        let hours = captures.get(1).map_or(0, |m| m.as_str().parse::<u64>().unwrap_or(0));
+        let minutes = captures.get(2).map_or(0, |m| m.as_str().parse::<u64>().unwrap_or(0));
+        let seconds = captures.get(3).map_or(0, |m| m.as_str().parse::<u64>().unwrap_or(0));
+        Some(hours * 60 + minutes + (seconds / 60))
+    } else {
+        None
+    }
+}
+
 pub fn trim_number(input: &str) -> String {
     // turn a number like 2123213123 to 2.12B
     let num: f64 = input.parse().unwrap();
