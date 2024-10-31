@@ -11,7 +11,9 @@ use tokio::sync::mpsc;
 use std::path::Path;
 use std::process::Command;
 use tokio::task;
-use serde::{Serialize, Deserialize};        
+use serde::{Serialize, Deserialize};   
+use std::sync::{Arc, Mutex};     
+use std::collections::HashSet;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct QueueItem {
@@ -28,22 +30,34 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
     create_audio_store_directory()?;
 
     let (tx, mut rx) = mpsc::channel(32);
-    let mut handles = vec![];
+    let handles = Arc::new(Mutex::new(Vec::new()));
+    let file_paths = Arc::new(Mutex::new(HashSet::new())); // HashSet to track file paths
 
-    for queue_item in queue_items{
+    for queue_item in queue_items {
         let command = if cfg!(target_os = "windows") { FFMPEG_PATH } else { FFMPEG_NO_EXT_PATH };
+        let tx = tx.clone();
+        let handles = Arc::clone(&handles);
+        let file_paths = Arc::clone(&file_paths);
 
-        let tx: mpsc::Sender<Result<(), String>> = tx.clone();
-        // Spawn a task for each audio download
         let handle = task::spawn(async move {
-            let file_name = format!("{}-converted_to-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, queue_item.converted_type);
-            let mut destination_path = Path::new(AUDIO_STORE).join(&file_name);
+            let base_file_name = format!("{}-converted_to-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, queue_item.converted_type);
+            let mut destination_path = Path::new(AUDIO_STORE).join(&base_file_name);
             let mut counter = 1;
-            while destination_path.exists() {
-                let new_file_name = format!("{}-converted_to-{}-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, counter, queue_item.converted_type);
-                destination_path = Path::new(AUDIO_STORE).join(new_file_name);
-                counter += 1;
+
+            // Lock the HashSet to check for existing paths
+            loop {
+                let mut paths_guard = file_paths.lock().unwrap();
+                if !paths_guard.contains(&destination_path) {
+                    paths_guard.insert(destination_path.clone());
+                    break; // Found a unique path
+                } else {
+                    // Generate a new file name
+                    let new_file_name = format!("{}-converted_to-{}-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, counter, queue_item.converted_type);
+                    destination_path = Path::new(AUDIO_STORE).join(new_file_name);
+                    counter += 1;
+                }
             }
+
             let args = vec![
                 "-i", &queue_item.path,
                 &destination_path.to_str().unwrap(),
@@ -63,7 +77,7 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
             if queue_item.is_added_to_list {
                 // Fetch metadata and insert into the database
                 let mut connection: SqliteConnection = establish_connection();
-                let new_audio: NewAudio<'_> = NewAudio{
+                let new_audio: NewAudio<'_> = NewAudio {
                     title: &queue_item.title,
                     author: &queue_item.author,
                     path: &destination_path.to_str().unwrap(),
@@ -83,7 +97,7 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
             }
         });
 
-        handles.push(handle);
+        handles.lock().unwrap().push(handle);
     }
 
     drop(tx);
@@ -94,10 +108,9 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
         }
     }
 
-    for handle in handles {
-        let _ = handle.await;
+    for handle in handles.lock().unwrap().iter() {
+        let _ = handle;
     }
 
     Ok(())
-
 }

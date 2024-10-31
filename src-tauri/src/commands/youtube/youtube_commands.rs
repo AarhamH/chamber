@@ -77,13 +77,20 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         let tx = tx.clone();
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
-            let output_path = format!("{}/{}.mp3", AUDIO_STORE, yt_audio.title.unwrap_or_default().replace(" ", "_"));
-            let output_path_clone = output_path.clone();
+            let yt_title = yt_audio.title.clone().unwrap_or_default();
+            let mut output_path = std::path::PathBuf::from(format!("{}/{}.{}", AUDIO_STORE, yt_title, "mp3"));
+            let mut counter = 0;
+
+            while output_path.exists() {
+                counter += 1;
+                output_path = std::path::PathBuf::from(format!("{}/{}-{}.{}", AUDIO_STORE, yt_title, counter, "mp3"));
+            }
+
             let args = vec![
                 "-x",
                 "--audio-format", "mp3",
                 "--max-filesize", "500m",
-                "-o", &output_path,
+                "-o", output_path.to_str().unwrap(),
                 "--cookies", "cookies.txt",
                 "--ffmpeg-location", ffmpeg,
                 &yt_audio.url,
@@ -110,9 +117,9 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 return;
             }
             
-            if std::fs::metadata(output_path).unwrap().len() > 200_000_000 {
+            if std::fs::metadata(&output_path).unwrap().len() > 200_000_000 {
                 let _ = tx.send(Err(format!("Error: A downloaded file size exceeds 100MB" ))).await;
-                std::fs::remove_file(&output_path_clone).unwrap();
+                std::fs::remove_file(&output_path).unwrap();
                 return;
             }
             // Fetch metadata and insert into the database
@@ -121,7 +128,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             let new_audio: NewAudio<'_> = NewAudio{
                 title: &download_result.title.unwrap_or_default(),
                 author: &download_result.channel.unwrap_or_default(),
-                path: &output_path_clone,
+                path: output_path.to_str().unwrap(),
                 duration: &download_result.duration.unwrap_or_default(),
                 audio_type: "mp3",
             };
@@ -151,7 +158,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
     for handle in handles {
         let _ = handle.await;
     }
-
+    
     Ok(())
 }
 pub async fn fetch_metadata(url: String) -> Result<YouTubeAudio, String> {

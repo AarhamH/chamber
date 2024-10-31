@@ -33,8 +33,6 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
     .read()
     .expect("Error reading file");
 
-  println!("{}", std::fs::metadata(&file_path).unwrap().len());
-
   let tag = match tagged_file.primary_tag() {
     Some(primary_tag) => primary_tag,
     None => tagged_file.first_tag().expect("ERROR: No tags found!"),
