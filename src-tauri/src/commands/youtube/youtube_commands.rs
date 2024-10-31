@@ -5,6 +5,7 @@ use crate::binary_path_gen::{FFMPEG_NO_EXT_PATH, FFMPEG_PATH, YT_DLP_NO_EXT_PATH
 use crate::helper::constants::AUDIO_STORE;
 use crate::models::youtube_model::YouTubeAudio;
 use tokio::time::{timeout,Duration};
+use crate::helper::tools::meta_duration_to_minutes_raw;
 
 #[tauri::command]
 pub async fn youtube_suggestion(input: String) -> Result<Vec<String>, String> {
@@ -27,24 +28,29 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
         safe_search: false,
     };
     let res: Result<Vec<SearchResult>, rusty_ytdl::VideoError> = youtube.search(input, Some(&search_options)).await;
-    
     let structured_res: Vec<YouTubeAudio> = match res {
         Ok(results) => results.into_iter().filter_map(|result| {
             match result {
-                SearchResult::Video(video) => Some(YouTubeAudio{
-                    title: Some(video.title.clone()),
-                    thumbnail: video.thumbnails.first().map(|thumb| thumb.url.clone()),
-                    duration: Some(video.duration_raw.clone()),
-                    channel: Some(video.channel.name.clone()),
-                    views: Some(video.views.clone().to_string()),
-                    url: video.url.clone().to_string(),
-                }),
+                SearchResult::Video(video) => {
+                    let duration_minutes = meta_duration_to_minutes_raw(&video.duration_raw)?;
+                    if duration_minutes <= 420 {
+                        Some(YouTubeAudio {
+                            title: Some(video.title.clone()),
+                            thumbnail: video.thumbnails.first().map(|thumb| thumb.url.clone()),
+                            duration: Some(video.duration_raw.clone()),
+                            channel: Some(video.channel.name.clone()),
+                            views: Some(video.views.clone().to_string()),
+                            url: video.url.clone().to_string(),
+                        })
+                    } else {
+                        None
+                    }
+                },
                 _ => None,
             }
         }).collect(),
         Err(e) => return Err(e.to_string()),
     };
-    
     Ok(structured_res)
 }           
 
