@@ -12,6 +12,9 @@ import PlayBack from "./components/Playback";
 import { AudioProvider } from "./components/AudioContext";
 import { Transcoding } from "./pages/Transcoding";
 import CustomToast from "./components/CustomToast";
+import { ModifyTrimmer } from "./pages/modify/ModifyTrimmer";
+import { ModifyEffects } from "./pages/modify/ModifyEffects";
+import { Modify } from "./pages/modify/Modify";
 
 type AppProps = {
   children?: JSX.Element;
@@ -63,5 +66,7 @@ render(
       <Route path="/search" component={SearchPage} />
       <Route path="/transcoding" component={Transcoding} />
       <Route path="/playlist/:id" component={PlaylistPage} />
+      <Route path="/effect" component={ModifyEffects} />
+      <Route path="/trimmer" component={ModifyTrimmer} />
     </Router>), 
   document.getElementById("root") as HTMLElement);

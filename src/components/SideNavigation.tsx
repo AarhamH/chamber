@@ -12,6 +12,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { TextField, TextFieldInput } from "./TextField"
 import { toast } from "solid-sonner"
 import { TbRotate2 } from "solid-icons/tb"
+import { TbEditCircle } from "solid-icons/tb"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./Dropdown"
+import { TbWaveSine } from "solid-icons/tb"
+import { TbCut } from "solid-icons/tb" 
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
@@ -78,6 +82,22 @@ export const SideNavigation = () => {
           <TbRotate2 size={"1.4em"}/>
           <p>Transcoding</p>
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger as={Button} class="flex items-center gap-3 px-10">
+            <TbEditCircle size={"1.4em"}/>
+            <p>Modify</p>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent >
+            <DropdownMenuItem class="flex items-center gap-3" onClick={() => navigate("/effect")}>
+              <TbWaveSine size={"1.4em"}/>
+              <p>Effect</p>
+            </DropdownMenuItem>
+            <DropdownMenuItem class="flex items-center gap-3" onClick={() => navigate("/trimmer")}>
+              <TbCut size={"1.4em"}/>
+              <p>Trimmer</p>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>                    
         <div class="mt-10">
           <Dialog open={isAddPlaylistModalOpen()} onOpenChange={setIsAddPlaylistModalOpen}>
             <DialogTrigger class="w-full" as={Button} variant={"filled"}>(+) Add Playlist</DialogTrigger>
