@@ -103,20 +103,20 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 "--ffmpeg-location", ffmpeg,
                 &yt_audio.url,
             ];
-        let output = match timeout(Duration::from_secs(30), 
-            Command::new(command)
-            .args(&args)
-            .output()).await {
-            Ok(Ok(output)) => output,
-            Ok(Err(e)) => {
-                let _ = tx.send(Err(format!("Error: {}",e))).await;
-                return;
-            },
-            Err(_) => {
-                let _ = tx.send(Err(format!("Error: Download timed out"))).await;
-                return;
-            }
-        };
+            let output = match timeout(Duration::from_secs(300), 
+                Command::new(command)
+                .args(&args)
+                .output()).await {
+                Ok(Ok(output)) => output,
+                Ok(Err(e)) => {
+                    let _ = tx.send(Err(format!("Error: {}",e))).await;
+                    return;
+                },
+                Err(_) => {
+                    let _ = tx.send(Err(format!("Error: Download timed out"))).await;
+                    return;
+                }
+            };
             
             if !output.status.success() {
                 let stderr = String::from_utf8_lossy(&output.stderr);
