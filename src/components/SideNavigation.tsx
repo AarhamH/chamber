@@ -11,7 +11,9 @@ import chamberWhite from "~/assets/chamber_logo_white.svg"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
 import { TextField, TextFieldInput } from "./TextField"
 import { toast } from "solid-sonner"
-import { TbRotate2 } from "solid-icons/tb"
+import { TbRotate2, TbWaveSine } from "solid-icons/tb"
+import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./Dropdown"
+import { CgPiano } from "solid-icons/cg"
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
@@ -78,6 +80,19 @@ export const SideNavigation = () => {
           <TbRotate2 size={"1.4em"}/>
           <p>Transcoding</p>
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger as={Button} class="flex items-center gap-3 px-10">
+            <TbWaveSine size={"1.4em"}/>
+            <p>Compose  </p>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem class="flex gap-2" onClick={() => navigate("/compose/synthesizer")}>
+              <CgPiano size={"1.4em"}/>
+              Synthesizer
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>                    
         <div class="mt-10">
           <Dialog open={isAddPlaylistModalOpen()} onOpenChange={setIsAddPlaylistModalOpen}>
             <DialogTrigger class="w-full" as={Button} variant={"filled"}>(+) Add Playlist</DialogTrigger>
