@@ -12,7 +12,7 @@ import PlayBack from "./components/Playback";
 import { AudioProvider } from "./components/AudioContext";
 import { Transcoding } from "./pages/Transcoding";
 import CustomToast from "./components/CustomToast";
-import { Synthesizer } from "./pages/compose/SynthesizerPage";
+import SynthesizerPage from "./pages/compose/SynthesizerPage";
 
 type AppProps = {
   children?: JSX.Element;
@@ -64,6 +64,6 @@ render(
       <Route path="/search" component={SearchPage} />
       <Route path="/transcoding" component={Transcoding} />
       <Route path="/playlist/:id" component={PlaylistPage} />
-      <Route path="/compose/synthesizer" component={Synthesizer} />
+      <Route path="/compose/synthesizer" component={SynthesizerPage} />
     </Router>), 
   document.getElementById("root") as HTMLElement);
