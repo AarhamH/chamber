@@ -3,7 +3,7 @@ import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js"
 import ZoomPlugin from "wavesurfer.js/dist/plugins/zoom.esm.js"
 import Minimap from "wavesurfer.js/dist/plugins/minimap.esm.js"
-import audio from "../../../src-tauri/audio_store/Opeth_-_Moonlapse_Vertigo.mp3";
+import audioUrl from "../../../src-tauri/audio_store/Lenny_Kravitz_-_Fly_Away_(Official_Music_Video).mp3";
 import { useColorMode } from "@kobalte/core";
 import type { Region } from "wavesurfer.js/dist/plugins/regions.esm.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.esm.js"
@@ -14,6 +14,12 @@ import { BiRegularPause, BiRegularPlay } from "solid-icons/bi";
 import { AiFillBackward, AiFillForward } from "solid-icons/ai";
 import { BsCircle } from "solid-icons/bs";
 import { FaSolidCircle } from "solid-icons/fa";
+import { modifyAudioTrim, setModifyAudioTrim } from "~/store/store";
+import { AllAudioModal } from "~/components/table/AllAudioModal";
+import { Dialog, DialogTrigger } from "~/components/Dialog";
+import { Audio } from "~/utils/types";
+import { IoAdd } from "solid-icons/io";
+import { audio } from "~/store/store";
 
 export const ModifyTrimmer = () => {
   let container: HTMLDivElement | null = null;
@@ -38,8 +44,6 @@ export const ModifyTrimmer = () => {
       });
 
       const timeline = TimelinePlugin.create();
-      const audioObj = new Audio();
-      audioObj.src = audio;
 
       wavesurfer = WaveSurfer.create({
         container: container,
@@ -52,7 +56,6 @@ export const ModifyTrimmer = () => {
         barRadius: 100,
         dragToSeek: true,
         plugins: [regions(), timeline, minimap],
-        url: audio,
       });
 
       wavesurfer.setVolume(volume());
@@ -149,15 +152,10 @@ export const ModifyTrimmer = () => {
     }
   }
 
-  const waveFormVolume = (value: number) => {
-    if (wavesurfer) {
-      wavesurfer.setVolume(value);
-    }
-  }
-
-  const printstuff = () => {
-    console.log("activeRegion", activeRegion);
-    console.log("regions", regions().getRegions());
+  const secondsToMinutes = (seconds:number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds}`;
   }
 
   createEffect(() => {
@@ -187,27 +185,68 @@ export const ModifyTrimmer = () => {
   }, [activeRegion]);
   
 
+  const insertFromAllAudios = async (id: number) => {
+    try {
+      const foundAudio = audio.find((audio_item: Audio) => audio_item.id === id);
+      if (foundAudio) {
+        setModifyAudioTrim(foundAudio);
+      } else {
+        throw new Error("Audio not found");
+      }
+      return "Successfully added to transcoding queue";
+    } catch (error) {
+      return new Error(String(error));
+    }
+  };
+
+  createEffect(() => {
+    if (modifyAudioTrim && wavesurfer) {
+      const response = fetch(modifyAudioTrim.path)
+      console.log(response);  
+      wavesurfer.load(modifyAudioTrim.path);
+    }
+    
+  }, [modifyAudioTrim]);
+
   return (
     <div>
-      <div class="flex justify-center pt-20 text-4xl font-thin overflow-x-auto">Trimmer</div>
-      <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={el => container = el}></div>
-      <div class="flex flex-row items-center justify-center pt-5 gap-5">
-        <AiFillBackward size={"2em"} class="mb-2" onClick={waveFormBackward} />
-        {isPlaying() ? (
-          <BiRegularPause size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
-        ) : (
-          <BiRegularPlay size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
-        )}
-        <AiFillForward size={"2em"} class="mb-2" onClick={waveFormForward} />
-      </div>
-      {regionsContent().map((region) => (
-        <div class="flex flex-row items-center justify-center gap-5">
-          <FaSolidCircle size={"1.2em"} color={region.region.color} class="border-black" />
-          <span>{region.title}</span>
-          <span>{region.region.start}</span>
-          <Button class="w-20" onClick={() => region.region.play()}>Play</Button>
-        </div>
-      ))}
+      {
+        Object.keys(modifyAudioTrim).length !== 0 ? (
+          <div>
+            <div class="flex justify-center pt-20 text-4xl font-thin overflow-x-auto">Trimmer</div>
+            <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={el => container = el}></div>
+            <div class="flex flex-row items-center justify-center pt-5 gap-5">
+              <AiFillBackward size={"2em"} class="mb-2" onClick={waveFormBackward} />
+              {isPlaying() ? (
+                <BiRegularPause size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
+              ) : (
+                <BiRegularPlay size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
+              )}
+              <AiFillForward size={"2em"} class="mb-2" onClick={waveFormForward} />
+            </div>
+            {regionsContent().map((region) => (
+              <div class="flex flex-row items-center justify-center gap-5">
+                <FaSolidCircle size={"1.2em"} color={region.region.color} class="border-black" />
+                <span>{region.title}</span>
+                <span>Start:  {secondsToMinutes(region.region.start)}</span>
+                <span>End:  {secondsToMinutes(region.region.end)}</span>
+                <span>Duration:  {secondsToMinutes(region.region.end - region.region.start)}</span> 
+                <Button class="w-20" onClick={() => region.region.play()}>Play</Button>
+              </div>
+            ))}
+          </div>
+        ):(
+          <div>
+            <div class="flex flex-col items-center justify-center">
+              <div class="text-3xl font-thin">Welcome to the Trimmer</div>
+              <Dialog>
+                <DialogTrigger as={Button} class="mt-5 w-32 border-2 hover:bg-transparent hover:border-opacity-60" size={"sm"}>(+) Add Audio</DialogTrigger>
+                <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
+              </Dialog>
+            </div>
+          </div>
+        )
+      }
     </div>
   );
 };
