@@ -1,1 +1,1 @@
-pub const AUDIO_STORE: &str = "audio_store";
+pub const AUDIO_STORE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/audio_store");

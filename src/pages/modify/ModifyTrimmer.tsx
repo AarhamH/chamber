@@ -3,16 +3,13 @@ import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js"
 import ZoomPlugin from "wavesurfer.js/dist/plugins/zoom.esm.js"
 import Minimap from "wavesurfer.js/dist/plugins/minimap.esm.js"
-import audioUrl from "../../../src-tauri/audio_store/Lenny_Kravitz_-_Fly_Away_(Official_Music_Video).mp3";
 import { useColorMode } from "@kobalte/core";
 import type { Region } from "wavesurfer.js/dist/plugins/regions.esm.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.esm.js"
 import { Button } from "../../components/Button";
-
 import "../../App.css";
 import { BiRegularPause, BiRegularPlay } from "solid-icons/bi";
 import { AiFillBackward, AiFillForward } from "solid-icons/ai";
-import { BsCircle } from "solid-icons/bs";
 import { FaSolidCircle } from "solid-icons/fa";
 import { modifyAudioTrim, setModifyAudioTrim } from "~/store/store";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
@@ -20,24 +17,22 @@ import { Dialog, DialogTrigger } from "~/components/Dialog";
 import { Audio } from "~/utils/types";
 import { IoAdd } from "solid-icons/io";
 import { audio } from "~/store/store";
+import { invoke } from "@tauri-apps/api/tauri";
 
 export const ModifyTrimmer = () => {
-  let container: HTMLDivElement | null = null;
+  let container!: HTMLDivElement;
+  let actualContainer!: HTMLDivElement;
   let wavesurfer: WaveSurfer;
   const [isPlaying, setIsPlaying] = createSignal(false);
   const [volume, setVolume] = createSignal(0.5);
   let activeRegion: Region | null = null;
   const { colorMode } = useColorMode();
   const [regionCount, setRegionCount] = createSignal(0);
-  const [regions, setRegions] = createSignal<RegionsPlugin>(RegionsPlugin.create());
+  const regions = RegionsPlugin.create();
   const [regionsContent, setRegionsContent] = createSignal<{title:string, region: Region}[]>([]);
 
   onMount(() => {
     try {
-      if (!container) {
-        throw new Error("Container element not found");
-      }
-
       const minimap = Minimap.create({
         height: 20,
         dragToSeek: true,
@@ -47,6 +42,7 @@ export const ModifyTrimmer = () => {
 
       wavesurfer = WaveSurfer.create({
         container: container,
+        autoCenter: true,
         height: 100,
         waveColor: colorMode() == "dark" ? "white" : "black",
         progressColor: "#C2C0C0",
@@ -55,7 +51,7 @@ export const ModifyTrimmer = () => {
         barWidth: 1,
         barRadius: 100,
         dragToSeek: true,
-        plugins: [regions(), timeline, minimap],
+        plugins: [regions, timeline, minimap],
       });
 
       wavesurfer.setVolume(volume());
@@ -87,7 +83,7 @@ export const ModifyTrimmer = () => {
 
   createEffect(() => {
     if (wavesurfer) {
-      regions().on("region-created", (region) => {
+      regions.on("region-created", (region) => {
         setRegionCount(regionsCount => regionsCount + 1);
         if (activeRegion) {
           activeRegion.remove();
@@ -98,7 +94,7 @@ export const ModifyTrimmer = () => {
         setRegionsContent([...regionsContent(), {title: `Region ${regionCount()}`, region} ]);
       });
 
-      regions().on("region-updated", (region) => {
+      regions.on("region-updated", (region) => {
         setRegionsContent(regionsContent().map(regionContent => {
           if (regionContent.region === region) {
             return {title: regionContent.title, region}
@@ -107,11 +103,11 @@ export const ModifyTrimmer = () => {
         }))
       });
 
-      regions().on("region-in", (region) => {
+      regions.on("region-in", (region) => {
         activeRegion = region;
       });
 
-      regions().on("region-out", (region) => {
+      regions.on("region-out", (region) => {
         if (activeRegion === region) {
           activeRegion = null;
         }
@@ -120,11 +116,11 @@ export const ModifyTrimmer = () => {
       const random = (min: number, max: number) => Math.random() * (max - min) + min;
       const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
-      regions().enableDragSelection({
+      regions.enableDragSelection({
         color: "rgba(2555, 0, 0, 0.4)",
       });
 
-      regions().on("region-clicked", (region, e) => {
+      regions.on("region-clicked", (region, e) => {
         e.stopPropagation(); // prevent triggering a click on the waveform
         activeRegion = region;
         region.play();
@@ -183,6 +179,14 @@ export const ModifyTrimmer = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [activeRegion]);
+
+  createEffect(() => {
+    if(Object.keys(modifyAudioTrim).length !== 0) {
+      wavesurfer.setOptions({
+        container: actualContainer,
+      })
+    }
+  })
   
 
   const insertFromAllAudios = async (id: number) => {
@@ -193,28 +197,57 @@ export const ModifyTrimmer = () => {
       } else {
         throw new Error("Audio not found");
       }
-      return "Successfully added to transcoding queue";
+      return "Successfully added to trimmer";
     } catch (error) {
       return new Error(String(error));
     }
   };
 
-  createEffect(() => {
+  createEffect(async () => {
     if (modifyAudioTrim && wavesurfer) {
-      const response = fetch(modifyAudioTrim.path)
-      console.log(response);  
-      wavesurfer.load(modifyAudioTrim.path);
+      const audioData: string = await invoke("read_audio_buffer", { filePath: modifyAudioTrim.path });
+      // Decode the base64 string to binary
+      const byteCharacters = atob(audioData);
+      const byteNumbers = new Array(byteCharacters.length);
+      
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const getMimeType = (format: string): string => {
+        switch (format.toLowerCase()) {
+          case "mp3":
+            return "audio/mp3";
+          case "opus":
+            return "audio/opus";
+          case "ogg":
+            return "audio/ogg";
+          case "flac":
+            return "audio/flac";
+          case "m4a":
+            return "audio/m4a";
+          case "m4b":
+            return "audio/m4b";
+          default:
+            throw new Error("Unsupported audio format");
+        }
+      };
+      const mimeType = getMimeType(modifyAudioTrim.audio_type);        
+      // Create a Blob from the Uint8Array
+      const audioBlob = new Blob([byteArray], { type: mimeType });
+   
+      wavesurfer.loadBlob(audioBlob);
+
     }
-    
   }, [modifyAudioTrim]);
 
   return (
-    <div>
+    <div ref={container}>
       {
         Object.keys(modifyAudioTrim).length !== 0 ? (
           <div>
-            <div class="flex justify-center pt-20 text-4xl font-thin overflow-x-auto">Trimmer</div>
-            <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={el => container = el}></div>
+            <div class="flex justify-center pt-20 text-4xl font-thin">Trimmer</div>
+            <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={actualContainer}></div>
             <div class="flex flex-row items-center justify-center pt-5 gap-5">
               <AiFillBackward size={"2em"} class="mb-2" onClick={waveFormBackward} />
               {isPlaying() ? (
