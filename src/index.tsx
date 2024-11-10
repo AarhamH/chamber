@@ -14,7 +14,6 @@ import { Transcoding } from "./pages/Transcoding";
 import CustomToast from "./components/CustomToast";
 import { ModifyTrimmer } from "./pages/modify/ModifyTrimmer";
 import { ModifyEffects } from "./pages/modify/ModifyEffects";
-import { Modify } from "./pages/modify/Modify";
 
 type AppProps = {
   children?: JSX.Element;
@@ -43,7 +42,7 @@ const App = (props: AppProps) => {
               <div class="flex-shrink-0 w-48">
                 <SideNavigation />
               </div>
-              <div class="flex-1 max-h-screen overflow-x-hidden overflow-y-auto" ref={scrollContainerRef}>
+              <div class="flex-1 max-h-full overflow-x-hidden overflow-y-auto" ref={scrollContainerRef}>
                 {props.children}
               </div>
             </div>

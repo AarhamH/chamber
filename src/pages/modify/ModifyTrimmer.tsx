@@ -8,14 +8,14 @@ import type { Region } from "wavesurfer.js/dist/plugins/regions.esm.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.esm.js"
 import { Button } from "../../components/Button";
 import "../../App.css";
-import { BiRegularPause, BiRegularPlay } from "solid-icons/bi";
+import { BiRegularLoaderCircle, BiRegularPause, BiRegularPlay } from "solid-icons/bi";
 import { AiFillBackward, AiFillForward } from "solid-icons/ai";
 import { FaSolidCircle } from "solid-icons/fa";
 import { modifyAudioTrim, setModifyAudioTrim } from "~/store/store";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
 import { Dialog, DialogTrigger } from "~/components/Dialog";
 import { Audio } from "~/utils/types";
-import { IoAdd } from "solid-icons/io";
+import { IoAdd, IoRemoveCircleOutline } from "solid-icons/io";
 import { audio } from "~/store/store";
 import { invoke } from "@tauri-apps/api/tauri";
 
@@ -24,7 +24,7 @@ export const ModifyTrimmer = () => {
   let actualContainer!: HTMLDivElement;
   let wavesurfer: WaveSurfer;
   const [isPlaying, setIsPlaying] = createSignal(false);
-  const [volume, setVolume] = createSignal(0.5);
+  const [isWaveSurferLoading, setIsWaveSurferLoading] = createSignal(true);
   let activeRegion: Region | null = null;
   const { colorMode } = useColorMode();
   const [regionCount, setRegionCount] = createSignal(0);
@@ -43,7 +43,7 @@ export const ModifyTrimmer = () => {
       wavesurfer = WaveSurfer.create({
         container: container,
         autoCenter: true,
-        height: 100,
+        height: 200,
         waveColor: colorMode() == "dark" ? "white" : "black",
         progressColor: "#C2C0C0",
         cursorWidth: 3,
@@ -53,8 +53,6 @@ export const ModifyTrimmer = () => {
         dragToSeek: true,
         plugins: [regions, timeline, minimap],
       });
-
-      wavesurfer.setVolume(volume());
 
       wavesurfer.on("play", () => {
         setIsPlaying(true);
@@ -68,6 +66,13 @@ export const ModifyTrimmer = () => {
       wavesurfer.on("interaction", () => {
         activeRegion = null;
       });
+
+      wavesurfer.on("ready", () => {
+        setIsWaveSurferLoading(false);
+      })
+      wavesurfer.on("loading", () => {
+        setIsWaveSurferLoading(true);
+      })
 
       wavesurfer.registerPlugin(
         ZoomPlugin.create({
@@ -154,6 +159,11 @@ export const ModifyTrimmer = () => {
     return `${minutes}:${remainingSeconds}`;
   }
 
+  const deleteRegion = (region: Region) => {
+    setRegionsContent(regionsContent().filter(regionContent => regionContent.region !== region));
+    region.remove();
+  }
+
   createEffect(() => {
     if (wavesurfer) {
       wavesurfer.setOptions({
@@ -187,7 +197,6 @@ export const ModifyTrimmer = () => {
       })
     }
   })
-  
 
   const insertFromAllAudios = async (id: number) => {
     try {
@@ -204,7 +213,7 @@ export const ModifyTrimmer = () => {
   };
 
   createEffect(async () => {
-    if (modifyAudioTrim && wavesurfer) {
+    if (Object.keys(modifyAudioTrim).length !== 0 && wavesurfer) {
       const audioData: string = await invoke("read_audio_buffer", { filePath: modifyAudioTrim.path });
       // Decode the base64 string to binary
       const byteCharacters = atob(audioData);
@@ -228,45 +237,55 @@ export const ModifyTrimmer = () => {
             return "audio/m4a";
           case "m4b":
             return "audio/m4b";
+          case "wav":
+            return "audio/wav";
           default:
             throw new Error("Unsupported audio format");
         }
-      };
+      }
       const mimeType = getMimeType(modifyAudioTrim.audio_type);        
-      // Create a Blob from the Uint8Array
       const audioBlob = new Blob([byteArray], { type: mimeType });
    
       wavesurfer.loadBlob(audioBlob);
-
     }
   }, [modifyAudioTrim]);
 
   return (
-    <div ref={container}>
+    <div class="h-full" ref={container}>
       {
         Object.keys(modifyAudioTrim).length !== 0 ? (
-          <div>
+          <div class="h-full">
             <div class="flex justify-center pt-20 text-4xl font-thin">Trimmer</div>
-            <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={actualContainer}></div>
-            <div class="flex flex-row items-center justify-center pt-5 gap-5">
-              <AiFillBackward size={"2em"} class="mb-2" onClick={waveFormBackward} />
-              {isPlaying() ? (
-                <BiRegularPause size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
-              ) : (
-                <BiRegularPlay size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
+            <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={actualContainer}/>
+            
+            <div class="flex flex-row items-center justify-center pt-5 pb-5 gap-5">
+              {isWaveSurferLoading() ? (
+                <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} />
+              ): (
+                <div class="flex flex-row items-center justify-center pt-5 gap-5">
+                  <AiFillBackward size={"2em"} class="mb-2" onClick={waveFormBackward} />
+                  {isPlaying() ? (
+                    <BiRegularPause size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
+                  ) : (
+                    <BiRegularPlay size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
+                  )}
+                  <AiFillForward size={"2em"} class="mb-2" onClick={waveFormForward} />
+                </div>
               )}
-              <AiFillForward size={"2em"} class="mb-2" onClick={waveFormForward} />
             </div>
-            {regionsContent().map((region) => (
-              <div class="flex flex-row items-center justify-center gap-5">
-                <FaSolidCircle size={"1.2em"} color={region.region.color} class="border-black" />
-                <span>{region.title}</span>
-                <span>Start:  {secondsToMinutes(region.region.start)}</span>
-                <span>End:  {secondsToMinutes(region.region.end)}</span>
-                <span>Duration:  {secondsToMinutes(region.region.end - region.region.start)}</span> 
-                <Button class="w-20" onClick={() => region.region.play()}>Play</Button>
-              </div>
-            ))}
+            <div class="p-5 border-2 overflow-auto h-1/2">
+              {regionsContent().map((region) => (
+                <div class="flex flex-row items-center justify-evenly p-2 mb-4 border-b">
+                  <FaSolidCircle size={"1.2em"} color={region.region.color} />
+                  <span>{region.title}</span>
+                  <span>Start: {secondsToMinutes(region.region.start)}</span>
+                  <span>End: {secondsToMinutes(region.region.end)}</span>
+                  <span>Duration: {secondsToMinutes(region.region.end - region.region.start)}</span>
+                  <Button size={"sm"} class="w-20" onClick={() => region.region.play()}>Play</Button>
+                  <IoRemoveCircleOutline class="hover:cursor-pointer" size={"1.5em"} onClick={() => deleteRegion(region.region)} />
+                </div>
+              ))}
+            </div>
           </div>
         ):(
           <div>
