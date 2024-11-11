@@ -19,6 +19,7 @@ import { IoAdd, IoRemoveCircleOutline } from "solid-icons/io";
 import { audio } from "~/store/store";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BsPlus } from "solid-icons/bs";
+import { toast } from "solid-sonner";
 
 export const ModifyTrimmer = () => {
   let container!: HTMLDivElement;
@@ -166,10 +167,19 @@ export const ModifyTrimmer = () => {
   }
 
   const trimSingleAudio = async (region: Region) => {
+    const argument = {
+      fileName: modifyAudioTrim.title,
+      filePath: modifyAudioTrim.path,
+      start: region.start,
+      end: region.end,
+      fileType: modifyAudioTrim.audio_type,
+    }
     try {
-      await invoke("trim_single_audio",{fileName: modifyAudioTrim.title, filePath: modifyAudioTrim.path, start: region.start, end: region.end, fileType: modifyAudioTrim.audio_type});
+      await invoke("trim_single_audio", argument);
+      regions.getRegions().forEach(region_item => deleteRegion(region_item));
+      return "Successfully trimmed audio";
     } catch (error) {
-      console.log(error);
+      return new Error(String(error));
     }
   }
 
@@ -300,7 +310,16 @@ export const ModifyTrimmer = () => {
                   <span>End: {secondsToMinutes(region.region.end)}</span>
                   <span>Duration: {secondsToMinutes(region.region.end - region.region.start)}</span>
                   <Button size={"sm"} class="w-20" onClick={() => region.region.play()}>Play</Button>
-                  <Button size={"sm"} class="w-20" onClick={() => trimSingleAudio(region.region)}>Trim</Button>
+                  <Button 
+                    size={"sm"} 
+                    class="w-20"
+                    onClick={() => 
+                    {trimSingleAudio(region.region).then(result => {
+                      const isError = result instanceof Error;
+                      (() => isError ? toast.error(result.message) : toast.success(result))();
+                    })}}>
+                    Trim
+                  </Button>
                   <IoRemoveCircleOutline class="hover:cursor-pointer" size={"1.5em"} onClick={() => deleteRegion(region.region)} />
                 </div>
               ))}

@@ -1,10 +1,15 @@
 use std::process::Command;
 
+use diesel::prelude::*;
+use diesel::SqliteConnection;
 use crate::binary_path_gen::FFMPEG_NO_EXT_PATH;
 use crate::binary_path_gen::FFMPEG_PATH;
+use crate::db::establish_connection;
 use crate::helper::constants::AUDIO_STORE;
 pub use crate::helper::files::{create_audio_store_directory, construct_output_path};
-pub use crate::helper::tools::seconds_to_hh_mm_ss;
+pub use crate::helper::tools::{seconds_to_minutes,seconds_to_hh_mm_ss};
+use crate::models::audio_model::NewAudio;
+use crate::schema::audio::dsl::*;
 
 #[tauri::command]
 pub async fn trim_single_audio(file_name:String, file_path:String, start:f64, end:f64, file_type:String) -> Result<(), String> {  
@@ -40,9 +45,27 @@ pub async fn trim_single_audio(file_name:String, file_path:String, start:f64, en
       .expect("Failed to execute command");
 
     if !output.status.success() {
-        println!("{:?}", output);
         return Err("Failed to trim audio".to_string());
     }
 
-    Ok(())
+
+    let mut connection: SqliteConnection = establish_connection();
+    let new_audio: NewAudio<'_> = NewAudio {
+        title: &base_file_name,
+        author: "Unknown",
+        path: &destination_path.to_str().unwrap(),
+        duration: &seconds_to_minutes(length as u64),
+        audio_type: &file_type,
+    };
+
+    let result: Result<usize, diesel::result::Error> = diesel::insert_into(audio)
+        .values(&new_audio)
+        .execute(&mut connection);
+
+    match result{
+        Ok(_) => Ok(()),
+        Err(e) => {
+            return Err(format!("Error: Could not add audio entry to database: {}", e));
+        }
+    }
 }
