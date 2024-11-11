@@ -73,6 +73,10 @@
     --ring: 240 5.9% 10%;
 
     --radius: 0.5rem;
+
+    ::-webkit-media-controls-panel {
+      background-color: hsl(0, 0%, 100%);    
+    }
   }
 
   .dark,
@@ -121,6 +125,10 @@
     --ring: 240 4.9% 83.9%;
 
     --radius: 0.5rem;
+  
+    ::-webkit-media-controls-panel {
+      background-color: hsl(240, 10%, 3.9%);    
+    }
   }
 }
 
