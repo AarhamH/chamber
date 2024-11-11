@@ -2,13 +2,13 @@ import { BiRegularPlay, BiRegularPause } from "solid-icons/bi";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
 import { BiRegularVolumeFull } from "solid-icons/bi";
 import { useAudio } from "./AudioContext";
-import { TbMoon } from "solid-icons/tb"
+import { TbArrowsShuffle, TbMoon, TbRepeat, TbRepeatOnce } from "solid-icons/tb"
 import { TbSun } from "solid-icons/tb"
 import { useColorMode } from "@kobalte/core";
 import { Button } from "./Button";
 
 const PlayBack = () => {
-  const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange } = useAudio();
+  const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange, togglePlaybackMode, playbackStatus } = useAudio();
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -33,7 +33,7 @@ const PlayBack = () => {
         </div>
       </div>
       <div class="w-3/5 p-2 flex flex-col items-center justify-center">
-        <div class="flex flex-row items-center justify-center space-x-4">
+        <div class="flex flex-row items-center justify-between space-x-4">
           <AiFillStepBackward size={"1.5em"} onClick={handleSkipBackward} />
           {isAudioPlaying() ? (
             <BiRegularPause size={"2em"} onClick={togglePlay} />
@@ -42,7 +42,7 @@ const PlayBack = () => {
           )}
           <AiFillStepForward size={"1.5em"} onClick={handleSkipForward} />
         </div>
-        <div class="flex items-center w-full">
+        <div class="flex items-center w-3/4">
           <span class="text-sm mr-2 w-12 text-right">
             {formatTime(trackProgress())}
           </span>
@@ -57,6 +57,10 @@ const PlayBack = () => {
           <span class="text-sm ml-2 w-12 text-left">
             {formatTime(audioDuration())}
           </span>
+          <div class="hover:cursor-pointer" onClick={togglePlaybackMode}>
+            {playbackStatus() === "shuffle" ? 
+              <TbArrowsShuffle size={"1em"} /> : playbackStatus() === "repeat" ? <TbRepeatOnce size={"1em"} /> : <TbRepeat size={"1em"} />}
+          </div>
         </div>
       </div>
       <div class="w-1/5 p-2 flex flex-row justify-start items-center">

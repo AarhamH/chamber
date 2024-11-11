@@ -19,6 +19,8 @@ interface AudioContextType {
   handleVolumeChange: (event: Event) => void;
   // eslint-disable-next-line no-unused-vars
   setActiveAudio: (audio_item: Audio) => void;
+  togglePlaybackMode: () => void;
+  playbackStatus: () => string;
 }
 
 const AudioContext = createContext<AudioContextType>();
@@ -33,6 +35,8 @@ export const AudioProvider  = (props: ParentProps) => {
   const [loading, setLoading] = createSignal(false);
   const [activeAudio, setActiveAudio] = createSignal<Audio>({} as Audio);
   const [activePlaylist, setActivePlaylist] = createSignal<Audio[]>([]);
+
+  const [playbackStatus, setPlaybackStatus] = createSignal("default");
 
   createEffect(async () => {
     if(activeAudio) {
@@ -78,7 +82,14 @@ export const AudioProvider  = (props: ParentProps) => {
           });
           
           audioRef.addEventListener("ended", () => {
-            handleSkipForward();
+            if(playbackStatus() === "shuffle") {
+              handleRandomSkip();
+            } else if(playbackStatus() === "repeat") {
+              audioRef.currentTime = 0;
+              audioRef.play();
+            } else {
+              handleSkipForward();
+            }
           });
           
           audioRef.addEventListener("timeupdate", () => {
@@ -113,6 +124,10 @@ export const AudioProvider  = (props: ParentProps) => {
     }
   };
 
+  const togglePlaybackMode = () => {
+    setPlaybackStatus(playbackStatus() === "default" ? "shuffle" : playbackStatus() === "shuffle" ? "repeat" : "default");
+  }
+
   const handleSkipForward = () => {
     if (audioRef && activeAudio && activePlaylist) {
       let index = activePlaylist().findIndex((audio_item) => audio_item.id === activeAudio()?.id);
@@ -129,6 +144,13 @@ export const AudioProvider  = (props: ParentProps) => {
     }
   };
 
+  const handleRandomSkip = () => {
+    if (audioRef && activeAudio() && activePlaylist) {
+      const index = Math.floor(Math.random() * activePlaylist().length);
+      setActiveAudio(activePlaylist()[index]); 
+    }
+  }
+
   const handleTrackChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (audioRef) {
@@ -144,7 +166,21 @@ export const AudioProvider  = (props: ParentProps) => {
   };
 
   return (
-    <AudioContext.Provider value={{ activeAudio, loading, audioUrl, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange, setActiveAudio}}>
+    <AudioContext.Provider value={{ 
+      activeAudio, 
+      loading, 
+      audioUrl, 
+      trackProgress, 
+      isAudioPlaying, 
+      audioDuration, 
+      togglePlay, 
+      handleSkipForward, 
+      handleSkipBackward, 
+      handleTrackChange, 
+      handleVolumeChange, 
+      setActiveAudio, 
+      togglePlaybackMode,
+      playbackStatus}}>
       <audio ref={audioRef} src={audioUrl()} id="audio"/>
       {props.children}
     </AudioContext.Provider>
