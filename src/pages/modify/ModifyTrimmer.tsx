@@ -257,8 +257,6 @@ export const ModifyTrimmer = () => {
             return "audio/m4a";
           case "m4b":
             return "audio/m4b";
-          case "wav":
-            return "audio/wav";
           default:
             throw new Error("Unsupported audio format");
         }
