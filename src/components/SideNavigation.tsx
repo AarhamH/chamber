@@ -5,14 +5,13 @@ import { Playlist } from "~/utils/types"
 import { useNavigate } from "@solidjs/router"
 import { playlists, setPlaylists } from "~/store/store"
 import { BiRegularHomeAlt2 } from "solid-icons/bi"
-import { FaRegularFolderOpen } from "solid-icons/fa"
+import { FaRegularFolderOpen, FaSolidMicrophone } from "solid-icons/fa"
 import { IoSearchOutline } from "solid-icons/io"
 import chamberWhite from "~/assets/chamber_logo_white.svg"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
 import { TextField, TextFieldInput } from "./TextField"
 import { toast } from "solid-sonner"
 import { TbRotate2 } from "solid-icons/tb"
-import { TbEditCircle } from "solid-icons/tb"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./Dropdown"
 import { TbWaveSine } from "solid-icons/tb"
 import { TbCut } from "solid-icons/tb" 
@@ -84,15 +83,15 @@ export const SideNavigation = () => {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger as={Button} class="flex items-center gap-3 px-10">
-            <TbEditCircle size={"1.4em"}/>
-            <p>Modify</p>
+            <TbWaveSine size={"1.4em"}/>
+            <p>Waveform</p>
           </DropdownMenuTrigger>
           <DropdownMenuContent >
-            <DropdownMenuItem class="flex items-center gap-3" onClick={() => navigate("/effect")}>
-              <TbWaveSine size={"1.4em"}/>
-              <p>Effect</p>
+            <DropdownMenuItem class="flex items-center gap-3" onClick={() => navigate("/wave/effect")}>
+              <FaSolidMicrophone size={"1.4em"}/>
+              <p>Recorder</p>
             </DropdownMenuItem>
-            <DropdownMenuItem class="flex items-center gap-3" onClick={() => navigate("/trimmer")}>
+            <DropdownMenuItem class="flex items-center gap-3" onClick={() => navigate("/wave/trimmer")}>
               <TbCut size={"1.4em"}/>
               <p>Trimmer</p>
             </DropdownMenuItem>

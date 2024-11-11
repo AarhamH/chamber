@@ -21,7 +21,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { BsPlus } from "solid-icons/bs";
 import { toast } from "solid-sonner";
 
-export const ModifyTrimmer = () => {
+export const WaveTrimmer = () => {
   let container!: HTMLDivElement;
   let actualContainer!: HTMLDivElement;
   let wavesurfer: WaveSurfer;
@@ -48,9 +48,8 @@ export const ModifyTrimmer = () => {
         waveColor: colorMode() == "dark" ? "white" : "black",
         progressColor: "#C2C0C0",
         cursorWidth: 3,
-        barGap: 7,
-        barWidth: 1,
-        barRadius: 100,
+        barWidth: 3,
+        barRadius:3,
         dragToSeek: true,
         plugins: [regions, timeline, minimap],
       });

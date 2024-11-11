@@ -5,7 +5,7 @@ import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
 import { Button } from "~/components/Button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/Dropdown";
 
-export const ModifyEffects = () => {
+export const WaveRecorder = () => {
   let container!: HTMLDivElement;
   let wavesurfer!: WaveSurfer;
   let record!: RecordPlugin;
