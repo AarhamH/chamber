@@ -18,6 +18,7 @@ import { Audio } from "~/utils/types";
 import { IoAdd, IoRemoveCircleOutline } from "solid-icons/io";
 import { audio } from "~/store/store";
 import { invoke } from "@tauri-apps/api/tauri";
+import { BsPlus } from "solid-icons/bs";
 
 export const ModifyTrimmer = () => {
   let container!: HTMLDivElement;
@@ -43,7 +44,6 @@ export const ModifyTrimmer = () => {
       wavesurfer = WaveSurfer.create({
         container: container,
         autoCenter: true,
-        height: 200,
         waveColor: colorMode() == "dark" ? "white" : "black",
         progressColor: "#C2C0C0",
         cursorWidth: 3,
@@ -153,15 +153,24 @@ export const ModifyTrimmer = () => {
     }
   }
 
-  const secondsToMinutes = (seconds:number) => {
-    const minutes = Math.floor(seconds / 60);
+  const secondsToMinutes = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds}`;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
   }
 
   const deleteRegion = (region: Region) => {
     setRegionsContent(regionsContent().filter(regionContent => regionContent.region !== region));
     region.remove();
+  }
+
+  const trimSingleAudio = async (region: Region) => {
+    try {
+      await invoke("trim_single_audio",{fileName: modifyAudioTrim.title, filePath: modifyAudioTrim.path, start: region.start, end: region.end, fileType: modifyAudioTrim.audio_type});
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   createEffect(() => {
@@ -206,6 +215,7 @@ export const ModifyTrimmer = () => {
       } else {
         throw new Error("Audio not found");
       }
+      regions.getRegions().forEach(region => deleteRegion(region));
       return "Successfully added to trimmer";
     } catch (error) {
       return new Error(String(error));
@@ -255,7 +265,8 @@ export const ModifyTrimmer = () => {
       {
         Object.keys(modifyAudioTrim).length !== 0 ? (
           <div class="h-full">
-            <div class="flex justify-center pt-20 text-4xl font-thin">Trimmer</div>
+            <div class="flex justify-center pt-28 text-4xl font-thin">Trimmer</div>
+            <div class="flex justify-center text-2xl font-thin">{modifyAudioTrim.title}</div>
             <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={actualContainer}/>
             
             <div class="flex flex-row items-center justify-center pt-5 pb-5 gap-5">
@@ -270,10 +281,17 @@ export const ModifyTrimmer = () => {
                     <BiRegularPlay size={"2.2em"} class="mb-2" onClick={waveFormPlay} />
                   )}
                   <AiFillForward size={"2em"} class="mb-2" onClick={waveFormForward} />
+         
+                  <Dialog>
+                    <DialogTrigger class="flex items-center justify-center">
+                      <BsPlus size={"2em"} class="mb-2 hover:cursor-pointer" />
+                    </DialogTrigger>
+                    <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
+                  </Dialog>
                 </div>
               )}
             </div>
-            <div class="p-5 border-2 overflow-auto h-1/2">
+            <div class="p-5 ml-48 mr-48 border-2 overflow-auto h-1/3">
               {regionsContent().map((region) => (
                 <div class="flex flex-row items-center justify-evenly p-2 mb-4 border-b">
                   <FaSolidCircle size={"1.2em"} color={region.region.color} />
@@ -282,6 +300,7 @@ export const ModifyTrimmer = () => {
                   <span>End: {secondsToMinutes(region.region.end)}</span>
                   <span>Duration: {secondsToMinutes(region.region.end - region.region.start)}</span>
                   <Button size={"sm"} class="w-20" onClick={() => region.region.play()}>Play</Button>
+                  <Button size={"sm"} class="w-20" onClick={() => trimSingleAudio(region.region)}>Trim</Button>
                   <IoRemoveCircleOutline class="hover:cursor-pointer" size={"1.5em"} onClick={() => deleteRegion(region.region)} />
                 </div>
               ))}

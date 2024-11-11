@@ -26,5 +26,6 @@ pub mod commands {
     }
     pub mod processing {
       pub mod transcode;
+      pub mod trimming;
     }
 }

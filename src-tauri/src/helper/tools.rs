@@ -5,6 +5,14 @@ pub fn seconds_to_minutes(seconds: u64) -> String {
     res
 }
 
+pub fn seconds_to_hh_mm_ss(seconds: u64) -> String {
+    let hours: u64 = seconds / 3600;
+    let minutes: u64 = (seconds % 3600) / 60;
+    let seconds: u64 = seconds % 60;
+    let res: String = format!("{:02}:{:02}:{:02}", hours, minutes, seconds);
+    res
+}
+
 pub fn meta_duration_to_minutes(meta_dur: String) -> String {
     let mut minutes: i32 = 0;
     let mut seconds: i32 = 0;
@@ -24,6 +32,7 @@ pub fn meta_duration_to_minutes(meta_dur: String) -> String {
     format!("{:02}:{:02}", minutes, seconds)
 }
 
+// used by the youtube web parser
 pub fn meta_duration_to_minutes_raw(duration_str: &str) -> Option<u64> {
     let re = regex::Regex::new(r"(?:(\d+):)?(\d+):(\d+)").unwrap();
     if let Some(captures) = re.captures(duration_str) {
@@ -35,6 +44,7 @@ pub fn meta_duration_to_minutes_raw(duration_str: &str) -> Option<u64> {
         None
     }
 }
+
 
 pub fn trim_number(input: &str) -> String {
     // turn a number like 2123213123 to 2.12B
