@@ -271,11 +271,11 @@ export const ModifyTrimmer = () => {
   }, [modifyAudioTrim]);
 
   return (
-    <div class="h-full" ref={container}>
+    <div class="flex items-center justify-center h-full w-full" ref={container}>
       {
         Object.keys(modifyAudioTrim).length !== 0 ? (
-          <div class="h-full">
-            <div class="flex justify-center pt-28 text-4xl font-thin">Trimmer</div>
+          <div class="h-full w-full">
+            <div class="flex justify-center pt-10 text-4xl font-thin">Trimmer</div>
             <div class="flex justify-center text-2xl font-thin">{modifyAudioTrim.title}</div>
             <div class="mt-16 pl-16 pr-16 overflow-x-visible" ref={actualContainer}/>
             
