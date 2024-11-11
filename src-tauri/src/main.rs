@@ -6,6 +6,7 @@ use chamber::commands::playlist_commands::*;
 use chamber::commands::playlist_audio_commands::*;
 use chamber::commands::youtube::youtube_commands::*;
 use chamber::commands::processing::transcode::*;
+use chamber::commands::processing::trimming::*;
 use chamber::db;
 fn main() {
     tauri::Builder::default()
@@ -27,7 +28,8 @@ fn main() {
             youtube_search,
             youtube_suggestion,
             download_audio,
-            transcode_audio
+            transcode_audio,
+            trim_single_audio,
          ])
         .setup(|_app| {
             db::init();

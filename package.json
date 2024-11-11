@@ -29,13 +29,15 @@
     "solid-js": "^1.7.8",
     "solid-sonner": "^0.2.8",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "wavesurfer.js": "^7.8.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@stylistic/eslint-plugin": "^2.6.4",
     "@tauri-apps/cli": "^1.6.2",
     "@types/node": "^22.4.0",
+    "@types/wavesurfer.js": "^6.0.12",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.9.0",
     "globals": "^15.9.0",

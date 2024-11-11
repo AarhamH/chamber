@@ -12,6 +12,8 @@ import PlayBack from "./components/Playback";
 import { AudioProvider } from "./components/AudioContext";
 import { Transcoding } from "./pages/Transcoding";
 import CustomToast from "./components/CustomToast";
+import { ModifyTrimmer } from "./pages/modify/ModifyTrimmer";
+import { ModifyEffects } from "./pages/modify/ModifyEffects";
 
 type AppProps = {
   children?: JSX.Element;
@@ -40,7 +42,7 @@ const App = (props: AppProps) => {
               <div class="flex-shrink-0 w-48">
                 <SideNavigation />
               </div>
-              <div class="flex-1 max-h-screen overflow-x-hidden overflow-y-auto" ref={scrollContainerRef}>
+              <div class="flex-1 max-h-full overflow-x-hidden overflow-y-auto" ref={scrollContainerRef}>
                 {props.children}
               </div>
             </div>
@@ -63,5 +65,7 @@ render(
       <Route path="/search" component={SearchPage} />
       <Route path="/transcoding" component={Transcoding} />
       <Route path="/playlist/:id" component={PlaylistPage} />
+      <Route path="/effect" component={ModifyEffects} />
+      <Route path="/trimmer" component={ModifyTrimmer} />
     </Router>), 
   document.getElementById("root") as HTMLElement);
