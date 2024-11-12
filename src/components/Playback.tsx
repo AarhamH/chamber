@@ -1,17 +1,27 @@
 import { useColorMode } from "@kobalte/core";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
-import { BiRegularPlay, BiRegularPause, BiRegularVolumeFull} from "solid-icons/bi";
+import { BiRegularPlay, BiRegularPause, BiRegularVolumeFull, BiRegularLoaderCircle} from "solid-icons/bi";
 import { TbArrowsShuffle, TbMoon, TbRepeat, TbRepeatOnce, TbSun } from "solid-icons/tb"
 import { Button } from "~/components/solidui/Button";
 import { useAudio } from "~/components/AudioContext";
-const PlayBack = () => {
-  const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange, togglePlaybackMode, playbackStatus } = useAudio();
+import { formatTime } from "~/utils/format";
 
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
-  };
+export const PlayBack = () => {
+  /* States and references */
+  const { 
+    activeAudio, 
+    loading, 
+    trackProgress, 
+    isAudioPlaying, 
+    audioDuration, 
+    togglePlay, 
+    handleSkipForward, 
+    handleSkipBackward, 
+    handleTrackChange, 
+    handleVolumeChange, 
+    togglePlaybackMode, 
+    playbackStatus 
+  } = useAudio();
 
   const { colorMode, setColorMode } = useColorMode();
 
@@ -19,8 +29,8 @@ const PlayBack = () => {
     <div class="bg-playback h-20 flex items-center">
       <div class="w-1/5 ml-16 h-full p-2 flex flex-col items-center justify-center text-center">
         <div class="truncate w-full mb-1">
-          <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center">
-            {loading() ? "Loading..." : `${activeAudio()?.title ?? "n/A"}`}
+          <span class="flex items-center justify-center whitespace-nowrap overflow-hidden">
+            {loading() ? <BiRegularLoaderCircle size={"1.5em"} class="animate-spin" /> : `${activeAudio()?.title ?? "n/A"}`}
           </span>
         </div>
         <div class="truncate w-full" style={{ width: "200px" }}>
@@ -65,8 +75,7 @@ const PlayBack = () => {
         <input type="range" min="0" max="1" step="0.01" onInput={handleVolumeChange} class="w-1/2" />
         <Button 
           class="m-auto hover:cursor-pointer w-fit rounded-full" 
-          onClick={() => setColorMode(colorMode() === "dark" ? "light" : "dark")}
-        >
+          onClick={() => setColorMode(colorMode() === "dark" ? "light" : "dark")}>
           {colorMode() === "dark" ? (
             <TbMoon size={"1.2em"} />
           ) : (
@@ -77,5 +86,3 @@ const PlayBack = () => {
     </div>
   );
 };
-
-export default PlayBack;
