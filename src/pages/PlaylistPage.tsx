@@ -19,7 +19,7 @@ import {
 } from "~/components/Dropdown"
 
 import { Audio } from "~/utils/types";
-import { playlists, setPlaylists, audioInPlaylist, setAudioInPlaylist, activeAudio } from "~/store/store";
+import { playlists, setPlaylists, audioInPlaylist, setAudioInPlaylist } from "~/store/store";
 import { Button } from "~/components/Button";
 import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 import { BiRegularPause, BiRegularPlay } from "solid-icons/bi"
@@ -33,7 +33,7 @@ import { AllAudioModal } from "~/components/table/AllAudioModal";
 export const PlaylistPage = () => {
   const params = useParams();
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
-  const { setActiveAudio } = useAudio();
+  const { togglePlay, activeAudio, setActiveAudio, setActivePlaylist, isAudioPlaying } = useAudio();
   let playlistPageRef!: HTMLDivElement;
   const navigate = useNavigate();
 
@@ -151,10 +151,18 @@ export const PlaylistPage = () => {
           {audioInPlaylist.map((audio_item:Audio, index: number) => (
             <TableRow>
               <TableCell class="flex justify-end hover:cursor-pointer">
-                {audio_item.id === activeAudio.id ? (
-                  <BiRegularPause size={"2em"} class="text-green" />
+                {audio_item.id === activeAudio()?.id && isAudioPlaying() ? (
+                  <BiRegularPause size={"2em"} class="text-green" onClick={() => togglePlay()} />
                 ) : (
-                  <BiRegularPlay size={"2em"} onClick={() => setActiveAudio(audio_item)} />
+                  <BiRegularPlay size={"2em"} 
+                    onClick={() => {
+                      if(audio_item.id !== activeAudio()?.id) {
+                        setActiveAudio(audio_item); 
+                        setActivePlaylist([...audioInPlaylist]);
+                      } else {
+                        togglePlay();
+                      }
+                    }} />
                 )}
               </TableCell>
               <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
