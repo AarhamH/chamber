@@ -123,19 +123,29 @@ export const WaveRecorder = () => {
           <Button class="w-32" size={"sm"} onClick={togglePause}>{isPaused() ? "Resume" : "Pause"}</Button>
         </div>
       </div>
-      <div class="flex flex-col items-center overflow-auto h-64 ml-20 mr-20 border-2 border-secondary">
-        {
-          audioList().map((audio: Blob,index) => (
+      <div class="flex flex-col items-center overflow-auto h-64 ml-20 mr-20 border-2 border-secondary rounded-lg">
+        {audioList().length === 0 ? (
+          <div class="flex items-center justify-center h-full">
+            <div class="text-center font-thin">No recordings available</div>
+          </div>
+        ) : (
+          audioList().map((audio: Blob, index) => (
             <div class="flex flex-row items-center">
-              <span>{index+1}</span>
+              <span>{index + 1}</span>
               <audio controls src={URL.createObjectURL(audio)} />
-              <Button class="w-32" size={"sm"} variant={"link"} onClick={() => 
-              {setAudioList(audioList().filter((_, i) => i !== index))}}>
+              <Button
+                class="w-32"
+                size={"sm"}
+                variant={"link"}
+                onClick={() => {
+                  setAudioList(audioList().filter((_, i) => i !== index));
+                }}
+              >
                 Delete
               </Button>
             </div>
           ))
-        }
+        )}
       </div>
     </div>
   );
