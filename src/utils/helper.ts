@@ -6,6 +6,14 @@ export const formatTime = (seconds: number) => {
   return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
 };
 
+export const formatTimeCounter = (duration: number) => {
+  const minutes = Math.floor(duration / 60000);
+  const seconds = Math.floor((duration % 60000) / 1000);
+  const milliseconds = Math.floor((duration % 1000) / 10); // Keep milliseconds to 2 significant figures
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}:${milliseconds < 10 ? "0" : ""}${milliseconds}`;
+};
+
+
 export const buildBlob = async (filePath:string, audioType: string) => {
 
   const audioData: string = await invoke("read_audio_buffer", { filePath });
