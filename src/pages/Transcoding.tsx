@@ -16,6 +16,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { BiRegularLoaderCircle } from "solid-icons/bi";
 import { toast } from "solid-sonner";
 import { SUPPORTED_TYPES } from "~/utils/constants";
+import { Switch, SwitchControl, SwitchLabel, SwitchThumb } from "~/components/Switch";
 
 export const Transcoding = () => {
   const supportedAudioTypes = SUPPORTED_TYPES
@@ -32,7 +33,7 @@ export const Transcoding = () => {
             ...audio_item,
             id: audioCodecQueue.length + index,
             converted_type: supportedAudioTypes.find((supAudioType: string) => supAudioType !== audio_item.audio_type) || "",
-            is_added_to_list: false
+            is_added_to_list: true
           };
         });
   
@@ -115,13 +116,12 @@ export const Transcoding = () => {
                 </TableCell> 
                 <TableCell>
                   <div class="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      class="h-4 w-4" 
-                      checked={audio_item.is_added_to_list}
-                      onChange={(e) => addToList(audio_item.id, e.currentTarget.checked)}
-                    />
-                    <span class="whitespace-nowrap">Add to Audio list?</span>
+                    <Switch class="flex items-center space-x-2" checked={audio_item.is_added_to_list} onChange={(isChecked: boolean) => addToList(audio_item.id, isChecked)}>
+                      <SwitchControl>
+                        <SwitchThumb />
+                      </SwitchControl>
+                      <SwitchLabel class="font-normal text-xs opacity-80">Add to list?</SwitchLabel>
+                    </Switch>
                   </div>
                 </TableCell>
               </TableRow>
