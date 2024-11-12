@@ -11,57 +11,55 @@ import chamberWhite from "~/assets/chamber_logo_white.svg"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
 import { TextField, TextFieldInput } from "./TextField"
 import { toast } from "solid-sonner"
-import { TbRotate2 } from "solid-icons/tb"
+import { TbRotate2, TbWaveSine, TbCut } from "solid-icons/tb"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./Dropdown"
-import { TbWaveSine } from "solid-icons/tb"
-import { TbCut } from "solid-icons/tb" 
 
 export const SideNavigation = () => {
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
   const [playlistTitle, setPlaylistTitle] = createSignal("");
-  
+  const navigate = useNavigate();
   let playlistRef!: HTMLDivElement;
 
-  const navigate = useNavigate();
-
+  // retreieve playlists from database
   const fetchPlaylists = async () => {
-    try {
-      const result = await invoke<Playlist[]>("get_all_playlists");
-      setPlaylists(result);
-    } catch (error) {
-      return error;
-    }
+    const result = await invoke<Playlist[]>("get_all_playlists").catch((error) => error);
+    if (result instanceof Error) return toast.error(result.message);
+    setPlaylists(result);
   };
   
   onMount(fetchPlaylists);
 
   const handleInput = (e: InputEvent) => {
     const newInput = e.target as HTMLInputElement;
-    setPlaylistTitle(newInput.value); // Just set the local state without invoking update
+    setPlaylistTitle(newInput.value);
   };
 
-  async function addPlaylist(title: string) {
-    try {
-      const playlistArg = {
-        title: title,
-        created_on: new Date().toISOString(),
-      };
-      await invoke("create_playlist", { playlistArg });
-      fetchPlaylists();
-      scrollToBottom();
-      setPlaylistTitle("");
-    } catch (error) {
-      return new Error(String(error));
-    }
-  }
+  const isPlaylistTitleEmpty = () => playlistTitle().trim() === "";
 
-  function scrollToBottom() {
-    playlistRef.scrollTop = playlistRef.scrollHeight; 
+  async function addPlaylist(title: string) {
+    if(isPlaylistTitleEmpty()) {
+      return toast.error("Playlist title cannot be empty");
+    } 
+
+    const playlistArg = {
+      title: title,
+      created_on: new Date().toISOString(),
+    };
+    const result = await invoke("create_playlist", { playlistArg }).catch((error) => error);
+    if(result instanceof Error) return toast.error(result.message);
+    fetchPlaylists();
+
+    // scroll to bottom
+    playlistRef.scrollTop = playlistRef.scrollHeight;
+    setPlaylistTitle("");
+    triggerModal();
+    return toast.success("Successfully created playlist");
   }
 
   function triggerModal() {
     setIsAddPlaylistModalOpen(!isAddPlaylistModalOpen());
   }
+
   return (
     <div class="bg-sidenavigation h-full w-full flex flex-col shadow-lg">
       <div class="flex items-center justify-center mt-10 mb-4 text-3xl font-thin">
@@ -111,12 +109,8 @@ export const SideNavigation = () => {
                     onInput={handleInput}   
                     placeholder="Group name"
                     onKeyPress={(e: KeyboardEvent) => {
-                      if (e.key == "Enter" &&playlistTitle().trim() !== "") {
-                        addPlaylist(playlistTitle()).then((result) => {
-                          const isError = result instanceof Error;
-                          (() => isError ? toast.error(result.message) : toast.success("Successfully created playlist"))();
-                          triggerModal();
-                        });
+                      if (e.key == "Enter") {
+                        addPlaylist(playlistTitle())
                       }
                     }}
                   />
@@ -125,16 +119,7 @@ export const SideNavigation = () => {
                   class="w-20 mt-5" size={"sm"} 
                   disabled={playlistTitle().trim() === ""}
                   variant={"filled"} 
-                  onClick={() => {
-                    if (playlistTitle().trim() !== "") {
-                      addPlaylist(playlistTitle()).then((result) => {
-                        const isError = result instanceof Error;
-                        (() => isError ? toast.error(result.message) : toast.success("Successfully created playlist"))();
-                        triggerModal();
-                      });
-                    }
-                  }}
-                >
+                  onClick={() => addPlaylist(playlistTitle())}>
                   Insert
                 </Button>
               </DialogHeader>
