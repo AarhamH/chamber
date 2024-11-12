@@ -33,7 +33,7 @@ export const PlayBack = () => {
             {loading() ? <BiRegularLoaderCircle size={"1.5em"} class="animate-spin" /> : `${activeAudio()?.title ?? "n/A"}`}
           </span>
         </div>
-        <div class="truncate w-full" style={{ width: "200px" }}>
+        <div class="truncate w-full">
           <span class="block whitespace-nowrap overflow-hidden text-ellipsis text-center text-sm font-thin">
             {loading() ? "Hold on!" : activeAudio()?.path ?? "n/A"}
           </span>
