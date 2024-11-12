@@ -26,6 +26,7 @@ fn main() {
             destroy_audio_from_playlist,
             read_audio_buffer,
             youtube_search,
+            youtube_search_by_url,
             youtube_suggestion,
             download_audio,
             transcode_audio,
