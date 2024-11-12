@@ -140,7 +140,6 @@ export const SideNavigation = () => {
             <Button class="flex justify-between w-full" onClick={() => navigate(`/playlist/${playlist.id}`)}>
               <span class="p-2">{index + 1}.</span>
               <span class="flex-grow text-left truncate">{playlist.title}</span>
-              <i class="fas fa-icon-class p-2">(i)</i>
             </Button>
           ))
         ) : (
