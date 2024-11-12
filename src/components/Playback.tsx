@@ -1,12 +1,9 @@
-import { BiRegularPlay, BiRegularPause } from "solid-icons/bi";
-import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
-import { BiRegularVolumeFull } from "solid-icons/bi";
-import { useAudio } from "./AudioContext";
-import { TbArrowsShuffle, TbMoon, TbRepeat, TbRepeatOnce } from "solid-icons/tb"
-import { TbSun } from "solid-icons/tb"
 import { useColorMode } from "@kobalte/core";
-import { Button } from "./Button";
-
+import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
+import { BiRegularPlay, BiRegularPause, BiRegularVolumeFull} from "solid-icons/bi";
+import { TbArrowsShuffle, TbMoon, TbRepeat, TbRepeatOnce, TbSun } from "solid-icons/tb"
+import { Button } from "~/components/solidui/Button";
+import { useAudio } from "~/components/AudioContext";
 const PlayBack = () => {
   const { activeAudio, loading, trackProgress, isAudioPlaying, audioDuration, togglePlay, handleSkipForward, handleSkipBackward, handleTrackChange, handleVolumeChange, togglePlaybackMode, playbackStatus } = useAudio();
 

@@ -1,25 +1,25 @@
 import { createEffect, createSignal, onMount } from "solid-js";
+import { invoke } from "@tauri-apps/api/tauri";
+import { useColorMode } from "@kobalte/core";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js"
 import ZoomPlugin from "wavesurfer.js/dist/plugins/zoom.esm.js"
 import Minimap from "wavesurfer.js/dist/plugins/minimap.esm.js"
-import { useColorMode } from "@kobalte/core";
 import type { Region } from "wavesurfer.js/dist/plugins/regions.esm.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.esm.js"
-import { Button } from "../../components/Button";
-import "../../App.css";
+import { modifyAudioTrim, setModifyAudioTrim } from "~/store/store";
+import { Audio } from "~/utils/types";
+import { audio } from "~/store/store";
 import { BiRegularLoaderCircle, BiRegularPause, BiRegularPlay } from "solid-icons/bi";
 import { AiFillBackward, AiFillForward } from "solid-icons/ai";
-import { FaSolidCircle } from "solid-icons/fa";
-import { modifyAudioTrim, setModifyAudioTrim } from "~/store/store";
-import { AllAudioModal } from "~/components/table/AllAudioModal";
-import { Dialog, DialogTrigger } from "~/components/Dialog";
-import { Audio } from "~/utils/types";
 import { IoAdd, IoRemoveCircleOutline } from "solid-icons/io";
-import { audio } from "~/store/store";
-import { invoke } from "@tauri-apps/api/tauri";
+import { FaSolidCircle } from "solid-icons/fa";
 import { BsPlus } from "solid-icons/bs";
 import { toast } from "solid-sonner";
+import { Button } from "~/components/solidui/Button";
+import { Dialog, DialogTrigger } from "~/components/solidui/Dialog";
+import { AllAudioModal } from "~/components/table/AllAudioModal";
+import "../../App.css";
 
 export const WaveTrimmer = () => {
   let container!: HTMLDivElement;

@@ -1,34 +1,18 @@
+import { createEffect, createSignal} from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri";
-import { createEffect, createSignal} from "solid-js";
-import { Playlist, PlaylistArg } from "~/utils/types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "~/components/Table"
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "~/components/Dropdown"
-
-import { Audio } from "~/utils/types";
+import { Playlist, PlaylistArg, Audio} from "~/utils/types";
 import { playlists, setPlaylists, audioInPlaylist, setAudioInPlaylist } from "~/store/store";
-import { Button } from "~/components/Button";
-import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
-import { BiRegularPause, BiRegularPlay } from "solid-icons/bi"
-import { BiRegularDotsVerticalRounded } from "solid-icons/bi"
+import { BiRegularPause, BiRegularPlay, BiRegularDotsVerticalRounded } from "solid-icons/bi"
 import { IoAdd } from "solid-icons/io"
-import { useAudio } from "~/components/AudioContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/Dialog";
 import { toast } from "solid-sonner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/solidui/Table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/solidui/Dropdown";
+import { Button } from "~/components/solidui/Button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/solidui/Dialog";
+import { useAudio } from "~/components/AudioContext";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
+import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 
 export const PlaylistPage = () => {
   const params = useParams();

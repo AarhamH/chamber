@@ -10,9 +10,7 @@ use crate::helper::tools::meta_duration_to_minutes_raw;
 #[tauri::command]
 pub async fn youtube_suggestion(input: String) -> Result<Vec<String>, String> {
     let youtube: YouTube = YouTube::new().map_err(|e| e.to_string())?;
-
     let res: Vec<String> = youtube.suggestion(input.to_string(), None).await.map_err(|e| e.to_string())?;
-    
     let suggestions: Vec<String> = res.iter().map(|s| s.to_string()).collect();
     
     Ok(suggestions)

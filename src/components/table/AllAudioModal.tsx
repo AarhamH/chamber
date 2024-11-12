@@ -1,15 +1,14 @@
-import { Audio } from "~/utils/types";
-import { Button } from "../Button";
-import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../Dialog";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../Table";
+import { createEffect } from "solid-js";
 import { open } from "@tauri-apps/api/dialog";
 import { invoke } from "@tauri-apps/api/tauri";
+import { Audio } from "~/utils/types";
 import { setAudio, audio } from "~/store/store";
 import { IconTypes } from "solid-icons";
-import { toast } from "solid-sonner";
-import { createEffect } from "solid-js";
 import { SUPPORTED_TYPES } from "~/utils/constants";
-
+import { Button } from "~/components/solidui/Button";
+import { toast } from "solid-sonner";
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "~/components/solidui/Dialog";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "~/components/solidui/Table";
 interface AllAudioModalProps {
   title: string;
   modalAction?: {icon: IconTypes, onClick: (_id:number) => Promise<string | Error>};

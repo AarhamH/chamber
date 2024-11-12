@@ -1,9 +1,9 @@
-import { useColorMode } from "@kobalte/core";
 import { createSignal, onMount, createEffect } from "solid-js";
+import { useColorMode } from "@kobalte/core";
 import WaveSurfer from "wavesurfer.js";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
-import { Button } from "~/components/Button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/Dropdown";
+import { Button } from "~/components/solidui/Button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/solidui/Dropdown";
 
 export const WaveRecorder = () => {
   let container!: HTMLDivElement;
