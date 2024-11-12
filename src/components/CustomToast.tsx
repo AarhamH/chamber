@@ -1,6 +1,6 @@
 import { Toaster } from "solid-sonner"
 
-const CustomToast = () => {
+export const CustomToast = () => {
   return (
     <Toaster
       toastOptions={{
@@ -14,5 +14,3 @@ const CustomToast = () => {
     />
   )
 }
-
-export default CustomToast;

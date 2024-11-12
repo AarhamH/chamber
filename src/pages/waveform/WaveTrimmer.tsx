@@ -1,38 +1,95 @@
 import { createEffect, createSignal, onMount } from "solid-js";
+import { invoke } from "@tauri-apps/api/tauri";
+import { useColorMode } from "@kobalte/core";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js"
 import ZoomPlugin from "wavesurfer.js/dist/plugins/zoom.esm.js"
 import Minimap from "wavesurfer.js/dist/plugins/minimap.esm.js"
-import { useColorMode } from "@kobalte/core";
 import type { Region } from "wavesurfer.js/dist/plugins/regions.esm.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.esm.js"
-import { Button } from "../../components/Button";
-import "../../App.css";
+import { modifyAudioTrim, setModifyAudioTrim } from "~/store/store";
+import { Audio } from "~/utils/types";
+import { audio } from "~/store/store";
 import { BiRegularLoaderCircle, BiRegularPause, BiRegularPlay } from "solid-icons/bi";
 import { AiFillBackward, AiFillForward } from "solid-icons/ai";
-import { FaSolidCircle } from "solid-icons/fa";
-import { modifyAudioTrim, setModifyAudioTrim } from "~/store/store";
-import { AllAudioModal } from "~/components/table/AllAudioModal";
-import { Dialog, DialogTrigger } from "~/components/Dialog";
-import { Audio } from "~/utils/types";
 import { IoAdd, IoRemoveCircleOutline } from "solid-icons/io";
-import { audio } from "~/store/store";
-import { invoke } from "@tauri-apps/api/tauri";
+import { FaSolidCircle } from "solid-icons/fa";
 import { BsPlus } from "solid-icons/bs";
 import { toast } from "solid-sonner";
+import { Button } from "~/components/solidui/Button";
+import { Dialog, DialogTrigger } from "~/components/solidui/Dialog";
+import { AllAudioModal } from "~/components/table/AllAudioModal";
+import "../../App.css";
+import { buildBlob } from "~/utils/helper";
+import { secondsToMinutes } from "~/utils/helper";
 
 export const WaveTrimmer = () => {
-  let container!: HTMLDivElement;
-  let actualContainer!: HTMLDivElement;
-  let wavesurfer: WaveSurfer;
+  /* States and references */
   const [isPlaying, setIsPlaying] = createSignal(false);
   const [isWaveSurferLoading, setIsWaveSurferLoading] = createSignal(true);
-  let activeRegion: Region | null = null;
   const { colorMode } = useColorMode();
   const [regionCount, setRegionCount] = createSignal(0);
   const regions = RegionsPlugin.create();
   const [regionsContent, setRegionsContent] = createSignal<{title:string, region: Region}[]>([]);
+  let container!: HTMLDivElement;
+  let actualContainer!: HTMLDivElement;
+  let wavesurfer: WaveSurfer;
+  let activeRegion: Region | null = null;
+  
+  const waveFormPlay = () => {
+    if (wavesurfer) {
+      wavesurfer.playPause();
+    } else {
+      toast.error("WaveSurfer instance is not initialized");
+    }
+  };
 
+  const waveFormForward = () => {
+    if (wavesurfer) {
+      wavesurfer.skip(10);
+    }
+  }
+
+  const waveFormBackward = () => {
+    if (wavesurfer) {
+      wavesurfer.skip(-10);
+    }
+  }
+
+  const deleteRegion = (region: Region) => {
+    setRegionsContent(regionsContent().filter(regionContent => regionContent.region !== region));
+    region.remove();
+  }
+
+  const trimSingleAudio = async (region: Region) => {
+    const argument = {
+      fileName: modifyAudioTrim.title,
+      filePath: modifyAudioTrim.path,
+      start: region.start,
+      end: region.end,
+      fileType: modifyAudioTrim.audio_type,
+    }
+    const response = await invoke("trim_single_audio", argument).catch((error) => error);
+    if(response instanceof Error) return toast.error(response.message);
+    regions.getRegions().forEach(region_item => deleteRegion(region_item));
+    return toast.success("Successfully trimmed audio");
+  }
+
+  const insertFromAllAudios = async (id: number) => {
+    try {
+      const foundAudio = audio.find((audio_item: Audio) => audio_item.id === id);
+      if (foundAudio) {
+        setModifyAudioTrim(foundAudio);
+      } else {
+        throw new Error("Audio not found");
+      }
+      regions.getRegions().forEach(region => deleteRegion(region));
+      return "Successfully added to trimmer";
+    } catch (error) {
+      return new Error(String(error));
+    }
+  };
+  
   onMount(() => {
     try {
       const minimap = Minimap.create({
@@ -133,55 +190,6 @@ export const WaveTrimmer = () => {
     }
   })
 
-  const waveFormPlay = () => {
-    if (wavesurfer) {
-      wavesurfer.playPause();
-    } else {
-      return new Error(String("WaveSurfer instance is not initialized"));
-    }
-  };
-
-  const waveFormForward = () => {
-    if (wavesurfer) {
-      wavesurfer.skip(10);
-    }
-  }
-
-  const waveFormBackward = () => {
-    if (wavesurfer) {
-      wavesurfer.skip(-10);
-    }
-  }
-
-  const secondsToMinutes = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
-  }
-
-  const deleteRegion = (region: Region) => {
-    setRegionsContent(regionsContent().filter(regionContent => regionContent.region !== region));
-    region.remove();
-  }
-
-  const trimSingleAudio = async (region: Region) => {
-    const argument = {
-      fileName: modifyAudioTrim.title,
-      filePath: modifyAudioTrim.path,
-      start: region.start,
-      end: region.end,
-      fileType: modifyAudioTrim.audio_type,
-    }
-    try {
-      await invoke("trim_single_audio", argument);
-      regions.getRegions().forEach(region_item => deleteRegion(region_item));
-      return "Successfully trimmed audio";
-    } catch (error) {
-      return new Error(String(error));
-    }
-  }
-
   createEffect(() => {
     if (wavesurfer) {
       wavesurfer.setOptions({
@@ -216,53 +224,10 @@ export const WaveTrimmer = () => {
     }
   })
 
-  const insertFromAllAudios = async (id: number) => {
-    try {
-      const foundAudio = audio.find((audio_item: Audio) => audio_item.id === id);
-      if (foundAudio) {
-        setModifyAudioTrim(foundAudio);
-      } else {
-        throw new Error("Audio not found");
-      }
-      regions.getRegions().forEach(region => deleteRegion(region));
-      return "Successfully added to trimmer";
-    } catch (error) {
-      return new Error(String(error));
-    }
-  };
 
   createEffect(async () => {
     if (Object.keys(modifyAudioTrim).length !== 0 && wavesurfer) {
-      const audioData: string = await invoke("read_audio_buffer", { filePath: modifyAudioTrim.path });
-      // Decode the base64 string to binary
-      const byteCharacters = atob(audioData);
-      const byteNumbers = new Array(byteCharacters.length);
-      
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const getMimeType = (format: string): string => {
-        switch (format.toLowerCase()) {
-          case "mp3":
-            return "audio/mp3";
-          case "opus":
-            return "audio/opus";
-          case "ogg":
-            return "audio/ogg";
-          case "flac":
-            return "audio/flac";
-          case "m4a":
-            return "audio/m4a";
-          case "m4b":
-            return "audio/m4b";
-          default:
-            throw new Error("Unsupported audio format");
-        }
-      }
-      const mimeType = getMimeType(modifyAudioTrim.audio_type);        
-      const audioBlob = new Blob([byteArray], { type: mimeType });
-   
+      const audioBlob = await buildBlob(modifyAudioTrim.path, modifyAudioTrim.audio_type);
       wavesurfer.loadBlob(audioBlob);
     }
   }, [modifyAudioTrim]);
@@ -310,11 +275,7 @@ export const WaveTrimmer = () => {
                   <Button 
                     size={"sm"} 
                     class="w-20"
-                    onClick={() => 
-                    {trimSingleAudio(region.region).then(result => {
-                      const isError = result instanceof Error;
-                      (() => isError ? toast.error(result.message) : toast.success(result))();
-                    })}}>
+                    onClick={() => trimSingleAudio(region.region)}>
                     Trim
                   </Button>
                   <IoRemoveCircleOutline class="hover:cursor-pointer" size={"1.5em"} onClick={() => deleteRegion(region.region)} />

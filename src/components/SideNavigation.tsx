@@ -1,67 +1,72 @@
 import { createSignal, onMount } from "solid-js"
-import { Button } from "./Button"
+import { useNavigate } from "@solidjs/router"
 import { invoke } from "@tauri-apps/api/tauri"
 import { Playlist } from "~/utils/types"
-import { useNavigate } from "@solidjs/router"
 import { playlists, setPlaylists } from "~/store/store"
 import { BiRegularHomeAlt2 } from "solid-icons/bi"
 import { FaRegularFolderOpen, FaSolidMicrophone } from "solid-icons/fa"
 import { IoSearchOutline } from "solid-icons/io"
-import chamberWhite from "~/assets/chamber_logo_white.svg"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./Dialog"
-import { TextField, TextFieldInput } from "./TextField"
+import { TbRotate2, TbWaveSine, TbCut } from "solid-icons/tb"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "~/components/solidui/Dropdown"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/solidui/Dialog"
+import { TextField, TextFieldInput } from "./solidui/TextField"
+import { Button } from "~/components/solidui/Button"
 import { toast } from "solid-sonner"
-import { TbRotate2 } from "solid-icons/tb"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./Dropdown"
-import { TbWaveSine } from "solid-icons/tb"
-import { TbCut } from "solid-icons/tb" 
+import chamberWhite from "~/assets/chamber_logo_white.svg"
 
 export const SideNavigation = () => {
+  /* States and references */
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
-  const [playlistTitle, setPlaylistTitle] = createSignal("");
-  
+  const [playlistTitleInput, setPlaylistTitleInput] = createSignal("");
+  const navigate = useNavigate();
   let playlistRef!: HTMLDivElement;
 
-  const navigate = useNavigate();
-
+  /* Functions */
+  // retreieve playlists from database
   const fetchPlaylists = async () => {
-    try {
-      const result = await invoke<Playlist[]>("get_all_playlists");
-      setPlaylists(result);
-    } catch (error) {
-      return error;
-    }
+    const result = await invoke<Playlist[]>("get_all_playlists").catch((error) => error);
+    if (result instanceof Error) return toast.error(result.message);
+    setPlaylists(result);
   };
   
-  onMount(fetchPlaylists);
-
-  const handleInput = (e: InputEvent) => {
+  const retrievePlaylistTitleInput = (e: InputEvent) => {
     const newInput = e.target as HTMLInputElement;
-    setPlaylistTitle(newInput.value); // Just set the local state without invoking update
+    setPlaylistTitleInput(newInput.value);
   };
 
-  async function addPlaylist(title: string) {
-    try {
-      const playlistArg = {
-        title: title,
-        created_on: new Date().toISOString(),
-      };
-      await invoke("create_playlist", { playlistArg });
-      fetchPlaylists();
-      scrollToBottom();
-      setPlaylistTitle("");
-    } catch (error) {
-      return new Error(String(error));
-    }
+  const isPlaylistTitleInputEmpty = () => playlistTitleInput().trim() === "";
+
+  const addPlaylist = async (title: string) => {
+    if(isPlaylistTitleInputEmpty()) {
+      return toast.error("Playlist title cannot be empty");
+    } 
+
+    const playlistArg = {
+      title: title,
+      created_on: new Date().toISOString(),
+    };
+
+    const result = await invoke("create_playlist", { playlistArg }).catch((error) => error);
+    if(result instanceof Error) return toast.error(result.message);
+
+    // refetch the playlist to update newly added playlist
+    fetchPlaylists();
+
+    // scroll to bottom and reset input state
+    playlistRef.scrollTop = playlistRef.scrollHeight;
+    setPlaylistTitleInput("");
+    toggleModal();
+
+    return toast.success("Successfully created playlist");
   }
 
-  function scrollToBottom() {
-    playlistRef.scrollTop = playlistRef.scrollHeight; 
-  }
-
-  function triggerModal() {
+  const toggleModal = () => {
     setIsAddPlaylistModalOpen(!isAddPlaylistModalOpen());
   }
+
+  /* Effects and Mounts/Cleanups */
+  onMount(fetchPlaylists);
+
   return (
     <div class="bg-sidenavigation h-full w-full flex flex-col shadow-lg">
       <div class="flex items-center justify-center mt-10 mb-4 text-3xl font-thin">
@@ -108,33 +113,20 @@ export const SideNavigation = () => {
                     class="w-full" 
                     maxLength={40}
                     type="text"
-                    onInput={handleInput}   
+                    onInput={retrievePlaylistTitleInput}   
                     placeholder="Group name"
                     onKeyPress={(e: KeyboardEvent) => {
-                      if (e.key == "Enter" &&playlistTitle().trim() !== "") {
-                        addPlaylist(playlistTitle()).then((result) => {
-                          const isError = result instanceof Error;
-                          (() => isError ? toast.error(result.message) : toast.success("Successfully created playlist"))();
-                          triggerModal();
-                        });
+                      if (e.key == "Enter") {
+                        addPlaylist(playlistTitleInput())
                       }
                     }}
                   />
                 </TextField>
                 <Button 
                   class="w-20 mt-5" size={"sm"} 
-                  disabled={playlistTitle().trim() === ""}
+                  disabled={isPlaylistTitleInputEmpty()}
                   variant={"filled"} 
-                  onClick={() => {
-                    if (playlistTitle().trim() !== "") {
-                      addPlaylist(playlistTitle()).then((result) => {
-                        const isError = result instanceof Error;
-                        (() => isError ? toast.error(result.message) : toast.success("Successfully created playlist"))();
-                        triggerModal();
-                      });
-                    }
-                  }}
-                >
+                  onClick={() => addPlaylist(playlistTitleInput())}>
                   Insert
                 </Button>
               </DialogHeader>

@@ -7,3 +7,4 @@
 *.css linguist-language=CSS
 *.html linguist-language=HTML
 *.exe filter=lfs diff=lfs merge=lfs -text
+src/components/solidui/* linguist-vendored=true

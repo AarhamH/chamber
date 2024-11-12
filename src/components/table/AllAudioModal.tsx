@@ -1,54 +1,53 @@
-import { Audio } from "~/utils/types";
-import { Button } from "../Button";
-import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../Dialog";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../Table";
+import { createEffect } from "solid-js";
 import { open } from "@tauri-apps/api/dialog";
 import { invoke } from "@tauri-apps/api/tauri";
+import { Audio } from "~/utils/types";
 import { setAudio, audio } from "~/store/store";
 import { IconTypes } from "solid-icons";
-import { toast } from "solid-sonner";
-import { createEffect } from "solid-js";
 import { SUPPORTED_TYPES } from "~/utils/constants";
-
+import { Button } from "~/components/solidui/Button";
+import { toast } from "solid-sonner";
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "~/components/solidui/Dialog";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "~/components/solidui/Table";
 interface AllAudioModalProps {
   title: string;
   modalAction?: {icon: IconTypes, onClick: (_id:number) => Promise<string | Error>};
 }
 
 export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
-  createEffect(() => {
-    fetchAllAudio();
-  },[])
-
+  /* Functions */
   const fetchAllAudio = async () => { 
-    try {
-      const result = await invoke<Audio[]>("get_all_audio");
-      setAudio(result);
-    } catch (error) {
-      return error
-    }
+    const result = await invoke<Audio[]>("get_all_audio").catch((error) => error);
+    if (result instanceof Error) return toast.error(result.message);
+    setAudio(result);
   }
+
   const addAudio= async () => {
-    try {
-      const filePaths = await open({
-        multiple: true,
-        filters: [{
-          name: "Audio Files",
-          extensions: SUPPORTED_TYPES,
-        }],
-      });
+    const filePaths = await open({
+      multiple: true,
+      filters: [{
+        name: "Audio Files",
+        extensions: SUPPORTED_TYPES,
+      }],
+    });
     
-      // Check if any files were selected
-      if (filePaths && Array.isArray(filePaths)) {
-        for (const filePath of filePaths) {
-          await invoke("create_audio", { filePath });
+    // Check if any files were selected
+    if (filePaths && Array.isArray(filePaths)) {
+      for (const filePath of filePaths) {
+        const response = await invoke("create_audio", { filePath }).catch((error) => error);
+        if (response instanceof Error) {
+          toast.error(response.message);
         }
         fetchAllAudio();
       }
-    } catch (err) {
-      return new Error(String(err));
-    }
-  };
+      toast.success("Successfully added audio");
+    };
+  }
+
+  /* Effects and events */
+  createEffect(() => {
+    fetchAllAudio();
+  })
   return(
     <DialogContent class="w-5/6 h-2/3">
       <DialogHeader>
@@ -56,12 +55,7 @@ export const AllAudioModal = ({ title, modalAction }:AllAudioModalProps) => {
           <DialogTitle>{title}</DialogTitle>
           <Button 
             class="w-32" 
-            onClick={() => {
-              addAudio().then(result => {
-                const isError = result instanceof Error;
-                (() => isError && toast.error(result.message))();
-              });
-            }} 
+            onClick={addAudio}
             variant={"link"}>Add Audio</Button>      
         </div>
         <DialogDescription>

@@ -1,22 +1,17 @@
-import { Button } from "~/components/Button"
-import { Dialog, DialogTrigger } from "~/components/Dialog";
-import { AllAudioModal } from "~/components/table/AllAudioModal";
 import { audioCodecQueue, setAudioCodecQueue, audio, isAudioTranscodeLoading, setIsAudioTranscodeLoading } from "~/store/store";
 import { Audio, AudioCodec } from "~/utils/types";
+import { SUPPORTED_TYPES } from "~/utils/constants";
+import { toast } from "solid-sonner";
 import { IoAdd } from "solid-icons/io";
-import { Table, TableBody, TableCell, TableRow } from "~/components/Table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "~/components/Dropdown"
 import { AiOutlineMinusCircle } from "solid-icons/ai";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BiRegularLoaderCircle } from "solid-icons/bi";
-import { toast } from "solid-sonner";
-import { SUPPORTED_TYPES } from "~/utils/constants";
-import { Switch, SwitchControl, SwitchLabel, SwitchThumb } from "~/components/Switch";
+import { Switch, SwitchControl, SwitchLabel, SwitchThumb } from "~/components/solidui/Switch";
+import { Table, TableBody, TableCell, TableRow } from "~/components/solidui/Table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/solidui/Dropdown"
+import { Dialog, DialogTrigger } from "~/components/solidui/Dialog";
+import { Button } from "~/components/solidui/Button"
+import { AllAudioModal } from "~/components/table/AllAudioModal";
 
 export const Transcoding = () => {
   const supportedAudioTypes = SUPPORTED_TYPES

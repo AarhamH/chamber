@@ -1,39 +1,27 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/Table"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxControl,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxItemLabel,
-} from "~/components/Combobox"
-import { invoke } from "@tauri-apps/api/tauri"
 import { createSignal, createEffect } from "solid-js"
-import { IoSearchOutline } from "solid-icons/io"
+import { invoke } from "@tauri-apps/api/tauri"
 import { YoutubeQuery } from "~/utils/types"
-import { BiRegularAddToQueue } from "solid-icons/bi"
-import { BiRegularLink } from "solid-icons/bi"
-import { Button } from "~/components/Button"
 import { youtubeQueue, setYoutubeQueue } from "~/store/store"
-import { IoRemoveCircleOutline } from "solid-icons/io"
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "~/components/Sheet"
-import { BiRegularLoaderCircle } from "solid-icons/bi"
+import { IoRemoveCircleOutline, IoSearchOutline } from "solid-icons/io"
+import { BiRegularLoaderCircle, BiRegularLink, BiRegularAddToQueue } from "solid-icons/bi"
 import { toast } from "solid-sonner"
-import { Switch, SwitchControl, SwitchThumb, SwitchLabel} from "~/components/Switch"
-
+import { Button } from "~/components/solidui/Button"
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "~/components/solidui/Sheet"
+import { Switch, SwitchControl, SwitchThumb, SwitchLabel} from "~/components/solidui/Switch"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/solidui/Table"
+import { Combobox, ComboboxContent, ComboboxControl, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxItemLabel, } from "~/components/solidui/Combobox"
 interface SearchSuggestion {
   label: string
   value: string
 }
 
 export const SearchPage = () => {
+  /* States and references */
   const [searchInput, setSearchInput] = createSignal<string>("")
   const [searchSuggestions, setSearchSuggestions] = createSignal<SearchSuggestion[]>([])
   const [youtubeQuery, setYoutubeQuery] = createSignal<YoutubeQuery[]>([])
   const [isDownloading, setIsDownloading] = createSignal<boolean>(false)
   const [isSearchableByUrl, setIsSearchableByUrl] = createSignal<boolean>(false)
-
   const cache = new Map();
 
   createEffect(() => {

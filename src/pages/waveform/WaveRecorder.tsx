@@ -1,14 +1,13 @@
-import { useColorMode } from "@kobalte/core";
 import { createSignal, onMount, createEffect } from "solid-js";
+import { useColorMode } from "@kobalte/core";
 import WaveSurfer from "wavesurfer.js";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
-import { Button } from "~/components/Button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/Dropdown";
+import { Button } from "~/components/solidui/Button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/solidui/Dropdown";
+import { formatTimeCounter } from "~/utils/helper";
 
 export const WaveRecorder = () => {
-  let container!: HTMLDivElement;
-  let wavesurfer!: WaveSurfer;
-  let record!: RecordPlugin;
+  /* States and references */
   const [micList, setMicList] = createSignal<MediaDeviceInfo[]>([]);
   const [selectedMic, setSelectedMic] = createSignal<MediaDeviceInfo>();
   const [audioList, setAudioList] = createSignal<Blob[]>([]);
@@ -16,11 +15,35 @@ export const WaveRecorder = () => {
   const [isPaused, setIsPaused] = createSignal(false);
   const [time, setTime] = createSignal(0);
   const { colorMode } = useColorMode();
+  let container!: HTMLDivElement;
+  let wavesurfer!: WaveSurfer;
+  let record!: RecordPlugin;
 
+  /* Functions */
+  const toggleRecord = () => {
+    if (record.isPaused() || record.isRecording()) {
+      record.stopRecording();
+      return;
+    }
+    record.startRecording({deviceId: "default"})
+  };
+
+  const togglePause = () => {
+    if(record.isPaused()) {
+      record.resumeRecording();
+      return;
+    }
+    record.pauseRecording();
+  }
+
+
+  /* Effects and events */
+
+  // builds the wave surfer insance with plugins
   onMount(() => {
     wavesurfer = WaveSurfer.create({
       container: container,
-      waveColor: "violet",
+      waveColor: colorMode() == "dark" ? "white" : "black",
       barWidth: 3,
       barRadius: 3,
       height: 100,
@@ -33,28 +56,6 @@ export const WaveRecorder = () => {
   });
 
   createEffect(() => {
-    record.on("record-end", (blob: Blob) => {
-      setAudioList([...audioList(), blob]);
-    });
-  })
-
-  const recordAudio = () => {
-    if (record.isPaused() || record.isRecording()) {
-      record.stopRecording();
-      return;
-    }
-    record.startRecording({deviceId: "default"})
-  };
-
-  const pauseRecording = () => {
-    if(record.isPaused()) {
-      record.resumeRecording();
-      return;
-    }
-    record.pauseRecording();
-  }
-
-  createEffect(() => {
     if (wavesurfer) {
       wavesurfer.setOptions({
         waveColor: colorMode() == "dark" ? "white" : "black",
@@ -63,8 +64,15 @@ export const WaveRecorder = () => {
       return new Error(String("WaveSurfer instance is not initialized"));
     }
   });
-
-
+  
+  // define mic list
+  createEffect(() => {
+    RecordPlugin.getAvailableAudioDevices().then((list: MediaDeviceInfo[]) => {
+      setMicList(list);
+    });
+  },[micList]);
+  
+  // define record listeners
   createEffect(() => {
     record.on("record-start", () => {
       setIsRecording(true);
@@ -84,24 +92,18 @@ export const WaveRecorder = () => {
     });
   });
 
+  // if recording ends, add the audio blob to the list
   createEffect(() => {
-    RecordPlugin.getAvailableAudioDevices().then((list: MediaDeviceInfo[]) => {
-      setMicList(list);
+    record.on("record-end", (blob: Blob) => {
+      setAudioList([...audioList(), blob]);
     });
-  },[micList]);
-
-  const formatTime = (duration: number) => {
-    const minutes = Math.floor(duration / 60000);
-    const seconds = Math.floor((duration % 60000) / 1000);
-    const milliseconds = Math.floor((duration % 1000) / 10); // Keep milliseconds to 2 significant figures
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}:${milliseconds < 10 ? "0" : ""}${milliseconds}`;
-  };
+  })
 
   return (
     <div>
       <div class="flex flex-col items-center justify-center">
         <div class="pt-10 text-4xl font-thin">Recorder</div>
-        <div class="text-2xl font-thin">{formatTime(time())}</div>
+        <div class="text-2xl font-thin">{formatTimeCounter(time())}</div>
 
         <DropdownMenu>
           <DropdownMenuTrigger as={Button} class="w-fit pl-2 pr-2" size={"sm"}>
@@ -117,8 +119,8 @@ export const WaveRecorder = () => {
       <div class="p-10" ref={container}></div>
       <div class="flex flex-col items-center justify-center">
         <div>
-          <Button class="w-32" size={"sm"} onClick={recordAudio}>{isRecording() ? "Stop Recording" : "Record"}</Button>
-          <Button class="w-32" size={"sm"} onClick={pauseRecording}>{isPaused() ? "Resume" : "Pause"}</Button>
+          <Button class="w-32" size={"sm"} onClick={toggleRecord}>{isRecording() ? "Stop Recording" : "Record"}</Button>
+          <Button class="w-32" size={"sm"} onClick={togglePause}>{isPaused() ? "Resume" : "Pause"}</Button>
         </div>
       </div>
       <div class="flex flex-col items-center overflow-auto h-64 ml-20 mr-20 border-2 border-secondary">
