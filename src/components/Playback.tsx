@@ -1,6 +1,6 @@
 import { useColorMode } from "@kobalte/core";
 import { AiFillStepForward, AiFillStepBackward } from "solid-icons/ai";
-import { BiRegularPlay, BiRegularPause, BiRegularVolumeFull, BiRegularLoaderCircle} from "solid-icons/bi";
+import { BiRegularPlay, BiRegularPause, BiRegularVolumeFull, BiRegularVolumeMute, BiRegularLoaderCircle} from "solid-icons/bi";
 import { TbArrowsShuffle, TbMoon, TbRepeat, TbRepeatOnce, TbSun } from "solid-icons/tb"
 import { Button } from "~/components/solidui/Button";
 import { useAudio } from "~/components/AudioContext";
@@ -20,7 +20,9 @@ export const PlayBack = () => {
     handleTrackChange, 
     handleVolumeChange, 
     togglePlaybackMode, 
-    playbackStatus 
+    playbackStatus,
+    isMuted,
+    handleVolumeMute 
   } = useAudio();
 
   const { colorMode, setColorMode } = useColorMode();
@@ -71,8 +73,10 @@ export const PlayBack = () => {
         </div>
       </div>
       <div class="w-1/5 p-2 flex flex-row justify-start items-center">
-        <BiRegularVolumeFull size={"1.2em"} class="mr-2" />
-        <input type="range" min="0" max="1" step="0.01" onInput={handleVolumeChange} class="w-1/2" />
+        <div class="hover:cursor-pointer" onClick={handleVolumeMute}>
+          {isMuted() ? <BiRegularVolumeMute size={"1.2em"} /> : <BiRegularVolumeFull size={"1.2em"} />}
+        </div>
+        <input type="range" min="0" max="1" step="0.01" value={1} onInput={handleVolumeChange} class="w-1/2" />
         <Button 
           class="m-auto hover:cursor-pointer w-fit rounded-full" 
           onClick={() => setColorMode(colorMode() === "dark" ? "light" : "dark")}>

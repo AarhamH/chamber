@@ -18,6 +18,8 @@ interface AudioContextType {
   togglePlaybackMode: () => void;
   playbackStatus: () => string;
   setActivePlaylist: (_playlist: Audio[]) => void;
+  isMuted: () => boolean;
+  handleVolumeMute: () => void;
 }
 
 // this context is used globally to handle audio playback
@@ -33,6 +35,7 @@ export const AudioProvider  = (props: ParentProps) => {
   const [activeAudio, setActiveAudio] = createSignal<Audio>({} as Audio);
   const [activePlaylist, setActivePlaylist] = createSignal<Audio[]>([]);
   const [playbackStatus, setPlaybackStatus] = createSignal("default");
+  const [isMuted, setIsMuted] = createSignal(false);
   let audioRef!: HTMLAudioElement;
 
   const togglePlay = () => {
@@ -86,6 +89,12 @@ export const AudioProvider  = (props: ParentProps) => {
     }
   };
 
+  const handleVolumeMute = () => {
+    if (audioRef) {
+      audioRef.muted = !audioRef.muted;
+    }
+  }
+
   /* Effects and events */
   createEffect(async () => {
     if(activeAudio() && activePlaylist()) {
@@ -106,10 +115,14 @@ export const AudioProvider  = (props: ParentProps) => {
         audioRef.addEventListener("play", () => {
           setIsAudioPlaying(true);
         });
-  
+        
         audioRef.addEventListener("pause", () => {
           setIsAudioPlaying(false);
         });
+
+        audioRef.addEventListener("volumechange", () => {
+          setIsMuted(audioRef.muted || audioRef.volume === 0);
+        })
 
         audioRef.addEventListener("ended", () => {
           if (!loading()) {
@@ -153,6 +166,8 @@ export const AudioProvider  = (props: ParentProps) => {
       togglePlaybackMode,
       playbackStatus,
       setActivePlaylist,
+      isMuted,
+      handleVolumeMute
     }}>
       <audio ref={audioRef} src={audioUrl()} id="audio"/>
       {props.children}
