@@ -12,7 +12,6 @@ import { Button } from "~/components/solidui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/solidui/Dialog";
 import { useAudio } from "~/components/AudioContext";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
-import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -86,8 +85,7 @@ export const PlaylistPage = () => {
 
   return(
     <div ref={playlistPageRef}>
-      <div class="pt-10 pb-5 flex items-end justify-start">
-        <img src={img} class="ml-10 mr-10 w-48 h-auto rounded-md" />
+      <div class="flex items-center pt-10 pb-5 pl-20 justify-start">
         <div class="flex flex-col">
           <input
             type="text"
