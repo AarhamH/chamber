@@ -12,7 +12,6 @@ import { Button } from "~/components/solidui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/solidui/Dialog";
 import { useAudio } from "~/components/AudioContext";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
-import img from "~/assets/GOJIRA-THE-WAY-OF-ALL-FLESH-2XWINYL-2627680470.png";
 
 export const PlaylistPage = () => {
   const params = useParams();
@@ -86,8 +85,7 @@ export const PlaylistPage = () => {
 
   return(
     <div ref={playlistPageRef}>
-      <div class="pt-10 pb-5 flex items-end justify-start">
-        <img src={img} class="ml-10 mr-10 w-48 h-auto rounded-md" />
+      <div class="flex items-center pt-10 pb-5 pl-20 justify-start">
         <div class="flex flex-col">
           <input
             type="text"
@@ -131,53 +129,61 @@ export const PlaylistPage = () => {
             <TableHead></TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {audioInPlaylist.map((audio_item:Audio, index: number) => (
+        {audioInPlaylist.length === 0 ? (
+          <TableBody>
             <TableRow>
-              <TableCell class="flex justify-end hover:cursor-pointer">
-                {audio_item.id === activeAudio()?.id && isAudioPlaying() ? (
-                  <BiRegularPause size={"2em"} class="text-green" onClick={() => togglePlay()} />
-                ) : (
-                  <BiRegularPlay size={"2em"} 
-                    onClick={() => {
-                      if(audio_item.id !== activeAudio()?.id) {
-                        setActiveAudio(audio_item); 
-                        setActivePlaylist([...audioInPlaylist]);
-                      } else {
-                        togglePlay();
-                      }
-                    }} />
-                )}
-              </TableCell>
-              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
-              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.title}</TableCell>
-              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.author}</TableCell>
-              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.path}</TableCell>
-              <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.audio_type}</TableCell>
-              <TableCell class=" truncate overflow-hidden whitespace-nowrap">{audio_item.duration}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <BiRegularDotsVerticalRounded size={"1.5em"}  />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem 
-                      class="text-red-500 hover:cursor-pointer" 
-                      onClick={() => {
-                        removeFromPlaylist(audio_item.id).then(result => {
-                          const isError = result instanceof Error;
-                          (() => isError ? toast.error(result.message) : toast.success(`Successfully removed from playlist: ${playlistTitle()}`))();
-                        });
-                      }}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>                    
-              </TableCell>  
+              <TableCell colSpan={8} class="text-center font-thin">No audio in this playlist</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
+          </TableBody>
+        ) : (
+          <TableBody>
+            {audioInPlaylist.map((audio_item: Audio, index: number) => (
+              <TableRow>
+                <TableCell class="flex justify-end hover:cursor-pointer">
+                  {audio_item.id === activeAudio()?.id && isAudioPlaying() ? (
+                    <BiRegularPause size={"2em"} class="text-green" onClick={() => togglePlay()} />
+                  ) : (
+                    <BiRegularPlay size={"2em"} 
+                      onClick={() => {
+                        if(audio_item.id !== activeAudio()?.id) {
+                          setActiveAudio(audio_item); 
+                          setActivePlaylist([...audioInPlaylist]);
+                        } else {
+                          togglePlay();
+                        }
+                      }} />
+                  )}
+                </TableCell>
+                <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{index+1}</TableCell>
+                <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.title}</TableCell>
+                <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.author}</TableCell>
+                <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.path}</TableCell>
+                <TableCell class="max-w-xs truncate overflow-hidden whitespace-nowrap">{audio_item.audio_type}</TableCell>
+                <TableCell class=" truncate overflow-hidden whitespace-nowrap">{audio_item.duration}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <BiRegularDotsVerticalRounded size={"1.5em"}  />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem 
+                        class="text-red-500 hover:cursor-pointer" 
+                        onClick={() => {
+                          removeFromPlaylist(audio_item.id).then(result => {
+                            const isError = result instanceof Error;
+                            (() => isError ? toast.error(result.message) : toast.success(`Successfully removed from playlist: ${playlistTitle()}`))();
+                          });
+                        }}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>                    
+                </TableCell>  
+              </TableRow>
+            ))}
+          </TableBody>
+        )}
       </Table>
     </div>
   )

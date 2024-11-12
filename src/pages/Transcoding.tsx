@@ -88,40 +88,50 @@ export const Transcoding = () => {
       </div>
       <div class="min-h-96 max-h-96 w-3/4 border rounded-lg overflow-auto">
         <Table class="min-w-5xl">
-          <TableBody>
-            {audioCodecQueue.map((audio_item: AudioCodec) => (
-              <TableRow>
-                <TableCell class="max-w-sm">
-                  <AiOutlineMinusCircle onClick={() => removeFromQueue(audio_item.id)} class="hover:cursor-pointer"/>
-                </TableCell>
-                <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{audio_item.title}</TableCell>
-                <TableCell class="w-20">{audio_item.path}</TableCell>
-                <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{"-->"}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger class="underline">
-                      {audio_item.converted_type}
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      {supportedAudioTypes.filter((supAudioType: string) => supAudioType !== audio_item.audio_type).map((supAudioType: string) => (
-                        <DropdownMenuItem onClick={() => setConvertType(audio_item.id, supAudioType)}>{supAudioType}</DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>                    
-                </TableCell> 
-                <TableCell>
-                  <div class="flex items-center gap-2">
-                    <Switch class="flex items-center space-x-2" checked={audio_item.is_added_to_list} onChange={(isChecked: boolean) => addToList(audio_item.id, isChecked)}>
-                      <SwitchControl>
-                        <SwitchThumb />
-                      </SwitchControl>
-                      <SwitchLabel class="font-normal text-xs opacity-80">Add to list?</SwitchLabel>
-                    </Switch>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+          {
+            audioCodecQueue.length === 0 ? (
+              <TableBody>
+                <TableRow class="flex items-center justify-center font-thin">
+                  <TableCell class="">No items in queue</TableCell>
+                </TableRow>
+              </TableBody> 
+            ) : (
+              <TableBody>
+                {audioCodecQueue.map((audio_item: AudioCodec) => (
+                  <TableRow>
+                    <TableCell class="max-w-sm">
+                      <AiOutlineMinusCircle onClick={() => removeFromQueue(audio_item.id)} class="hover:cursor-pointer"/>
+                    </TableCell>
+                    <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{audio_item.title}</TableCell>
+                    <TableCell class="w-20">{audio_item.path}</TableCell>
+                    <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{"-->"}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger class="underline">
+                          {audio_item.converted_type}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {supportedAudioTypes.filter((supAudioType: string) => supAudioType !== audio_item.audio_type).map((supAudioType: string) => (
+                            <DropdownMenuItem onClick={() => setConvertType(audio_item.id, supAudioType)}>{supAudioType}</DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>                    
+                    </TableCell> 
+                    <TableCell>
+                      <div class="flex items-center gap-2">
+                        <Switch class="flex items-center space-x-2" checked={audio_item.is_added_to_list} onChange={(isChecked: boolean) => addToList(audio_item.id, isChecked)}>
+                          <SwitchControl>
+                            <SwitchThumb />
+                          </SwitchControl>
+                          <SwitchLabel class="font-normal text-xs opacity-80">Add to list?</SwitchLabel>
+                        </Switch>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            )
+          }
         </Table>
       </div>
       <div class="flex items-center gap-2">

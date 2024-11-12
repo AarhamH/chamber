@@ -99,7 +99,7 @@ export const SearchPage = () => {
           optionValue="value"
           optionTextValue="label"
           optionLabel="label"
-          placeholder="Search for an audio..."
+          placeholder={isSearchableByUrl() ? "Enter YouTube URL" : "Search for YouTube video"}
           itemComponent={(props) => (
             <ComboboxItem item={props.item}>
               <ComboboxItemLabel>{props.item.rawValue.label}</ComboboxItemLabel>
@@ -204,38 +204,48 @@ export const SearchPage = () => {
             <TableHead class="w-8 text-right truncate"></TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {youtubeQuery().map((query, index) => (
-            <TableRow>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap pl-20">{index + 1}</TableCell>  
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
-                <img src={query.thumbnail} class="rounded-md" />
-              </TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.title}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.channel}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.views}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.duration}</TableCell>
-              <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
-                <div class="flex items-center justify-center gap-5">
-                  <a href={query.url} target="_blank">
-                    <BiRegularLink size={"1.5em"} />
-                  </a> 
-                  <Button 
-                    variant="link" 
-                    size="icon" 
-                    class="flex items-center justify-center" 
-                    onClick={() => {
-                      const success = addToQueue(query);
-                      (() => !success ? toast.error("Already in queue") : toast.success("Successfully added to queue", { description: query.title }))();
-                    }}
-                  >
-                    <BiRegularAddToQueue size={"1.5em"}/>  
-                  </Button>
-                </div>
-              </TableCell>    
-            </TableRow>
-          ))}
-        </TableBody>
+        {
+          youtubeQuery().length === 0 ? (
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={8} class="text-center font-thin">No items found</TableCell>
+              </TableRow>
+            </TableBody>
+          ) : (
+            <TableBody>
+              {youtubeQuery().map((query, index) => (
+                <TableRow>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap pl-20">{index + 1}</TableCell>  
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
+                    <img src={query.thumbnail} class="rounded-md" />
+                  </TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.title}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.channel}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.views}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">{query.duration}</TableCell>
+                  <TableCell class="max-w-sm truncate overflow-hidden whitespace-nowrap">
+                    <div class="flex items-center justify-center gap-5">
+                      <a href={query.url} target="_blank">
+                        <BiRegularLink size={"1.5em"} />
+                      </a> 
+                      <Button 
+                        variant="link" 
+                        size="icon" 
+                        class="flex items-center justify-center" 
+                        onClick={() => {
+                          const success = addToQueue(query);
+                          (() => !success ? toast.error("Already in queue") : toast.success("Successfully added to queue", { description: query.title }))();
+                        }}
+                      >
+                        <BiRegularAddToQueue size={"1.5em"}/>  
+                      </Button>
+                    </div>
+                  </TableCell>    
+                </TableRow>
+              ))}
+            </TableBody>
+          )
+        }
       </Table>
     </div>
   )

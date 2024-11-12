@@ -263,24 +263,30 @@ export const WaveTrimmer = () => {
                 </div>
               )}
             </div>
-            <div class="p-5 ml-48 mr-48 border-2 overflow-auto h-1/3">
-              {regionsContent().map((region) => (
-                <div class="flex flex-row items-center justify-evenly p-2 mb-4 border-b">
-                  <FaSolidCircle size={"1.2em"} color={region.region.color} />
-                  <span>{region.title}</span>
-                  <span>Start: {secondsToMinutes(region.region.start)}</span>
-                  <span>End: {secondsToMinutes(region.region.end)}</span>
-                  <span>Duration: {secondsToMinutes(region.region.end - region.region.start)}</span>
-                  <Button size={"sm"} class="w-20" onClick={() => region.region.play()}>Play</Button>
-                  <Button 
-                    size={"sm"} 
-                    class="w-20"
-                    onClick={() => trimSingleAudio(region.region)}>
-                    Trim
-                  </Button>
-                  <IoRemoveCircleOutline class="hover:cursor-pointer" size={"1.5em"} onClick={() => deleteRegion(region.region)} />
+            <div class="p-5 ml-48 mr-48 border-2 overflow-auto h-1/3 rounded-lg">
+              {regionsContent().length === 0 ? (
+                <div class="flex items-center justify-center h-full">
+                  <span class="text-normal font-thin">No regions added</span>
                 </div>
-              ))}
+              ) : (
+                regionsContent().map((region) => (
+                  <div class="flex flex-row items-center justify-evenly p-2 mb-4 border-b">
+                    <FaSolidCircle size={"1.2em"} color={region.region.color} />
+                    <span>{region.title}</span>
+                    <span>Start: {secondsToMinutes(region.region.start)}</span>
+                    <span>End: {secondsToMinutes(region.region.end)}</span>
+                    <span>Duration: {secondsToMinutes(region.region.end - region.region.start)}</span>
+                    <Button size={"sm"} class="w-20" onClick={() => region.region.play()}>Play</Button>
+                    <Button 
+                      size={"sm"} 
+                      class="w-20"
+                      onClick={() => trimSingleAudio(region.region)}>
+                      Trim
+                    </Button>
+                    <IoRemoveCircleOutline class="hover:cursor-pointer" size={"1.5em"} onClick={() => deleteRegion(region.region)} />
+                  </div>
+                ))
+              )}
             </div>
           </div>
         ):(
