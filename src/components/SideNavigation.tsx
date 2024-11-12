@@ -15,11 +15,13 @@ import { TbRotate2, TbWaveSine, TbCut } from "solid-icons/tb"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./Dropdown"
 
 export const SideNavigation = () => {
+  /* States and references */
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
-  const [playlistTitle, setPlaylistTitle] = createSignal("");
+  const [playlistTitleInput, setPlaylistTitleInput] = createSignal("");
   const navigate = useNavigate();
   let playlistRef!: HTMLDivElement;
 
+  /* Functions */
   // retreieve playlists from database
   const fetchPlaylists = async () => {
     const result = await invoke<Playlist[]>("get_all_playlists").catch((error) => error);
@@ -27,17 +29,15 @@ export const SideNavigation = () => {
     setPlaylists(result);
   };
   
-  onMount(fetchPlaylists);
-
-  const handleInput = (e: InputEvent) => {
+  const retrievePlaylistTitleInput = (e: InputEvent) => {
     const newInput = e.target as HTMLInputElement;
-    setPlaylistTitle(newInput.value);
+    setPlaylistTitleInput(newInput.value);
   };
 
-  const isPlaylistTitleEmpty = () => playlistTitle().trim() === "";
+  const isPlaylistTitleInputEmpty = () => playlistTitleInput().trim() === "";
 
-  async function addPlaylist(title: string) {
-    if(isPlaylistTitleEmpty()) {
+  const addPlaylist = async (title: string) => {
+    if(isPlaylistTitleInputEmpty()) {
       return toast.error("Playlist title cannot be empty");
     } 
 
@@ -45,20 +45,27 @@ export const SideNavigation = () => {
       title: title,
       created_on: new Date().toISOString(),
     };
+
     const result = await invoke("create_playlist", { playlistArg }).catch((error) => error);
     if(result instanceof Error) return toast.error(result.message);
+
+    // refetch the playlist to update newly added playlist
     fetchPlaylists();
 
-    // scroll to bottom
+    // scroll to bottom and reset input state
     playlistRef.scrollTop = playlistRef.scrollHeight;
-    setPlaylistTitle("");
-    triggerModal();
+    setPlaylistTitleInput("");
+    toggleModal();
+
     return toast.success("Successfully created playlist");
   }
 
-  function triggerModal() {
+  const toggleModal = () => {
     setIsAddPlaylistModalOpen(!isAddPlaylistModalOpen());
   }
+
+  /* Effects and Mounts/Cleanups */
+  onMount(fetchPlaylists);
 
   return (
     <div class="bg-sidenavigation h-full w-full flex flex-col shadow-lg">
@@ -106,20 +113,20 @@ export const SideNavigation = () => {
                     class="w-full" 
                     maxLength={40}
                     type="text"
-                    onInput={handleInput}   
+                    onInput={retrievePlaylistTitleInput}   
                     placeholder="Group name"
                     onKeyPress={(e: KeyboardEvent) => {
                       if (e.key == "Enter") {
-                        addPlaylist(playlistTitle())
+                        addPlaylist(playlistTitleInput())
                       }
                     }}
                   />
                 </TextField>
                 <Button 
                   class="w-20 mt-5" size={"sm"} 
-                  disabled={playlistTitle().trim() === ""}
+                  disabled={isPlaylistTitleInputEmpty()}
                   variant={"filled"} 
-                  onClick={() => addPlaylist(playlistTitle())}>
+                  onClick={() => addPlaylist(playlistTitleInput())}>
                   Insert
                 </Button>
               </DialogHeader>
