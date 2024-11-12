@@ -25,7 +25,7 @@ pub async fn youtube_search(input: String) -> Result<Vec<YouTubeAudio>, String> 
     let search_options = SearchOptions {
         limit: 20,
         search_type: Video,
-        safe_search: false,
+        safe_search: true,
     };
     let res: Result<Vec<SearchResult>, rusty_ytdl::VideoError> = youtube.search(input, Some(&search_options)).await;
     let structured_res: Vec<YouTubeAudio> = match res {
