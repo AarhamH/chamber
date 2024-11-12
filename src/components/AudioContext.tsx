@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/tauri";
 import { createContext, createEffect, createSignal, ParentProps, useContext } from "solid-js";
+import { buildBlob } from "~/utils/helper";
 import { Audio } from "~/utils/types";
 
 interface AudioContextType {
@@ -41,36 +41,7 @@ export const AudioProvider  = (props: ParentProps) => {
     if(activeAudio() && activePlaylist()) {
       try {
         setLoading(true);
-        const audioData: string = await invoke("read_audio_buffer", { filePath: activeAudio()?.path });
-        // Decode the base64 string to binary
-        const byteCharacters = atob(audioData);
-        const byteNumbers = new Array(byteCharacters.length);
-      
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const getMimeType = (format: string): string => {
-          switch (format.toLowerCase()) {
-            case "mp3":
-              return "audio/mp3";
-            case "opus":
-              return "audio/opus";
-            case "ogg":
-              return "audio/ogg";
-            case "flac":
-              return "audio/flac";
-            case "m4a":
-              return "audio/m4a";
-            case "m4b":
-              return "audio/m4b";
-            default:
-              throw new Error("Unsupported audio format");
-          }
-        };
-        const mimeType = getMimeType(activeAudio()?.audio_type);        
-        // Create a Blob from the Uint8Array
-        const audioBlob = new Blob([byteArray], { type: mimeType });
+        const audioBlob = await buildBlob(activeAudio()?.path, activeAudio()?.audio_type);
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
   

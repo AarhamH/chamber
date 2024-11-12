@@ -20,6 +20,7 @@ import { Button } from "~/components/solidui/Button";
 import { Dialog, DialogTrigger } from "~/components/solidui/Dialog";
 import { AllAudioModal } from "~/components/table/AllAudioModal";
 import "../../App.css";
+import { buildBlob } from "~/utils/helper";
 
 export const WaveTrimmer = () => {
   let container!: HTMLDivElement;
@@ -233,36 +234,7 @@ export const WaveTrimmer = () => {
 
   createEffect(async () => {
     if (Object.keys(modifyAudioTrim).length !== 0 && wavesurfer) {
-      const audioData: string = await invoke("read_audio_buffer", { filePath: modifyAudioTrim.path });
-      // Decode the base64 string to binary
-      const byteCharacters = atob(audioData);
-      const byteNumbers = new Array(byteCharacters.length);
-      
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const getMimeType = (format: string): string => {
-        switch (format.toLowerCase()) {
-          case "mp3":
-            return "audio/mp3";
-          case "opus":
-            return "audio/opus";
-          case "ogg":
-            return "audio/ogg";
-          case "flac":
-            return "audio/flac";
-          case "m4a":
-            return "audio/m4a";
-          case "m4b":
-            return "audio/m4b";
-          default:
-            throw new Error("Unsupported audio format");
-        }
-      }
-      const mimeType = getMimeType(modifyAudioTrim.audio_type);        
-      const audioBlob = new Blob([byteArray], { type: mimeType });
-   
+      const audioBlob = await buildBlob(modifyAudioTrim.path, modifyAudioTrim.audio_type);
       wavesurfer.loadBlob(audioBlob);
     }
   }, [modifyAudioTrim]);

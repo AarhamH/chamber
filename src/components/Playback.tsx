@@ -4,7 +4,7 @@ import { BiRegularPlay, BiRegularPause, BiRegularVolumeFull, BiRegularLoaderCirc
 import { TbArrowsShuffle, TbMoon, TbRepeat, TbRepeatOnce, TbSun } from "solid-icons/tb"
 import { Button } from "~/components/solidui/Button";
 import { useAudio } from "~/components/AudioContext";
-import { formatTime } from "~/utils/format";
+import { formatTime } from "~/utils/helper";
 
 export const PlayBack = () => {
   /* States and references */
