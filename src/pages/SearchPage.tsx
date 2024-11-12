@@ -20,6 +20,7 @@ import { IoRemoveCircleOutline } from "solid-icons/io"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "~/components/Sheet"
 import { BiRegularLoaderCircle } from "solid-icons/bi"
 import { toast } from "solid-sonner"
+import { Switch, SwitchControl, SwitchThumb, SwitchLabel} from "~/components/Switch"
 
 interface SearchSuggestion {
   label: string
@@ -31,6 +32,7 @@ export const SearchPage = () => {
   const [searchSuggestions, setSearchSuggestions] = createSignal<SearchSuggestion[]>([])
   const [youtubeQuery, setYoutubeQuery] = createSignal<YoutubeQuery[]>([])
   const [isDownloading, setIsDownloading] = createSignal<boolean>(false)
+  const [isSearchableByUrl, setIsSearchableByUrl] = createSignal<boolean>(false)
 
   const cache = new Map();
 
@@ -45,7 +47,10 @@ export const SearchPage = () => {
   
   async function autoComplete(input: string) {
     try {
-      if (!input) return;
+      if (!input || isSearchableByUrl()){
+        setSearchSuggestions([]);
+        return;
+      };
       const suggestions = await invoke<string[]>("youtube_suggestion", { input })
         .then((result) =>
           result.map((suggestion) => ({
@@ -53,8 +58,7 @@ export const SearchPage = () => {
             value: suggestion.replace(/"/g, "")
           }))
         );
-  
-      cache.set(input, suggestions);
+      
       setSearchSuggestions(suggestions);
     } catch (error) {
       return error;
@@ -63,8 +67,13 @@ export const SearchPage = () => {
 
   async function search(input: string) {
     try {
-      const result = await invoke<YoutubeQuery[]>("youtube_search", { input });
-      setYoutubeQuery(result);
+      if(isSearchableByUrl()) {
+        const result = await invoke<YoutubeQuery>("youtube_search_by_url", { url: input });
+        setYoutubeQuery([result]);
+      } else {
+        const result = await invoke<YoutubeQuery[]>("youtube_search", { input });
+        setYoutubeQuery(result);
+      }
     } catch (error) {
       return error;
     }
@@ -96,97 +105,105 @@ export const SearchPage = () => {
 
   return (
     <div>
-      <Combobox
-        options={searchSuggestions()}
-        optionValue="value"
-        optionTextValue="label"
-        optionLabel="label"
-        placeholder="Search for an audio..."
-        itemComponent={(props) => (
-          <ComboboxItem item={props.item}>
-            <ComboboxItemLabel>{props.item.rawValue.label}</ComboboxItemLabel>
-            <ComboboxItemIndicator />
-          </ComboboxItem>
-        )}
-        class="w-1/3 mx-auto p-5"
-        onChange={(selectedItem) => {
-          if (selectedItem) {
-            setSearchInput(selectedItem.value);
-            search(selectedItem.value);
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            const value = (e.target as HTMLInputElement).value;
-            setSearchInput(setSearchInput(value));
-            search(searchInput());
-          }
-        }}
-      >
-        <ComboboxControl aria-label="SearchSuggestions">
-          <IoSearchOutline
-            class="mr-2 opacity-50 hover:cursor-pointer"
-            size={24}
-            onClick={() => search(searchInput())}
-          />
-          <ComboboxInput
-            value={searchInput()}
-            onInput={(e) => {
+      <div class="flex flex-row items-center justify-center">
+        <Combobox
+          options={searchSuggestions()}
+          optionValue="value"
+          optionTextValue="label"
+          optionLabel="label"
+          placeholder="Search for an audio..."
+          itemComponent={(props) => (
+            <ComboboxItem item={props.item}>
+              <ComboboxItemLabel>{props.item.rawValue.label}</ComboboxItemLabel>
+              <ComboboxItemIndicator />
+            </ComboboxItem>
+          )}
+          class="w-1/3 p-5"
+          onChange={(selectedItem) => {
+            if (selectedItem) {
+              setSearchInput(selectedItem.value);
+              search(selectedItem.value);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
               const value = (e.target as HTMLInputElement).value;
-              setSearchInput(value);
-              autoComplete(value);
-            }}
-          />  
-          <Sheet>
-            <SheetTrigger class="opacity-50 text-sm">Queue</SheetTrigger>
-            <SheetContent class="flex flex-col h-full overflow-y-hidden">
-              <SheetHeader>
-                <SheetTitle class="sticky top-0 z-10 pt-10">
-                  {isDownloading() ? 
-                    (
-                      <div class="flex flex-row gap-2 items-center">
-                        <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} />
-                        Downloading...
+              setSearchInput(setSearchInput(value));
+              search(searchInput());
+            }
+          }}
+        >
+          <ComboboxControl aria-label="SearchSuggestions">
+            <IoSearchOutline
+              class="mr-2 opacity-50 hover:cursor-pointer"
+              size={24}
+              onClick={() => search(searchInput())}
+            />
+            <ComboboxInput
+              value={searchInput()}
+              onInput={(e) => {
+                const value = (e.target as HTMLInputElement).value;
+                setSearchInput(value);
+                autoComplete(value);
+              }}
+            />  
+            <Sheet>
+              <SheetTrigger class="opacity-50 text-sm p-3">Queue</SheetTrigger>
+              <SheetContent class="flex flex-col h-full overflow-y-hidden">
+                <SheetHeader>
+                  <SheetTitle class="sticky top-0 z-10 pt-10">
+                    {isDownloading() ? 
+                      (
+                        <div class="flex flex-row gap-2 items-center">
+                          <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} />
+                          Downloading...
+                        </div>
+                      ): "Download Queue"
+                    }
+                  </SheetTitle>
+                  <SheetDescription class="flex-grow overflow-auto">
+                    {youtubeQueue.map((query) => (
+                      <div class="flex items-center p-4">
+                        <img src={query.thumbnail} class="rounded-md" width={120} height={90} />
+                        <div class="flex flex-col ml-2">
+                          <span class="text-sm">{query.title}</span>
+                          <span class="text-xs">{query.channel}</span>
+                        </div>
+                        <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" 
+                          onClick={() => {removeFromQueue(query)}}>
+                          <IoRemoveCircleOutline size={"1.5em"} />
+                        </Button>
                       </div>
-                    ): "Download Queue"
-                  }
-                </SheetTitle>
-                <SheetDescription class="flex-grow overflow-auto">
-                  {youtubeQueue.map((query) => (
-                    <div class="flex items-center p-4">
-                      <img src={query.thumbnail} class="rounded-md" width={120} height={90} />
-                      <div class="flex flex-col ml-2">
-                        <span class="text-sm">{query.title}</span>
-                        <span class="text-xs">{query.channel}</span>
-                      </div>
-                      <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" 
-                        onClick={() => {removeFromQueue(query)}}>
-                        <IoRemoveCircleOutline size={"1.5em"} />
-                      </Button>
-                    </div>
-                  ))}
-                </SheetDescription>
-              </SheetHeader>
-              <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5">
-                <Button 
-                  class="w-32" 
-                  variant="filled" 
-                  disabled={youtubeQueue.length === 0 || isDownloading()} 
-                  onClick={() => {
-                    download(youtubeQueue).then((result) => {
-                      const isError = result instanceof Error;
-                      (() => isError ? toast.error(result.message) : toast.success("Download was successful"))();
-                    })
-                  }} 
-                  size="sm">
-                  {isDownloading() ? <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} /> : "Download"}
-                </Button>
-              </div>
-            </SheetContent>      
-          </Sheet>
-        </ComboboxControl>
-        <ComboboxContent />
-      </Combobox>
+                    ))}
+                  </SheetDescription>
+                </SheetHeader>
+                <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5">
+                  <Button 
+                    class="w-32" 
+                    variant="filled" 
+                    disabled={youtubeQueue.length === 0 || isDownloading()} 
+                    onClick={() => {
+                      download(youtubeQueue).then((result) => {
+                        const isError = result instanceof Error;
+                        (() => isError ? toast.error(result.message) : toast.success("Download was successful"))();
+                      })
+                    }} 
+                    size="sm">
+                    {isDownloading() ? <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} /> : "Download"}
+                  </Button>
+                </div>
+              </SheetContent>      
+            </Sheet>
+          </ComboboxControl>
+          <ComboboxContent />
+        </Combobox>
+        <Switch checked={isSearchableByUrl()} onChange={setIsSearchableByUrl} class="flex items-center space-x-2">
+          <SwitchControl onChange={() => setIsSearchableByUrl(!isSearchableByUrl)}>
+            <SwitchThumb />
+          </SwitchControl>
+          <SwitchLabel class="font-normal text-xs opacity-50">Search By URL</SwitchLabel>
+        </Switch>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
