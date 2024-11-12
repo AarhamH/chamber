@@ -33,7 +33,7 @@ import { AllAudioModal } from "~/components/table/AllAudioModal";
 export const PlaylistPage = () => {
   const params = useParams();
   const [ playlistTitle, setPlaylistTitle ] = createSignal<string>(playlists.find((playlistItem) => playlistItem.id === parseInt(params.id))?.title || "");
-  const { activeAudio,setActiveAudio, setActivePlaylist } = useAudio();
+  const { togglePlay, activeAudio, setActiveAudio, setActivePlaylist, isAudioPlaying } = useAudio();
   let playlistPageRef!: HTMLDivElement;
   const navigate = useNavigate();
 
@@ -151,13 +151,17 @@ export const PlaylistPage = () => {
           {audioInPlaylist.map((audio_item:Audio, index: number) => (
             <TableRow>
               <TableCell class="flex justify-end hover:cursor-pointer">
-                {audio_item.id === activeAudio().id ? (
-                  <BiRegularPause size={"2em"} class="text-green" />
+                {audio_item.id === activeAudio()?.id && isAudioPlaying() ? (
+                  <BiRegularPause size={"2em"} class="text-green" onClick={() => togglePlay()} />
                 ) : (
                   <BiRegularPlay size={"2em"} 
                     onClick={() => {
-                      setActiveAudio(audio_item); 
-                      setActivePlaylist([...audioInPlaylist]);
+                      if(audio_item.id !== activeAudio()?.id) {
+                        setActiveAudio(audio_item); 
+                        setActivePlaylist([...audioInPlaylist]);
+                      } else {
+                        togglePlay();
+                      }
                     }} />
                 )}
               </TableCell>

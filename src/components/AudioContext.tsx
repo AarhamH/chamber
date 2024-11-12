@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { createContext, createEffect, createSignal, ParentProps, useContext } from "solid-js";
-import { audioInPlaylist } from "~/store/store";
 import { Audio } from "~/utils/types";
 
 interface AudioContextType {
@@ -21,6 +20,7 @@ interface AudioContextType {
   setActiveAudio: (audio_item: Audio) => void;
   togglePlaybackMode: () => void;
   playbackStatus: () => string;
+  setActivePlaylist: (_playlist: Audio[]) => void;
 }
 
 const AudioContext = createContext<AudioContextType>();
@@ -29,20 +29,18 @@ const AudioContext = createContext<AudioContextType>();
 export const AudioProvider  = (props: ParentProps) => {
   const [audioUrl, setAudioUrl] = createSignal("");
   const [trackProgress, setTrackProgress] = createSignal(0);
-  let audioRef: HTMLAudioElement | undefined;
+  let audioRef!: HTMLAudioElement;
   const [isAudioPlaying, setIsAudioPlaying] = createSignal(false);
   const [audioDuration, setAudioDuration] = createSignal(0);
   const [loading, setLoading] = createSignal(false);
   const [activeAudio, setActiveAudio] = createSignal<Audio>({} as Audio);
   const [activePlaylist, setActivePlaylist] = createSignal<Audio[]>([]);
-
   const [playbackStatus, setPlaybackStatus] = createSignal("default");
 
   createEffect(async () => {
-    if(activeAudio) {
+    if(activeAudio() && activePlaylist()) {
       try {
         setLoading(true);
-        setActivePlaylist(() => audioInPlaylist);
         const audioData: string = await invoke("read_audio_buffer", { filePath: activeAudio()?.path });
         // Decode the base64 string to binary
         const byteCharacters = atob(audioData);
@@ -76,34 +74,38 @@ export const AudioProvider  = (props: ParentProps) => {
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
   
-        if (audioRef) {
-          audioRef.addEventListener("loadedmetadata", () => {
-            setAudioDuration(audioRef.duration);
-          });
+        audioRef.addEventListener("loadedmetadata", () => {
+          setAudioDuration(audioRef.duration);
+        });
           
-          audioRef.addEventListener("ended", () => {
+        audioRef.addEventListener("timeupdate", () => {
+          setTrackProgress(audioRef.currentTime);
+        });
+        
+        audioRef.addEventListener("play", () => {
+          setIsAudioPlaying(true);
+        });
+  
+        audioRef.addEventListener("pause", () => {
+          setIsAudioPlaying(false);
+        });
+
+        audioRef.addEventListener("ended", () => {
+          if (!loading()) {
             if(playbackStatus() === "shuffle") {
-              handleRandomSkip();
+              const randomIndex = Math.floor(Math.random() * activePlaylist().length);
+              setActiveAudio(activePlaylist()[randomIndex]);
             } else if(playbackStatus() === "repeat") {
               audioRef.currentTime = 0;
               audioRef.play();
             } else {
               handleSkipForward();
             }
-          });
-          
-          audioRef.addEventListener("timeupdate", () => {
-            setTrackProgress(audioRef.currentTime);
-          });
-        
+          }
+        });
+
+        if(audioRef.HAVE_ENOUGH_DATA) {
           audioRef.play();
-          audioRef.addEventListener("play", () => {
-            setIsAudioPlaying(true);
-          });
-  
-          audioRef.addEventListener("pause", () => {
-            setIsAudioPlaying(false);
-          });
         }
       } catch (error) {
         return error;
@@ -130,6 +132,7 @@ export const AudioProvider  = (props: ParentProps) => {
 
   const handleSkipForward = () => {
     if (audioRef && activeAudio && activePlaylist) {
+      audioRef.pause();
       let index = activePlaylist().findIndex((audio_item) => audio_item.id === activeAudio()?.id);
       index = (index + 1) % activePlaylist().length;
       setActiveAudio(activePlaylist()[index]); 
@@ -138,18 +141,12 @@ export const AudioProvider  = (props: ParentProps) => {
 
   const handleSkipBackward = () => {
     if (audioRef && activeAudio && activePlaylist) {
+      audioRef.pause(); 
       let index = activePlaylist().findIndex((audio_item) => audio_item.id === activeAudio()?.id);
       index = (index - 1 + activePlaylist().length) % activePlaylist().length;
       setActiveAudio(activePlaylist()[index]); 
     }
   };
-
-  const handleRandomSkip = () => {
-    if (audioRef && activeAudio() && activePlaylist) {
-      const index = Math.floor(Math.random() * activePlaylist().length);
-      setActiveAudio(activePlaylist()[index]); 
-    }
-  }
 
   const handleTrackChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -180,7 +177,9 @@ export const AudioProvider  = (props: ParentProps) => {
       handleVolumeChange, 
       setActiveAudio, 
       togglePlaybackMode,
-      playbackStatus}}>
+      playbackStatus,
+      setActivePlaylist,
+    }}>
       <audio ref={audioRef} src={audioUrl()} id="audio"/>
       {props.children}
     </AudioContext.Provider>
