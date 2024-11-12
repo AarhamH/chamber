@@ -106,6 +106,7 @@ export const SideNavigation = () => {
                 <TextField>
                   <TextFieldInput 
                     class="w-full" 
+                    maxLength={40}
                     type="text"
                     onInput={handleInput}   
                     placeholder="Group name"
