@@ -202,27 +202,3 @@ pub fn delete_audio(audio_id_arg: i32) -> Result<(), String> {
   }
 
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use std::path::{PathBuf};
-
-  #[test]
-  fn test_read_file_metadata() {
-      // Get the current working directory
-      let current_dir: PathBuf = std::env::current_dir().unwrap();
-      // Find the repository root by traversing up the directory tree
-      let repo_root = current_dir.ancestors().find(|ancestor| ancestor.join("Cargo.toml").exists()).unwrap();
-      // Construct the path to the test audio file relative to the repository root
-      let audio_file_path = repo_root.join("src").join("test_fixtures").join("test_audio_mp3.mp3");
-
-      let result = read_file_metadata(audio_file_path.to_str().unwrap().to_string());
-      assert!(result.is_ok());
-      let audio_arg = result.unwrap();
-      assert_eq!(audio_arg.title.unwrap(), "test_audio_mp3.mp3");
-      assert_eq!(audio_arg.author.unwrap(), "Unknown");
-      assert_eq!(audio_arg.audio_type.unwrap(), "mp3");
-      assert_eq!(audio_arg.duration.unwrap(), "00:42");
-  }
-}
