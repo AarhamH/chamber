@@ -44,8 +44,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-build-
 
-      - name: Go to the backend directory
-        run: cd src-tauri
-
       - name: Build and test
         run: cargo test --all --verbose
+        working-directory: src-tauri
