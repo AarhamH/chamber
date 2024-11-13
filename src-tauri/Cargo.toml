@@ -1,7 +1,7 @@
 [package]
 name = "chamber"
 version = "0.1.0"
-description = "A Tauri App"
+description = "Small and performant audio library"
 authors = ["you"]
 edition = "2021"
 
@@ -25,6 +25,7 @@ reqwest = { version = "0.12.8", features = ["blocking", "json"] }
 scraper = "0.12"
 regex = "1.5.4"
 lofty = "0.21.1"
+tempfile = "3.2"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

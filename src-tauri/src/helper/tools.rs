@@ -58,3 +58,46 @@ pub fn trim_number(input: &str) -> String {
 
     res.to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_seconds_to_minutes() {
+        assert_eq!(seconds_to_minutes(60), "01:00");
+        assert_eq!(seconds_to_minutes(61), "01:01");
+        assert_eq!(seconds_to_minutes(3600), "60:00");
+        assert_eq!(seconds_to_minutes(3661), "61:01");
+    }
+
+    #[test]
+    fn test_seconds_to_hh_mm_ss() {
+        assert_eq!(seconds_to_hh_mm_ss(60), "00:01:00");
+        assert_eq!(seconds_to_hh_mm_ss(61), "00:01:01");
+        assert_eq!(seconds_to_hh_mm_ss(3600), "01:00:00");
+        assert_eq!(seconds_to_hh_mm_ss(3661), "01:01:01");
+    }
+
+    #[test]
+    fn test_meta_duration_to_minutes() {
+        assert_eq!(meta_duration_to_minutes("PT1M1S".to_string()), "01:01");
+        assert_eq!(meta_duration_to_minutes("PT900M1S".to_string()), "900:01");
+        assert_eq!(meta_duration_to_minutes("PT1M".to_string()), "01:00");
+        assert_eq!(meta_duration_to_minutes("PT1S".to_string()), "00:01");
+    }
+
+    #[test]
+    fn test_trim_number() {
+        assert_eq!(trim_number("2123213123"), "2.12B");
+        assert_eq!(trim_number("2123123"), "2.12M");
+        assert_eq!(trim_number("2123"), "2.12K");
+        assert_eq!(trim_number("123"), "123");
+    }
+
+    #[test]
+    fn test_meta_duration_to_minutes_raw() {
+        assert_eq!(meta_duration_to_minutes_raw("1:01:01"), Some(61));
+        assert_eq!(meta_duration_to_minutes_raw("1:01"), Some(1));
+    }
+}
