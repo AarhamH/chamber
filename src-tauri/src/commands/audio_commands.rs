@@ -218,7 +218,6 @@ pub async fn export_to_destination_driectory(audio_id_arg: i32, destination_dire
 
   let destination_path = format!("{}/{}",destination_directory, file_name);
 
-  println!("Copying file from {} to {}", source_path, destination_path);
   copy_file_to_destination(source_path, destination_path.as_str()).map_err(|e| format!("Unable to copy file: {}", e))?;
 
   Ok(())
