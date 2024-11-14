@@ -1,7 +1,7 @@
 import { createSignal, createEffect } from "solid-js"
 import { invoke } from "@tauri-apps/api/tauri"
 import { YoutubeQuery } from "~/utils/types"
-import { youtubeQueue, setYoutubeQueue } from "~/store/store"
+import { youtubeQueue, setYoutubeQueue, isSearchDownloading, setIsSearchDownloading } from "~/store/store"
 import { IoRemoveCircleOutline, IoSearchOutline } from "solid-icons/io"
 import { BiRegularLoaderCircle, BiRegularLink, BiRegularAddToQueue } from "solid-icons/bi"
 import { toast } from "solid-sonner"
@@ -20,7 +20,6 @@ export const SearchPage = () => {
   const [searchInput, setSearchInput] = createSignal<string>("")
   const [searchSuggestions, setSearchSuggestions] = createSignal<SearchSuggestion[]>([])
   const [youtubeQuery, setYoutubeQuery] = createSignal<YoutubeQuery[]>([])
-  const [isDownloading, setIsDownloading] = createSignal<boolean>(false)
   const [isSearchableByUrl, setIsSearchableByUrl] = createSignal<boolean>(false)
   const cache = new Map();
 
@@ -69,12 +68,12 @@ export const SearchPage = () => {
 
   async function download(audioList: YoutubeQuery[]) {
     try {
-      setIsDownloading(true);
+      setIsSearchDownloading(true);
       await invoke("download_audio", { audioList });
     } catch (error) {
       return new Error(String(error));
     } finally {
-      setIsDownloading(false);
+      setIsSearchDownloading(false);
       setYoutubeQueue([]);
     }
   }
@@ -139,11 +138,10 @@ export const SearchPage = () => {
               <SheetTrigger class="opacity-50 text-sm p-3">Queue</SheetTrigger>
               <SheetContent class="flex flex-col h-full overflow-y-hidden">
                 <SheetHeader>
-                  <SheetTitle class="sticky top-0 z-10 pt-10">
-                    {isDownloading() ? 
+                  <SheetTitle class="sticky top-0 bg-background pt-10">
+                    {isSearchDownloading() ? 
                       (
                         <div class="flex flex-row gap-2 items-center">
-                          <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} />
                           Downloading...
                         </div>
                       ): "Download Queue"
@@ -165,11 +163,11 @@ export const SearchPage = () => {
                     ))}
                   </SheetDescription>
                 </SheetHeader>
-                <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5">
+                <div class="sticky bottom-0 left-0 right-0 mt-auto flex items-center justify-center p-5 bg-background">
                   <Button 
-                    class="w-32" 
+                    class="w-32 flex items-center justify-center" 
                     variant="filled" 
-                    disabled={youtubeQueue.length === 0 || isDownloading()} 
+                    disabled={youtubeQueue.length === 0 || isSearchDownloading()} 
                     onClick={() => {
                       download(youtubeQueue).then((result) => {
                         const isError = result instanceof Error;
@@ -177,7 +175,7 @@ export const SearchPage = () => {
                       })
                     }} 
                     size="sm">
-                    {isDownloading() ? <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} /> : "Download"}
+                    {isSearchDownloading() ? <BiRegularLoaderCircle class="animate-spin" size={"1.5em"} /> : "Download"}
                   </Button>
                 </div>
               </SheetContent>      
