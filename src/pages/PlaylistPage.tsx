@@ -85,8 +85,8 @@ export const PlaylistPage = () => {
 
   return(
     <div ref={playlistPageRef}>
-      <div class="flex items-center pt-10 pb-5 pl-20 justify-start">
-        <div class="flex flex-col">
+      <div class="flex items-center pt-10 pb-5 pl-20 pr-20 justify-start sticky top-0 bg-background z-50">
+        <div class="flex flex-col w-full">
           <input
             type="text"
             value={playlistTitle()}
