@@ -32,5 +32,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Build and run tests
-        run: cargo test --all --verbose
+        run: |
+           npm run setup
+           cargo test --all --verbose
         working-directory: src-tauri
