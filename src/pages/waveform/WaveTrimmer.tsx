@@ -71,7 +71,7 @@ export const WaveTrimmer = () => {
     }
     const response = await invoke("trim_single_audio", argument).catch((error) => error);
     if(response instanceof Error) return toast.error(response.message);
-    regions.getRegions().forEach(region_item => deleteRegion(region_item));
+    deleteRegion(region);
     return toast.success("Successfully trimmed audio");
   }
 
