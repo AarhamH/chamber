@@ -155,10 +155,12 @@ export const SearchPage = () => {
                           <span class="text-sm">{query.title}</span>
                           <span class="text-xs">{query.channel}</span>
                         </div>
-                        <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" 
-                          onClick={() => {removeFromQueue(query)}}>
-                          <IoRemoveCircleOutline size={"1.5em"} />
-                        </Button>
+                        {!isSearchDownloading() && (
+                          <Button variant="link" size="icon" class="flex items-center justify-center ml-auto" 
+                            onClick={() => {removeFromQueue(query)}}>
+                            <IoRemoveCircleOutline size={"1.5em"} />
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </SheetDescription>
