@@ -11,3 +11,4 @@ export const [effectInput, setEffectInput] = createStore<Audio>({} as Audio);
 export const [modifyAudioTrim, setModifyAudioTrim] = createStore<Audio>({} as Audio);
 // loading states
 export const [isAudioTranscodeLoading, setIsAudioTranscodeLoading] = createSignal(false);
+export const [isSearchDownloading, setIsSearchDownloading] = createSignal(false);

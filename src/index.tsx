@@ -14,6 +14,7 @@ import { Transcoding } from "./pages/Transcoding";
 import { CustomToast } from "./components/CustomToast";
 import { WaveRecorder } from "./pages/waveform/WaveRecorder";
 import { WaveTrimmer } from "./pages/waveform/WaveTrimmer";
+import { AllAudiosPage } from "./pages/AllAudiosPage";
 
 type AppProps = {
   children?: JSX.Element;
@@ -62,6 +63,7 @@ render(
   () => (
     <Router root={App}>
       <Route path="/" component={HomePage} />
+      <Route path="/audios" component={AllAudiosPage} />
       <Route path="/search" component={SearchPage} />
       <Route path="/transcoding" component={Transcoding} />
       <Route path="/playlist/:id" component={PlaylistPage} />

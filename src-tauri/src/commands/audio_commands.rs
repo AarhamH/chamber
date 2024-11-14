@@ -200,5 +200,25 @@ pub fn delete_audio(audio_id_arg: i32) -> Result<(), String> {
     Ok(_) => Ok(()),
     Err(err) => Err(format!("Error deleting playlist entry: {}", err)), // Return error to the client
   }
+}
 
+#[tauri::command(async)]
+pub async fn export_to_destination_driectory(audio_id_arg: i32, destination_directory: String) -> Result<(), String> {
+  use crate::helper::files::copy_file_to_destination;
+  use crate::schema::audio::dsl::*;
+
+  let mut connection: SqliteConnection = establish_connection();
+
+  let selected_audio = audio.find(audio_id_arg)
+    .first::<Audio>(&mut connection)
+    .expect("Error finding audio");
+
+  let source_path = selected_audio.path.as_str();
+  let file_name = selected_audio.title.as_str();
+
+  let destination_path = format!("{}/{}",destination_directory, file_name);
+
+  copy_file_to_destination(source_path, destination_path.as_str()).map_err(|e| format!("Unable to copy file: {}", e))?;
+
+  Ok(())
 }

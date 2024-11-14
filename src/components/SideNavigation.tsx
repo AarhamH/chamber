@@ -12,13 +12,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { TextField, TextFieldInput } from "./solidui/TextField"
 import { Button } from "~/components/solidui/Button"
 import { toast } from "solid-sonner"
-import chamberWhite from "~/assets/chamber_logo_white.svg"
+import chamberLight from "~/assets/chamber-light.svg"
+import chamberDark from "~/assets/chamber-dark.svg"
+import { useColorMode } from "@kobalte/core"
+import { CgMusicNote } from "solid-icons/cg"
 
 export const SideNavigation = () => {
   /* States and references */
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = createSignal(false);
   const [playlistTitleInput, setPlaylistTitleInput] = createSignal("");
   const navigate = useNavigate();
+  const {colorMode} = useColorMode();
   let playlistRef!: HTMLDivElement;
 
   /* Functions */
@@ -70,13 +74,17 @@ export const SideNavigation = () => {
   return (
     <div class="bg-sidenavigation h-full w-full flex flex-col shadow-lg">
       <div class="flex items-center justify-center mt-10 mb-4 text-3xl font-thin">
-        <img src={chamberWhite} class="w-7 h-7 m-1" />
+        <img src={colorMode() === "dark" ? chamberLight : chamberDark} class="w-12 h-12" />
         <span>chamber</span>
       </div>
       <div>
         <Button class="flex gap-3 px-10" onClick={() => navigate("/")}>
           <BiRegularHomeAlt2 size={"1.4em"} />
           <p>Home</p>
+        </Button>
+        <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/audios")}>
+          <CgMusicNote size={"1.4em"}/>
+          <p>Audios</p>
         </Button>
         <Button class="flex items-center gap-3 px-10" onClick={() => navigate("/search")}>
           <IoSearchOutline size={"1.4em"}/>
