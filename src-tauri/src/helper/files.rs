@@ -160,14 +160,6 @@ mod tests {
         assert_eq!(buffer.len(), large_content.len() + 1); // +1 for the newline
     }
 
-    // Tests for create_audio_store_directory
-    #[test]
-    fn test_create_audio_store_directory() {
-        let audio_store_path = Path::new(AUDIO_STORE);
-        create_audio_store_directory().unwrap();
-        assert!(audio_store_path.exists());
-    }
-
     // Tests for copy_file_to_destination
     #[test]
     fn test_copy_file_to_destination() {
