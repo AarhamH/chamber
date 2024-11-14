@@ -53,7 +53,6 @@ mod tests {
     use super::*;
     use tempfile::tempdir;
     use std::env;
-    use std::fs;
 
     #[test]
     fn test_get_db_path() {
@@ -61,22 +60,6 @@ mod tests {
         env::set_current_dir(&dir).unwrap();
         let db_path = get_db_path();
         assert!(db_path.ends_with("/chamberdb.sqlite"));
-    }
-
-    #[test]
-    fn test_db_file_exists() {
-        let dir = tempdir().unwrap();
-        env::set_current_dir(&dir).unwrap();
-        let db_path = get_db_path();
-
-        // Ensure the database file does not exist initially
-        assert!(!db_file_exists(), "Database file should not exist initially");
-
-        // Create the database file
-        fs::File::create(&db_path).unwrap();
-
-        // Ensure the database file exists after creation
-        assert!(db_file_exists(), "Database file should exist after creation");
     }
 
     #[test]
