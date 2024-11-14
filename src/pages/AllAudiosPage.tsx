@@ -45,7 +45,9 @@ export const AllAudiosPage = () => {
     const destinationDirectory = await open({
       directory: true,
     })
-    console.log(destinationDirectory);
+    const result = await invoke("export_to_destination_driectory", { audioIdArg, destinationDirectory }).catch((error) => error);
+    if(result instanceof Error) return toast.error(result.message);
+    return destinationDirectory && toast.success(`Successfully Audio exported to ${destinationDirectory}`);
   }
 
   const deleteAudio = async (audioIdArg: number) => {

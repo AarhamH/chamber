@@ -31,6 +31,7 @@ fn main() {
             download_audio,
             transcode_audio,
             trim_single_audio,
+            export_to_destination_driectory
          ])
         .setup(|_app| {
             db::init();
