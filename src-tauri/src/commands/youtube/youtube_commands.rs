@@ -2,7 +2,7 @@ use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
 use crate::binary_path_gen::{FFMPEG_NO_EXT_PATH, FFMPEG_PATH, YT_DLP_NO_EXT_PATH, YT_DLP_PATH};
-use crate::helper::constants::AUDIO_STORE;
+use crate::helper::constants::audio_store_path;
 use crate::models::youtube_model::YouTubeAudio;
 use tokio::time::{timeout,Duration};
 use crate::helper::tools::meta_duration_to_minutes_raw;
@@ -59,7 +59,7 @@ pub async fn youtube_search_by_url(url: String) -> Result<YouTubeAudio, String> 
 
 #[tauri::command(async)]
 pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String> {
-    pub use crate::helper::files:: {create_audio_store_directory, delete_file_if_exists, construct_output_path};
+    pub use crate::helper::files:: {create_audio_store_directory, delete_file_if_exists};
     use crate::models::audio_model::NewAudio;
     use crate::db::establish_connection;
     use diesel::SqliteConnection;
@@ -80,16 +80,17 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         let tx = tx.clone();
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
+            let audio_store_path = audio_store_path();
             let yt_title = yt_audio.title.clone().unwrap_or_default();
-            let mut output_path = construct_output_path(AUDIO_STORE, &yt_title, "mp3");
-            let mut output_path_webm = construct_output_path(AUDIO_STORE, &yt_title, "webm");
+            let mut output_path = audio_store_path.join(format!("{}.mp3", yt_title.replace(" ", "_")));
+            let mut output_path_webm = audio_store_path.join(format!("{}.webm", yt_title.replace(" ", "_")));
             let mut counter = 0;
 
             while output_path.exists() {
                 counter += 1;
                 let dup_title = format!("{}-{}", yt_title, counter);
-                output_path = construct_output_path(AUDIO_STORE, &dup_title, "mp3");
-                output_path_webm = construct_output_path(AUDIO_STORE, &dup_title, "webm");
+                output_path = audio_store_path.join(format!("{}.mp3", dup_title.replace(" ", "_")));
+                output_path_webm = audio_store_path.join(format!("{}.webm", dup_title.replace(" ", "_")));
             }
 
             let args = vec![

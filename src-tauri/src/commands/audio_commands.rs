@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::tag::Accessor;
 use lofty::probe::Probe;
-use crate::helper::constants::AUDIO_STORE;
+use crate::helper::constants::audio_store_path;
 use crate::helper::tools::seconds_to_minutes;
 use crate::schema::audio::dsl::*;
 use crate::models::audio_model:: {
@@ -49,13 +49,14 @@ fn read_file_metadata(file_path: String) -> Result<AudioArg, String> {
   create_audio_store_directory()?;
 
   // create destination path based on file_name, if there is a duplicate, add a suffix -1, -2, etc.
-  let mut destination_path = Path::new(AUDIO_STORE).join(&file_name);
+  let audio_store_path = audio_store_path();
+  let mut destination_path = audio_store_path.join(&file_name);
   let mut counter = 1;
         
   while destination_path.exists() {
       // Create a new destination path with a counter suffix
       let new_file_name = format!("{}-{}", file_name, counter);
-      destination_path = Path::new(AUDIO_STORE).join(new_file_name);
+      destination_path = audio_store_path.join(new_file_name);
       counter += 1;
   }
 

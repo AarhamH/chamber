@@ -2,7 +2,7 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 use mime_guess::from_path;
-use crate::helper::constants::AUDIO_STORE;
+use crate::helper::constants::audio_store_path;
 
 pub fn get_file_type(file_path: &str) -> Result<String, String> {
     let file_type: String = from_path(file_path).first_or_octet_stream().essence_str().to_string();
@@ -27,7 +27,7 @@ pub fn read_file_to_buffer(file_path: &str) -> Result<Vec<u8>, String> {
 }
 
 pub fn create_audio_store_directory() -> Result<(), String> {
-    let audio_store_path: &Path = Path::new(AUDIO_STORE);
+    let audio_store_path: std::path::PathBuf = audio_store_path();
     if !audio_store_path.exists() {
         fs::create_dir(audio_store_path).map_err(|err| {
             eprintln!("Failed to create audio_store directory: {}", err);
