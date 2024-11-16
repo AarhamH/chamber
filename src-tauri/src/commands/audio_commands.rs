@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use diesel::prelude::*;
 use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::tag::Accessor;
