@@ -78,14 +78,15 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         let handle = task::spawn(async move {
             let audio_store_path = audio_store_path();
             let yt_title = yt_audio.title.clone().unwrap_or_default();
-            let mut output_path = audio_store_path.join(format!("{}.webm", trim_invalid_file_characters(&yt_title)));
+            let download_file_extension = if !cfg!(target_os = "windows") { "webm" } else { "opus" };
+            let mut output_path = audio_store_path.join(format!("{}.{}", trim_invalid_file_characters(&yt_title), download_file_extension));
             let mut output_path_final = audio_store_path.join(format!("{}.mp3", trim_invalid_file_characters(&yt_title)));
             let mut counter = 0;
 
             while output_path.exists() {
                 counter += 1;
                 let dup_title = format!("{}-{}", trim_invalid_file_characters(&yt_title), counter);
-                output_path = audio_store_path.join(format!("{}.webm", dup_title.replace(" ", "_")));
+                output_path = audio_store_path.join(format!("{}.{}", dup_title.replace(" ", "_"), download_file_extension));
                 output_path_final = audio_store_path.join(format!("{}.mp3", dup_title.replace(" ", "_")));
             }
 
@@ -114,7 +115,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 }
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }
-            
+
             let ffmpeg_args = vec![
                 "-i", &output_path.to_str().unwrap(),
                 &output_path_final.to_str().unwrap(),
