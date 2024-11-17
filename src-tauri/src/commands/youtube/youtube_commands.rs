@@ -1,10 +1,9 @@
 use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
-use crate::binary_path_gen::{FFMPEG_NO_EXT_PATH, FFMPEG_PATH, YT_DLP_NO_EXT_PATH, YT_DLP_PATH};
 use crate::helper::constants::audio_store_path;
+use crate::helper::files::trim_invalid_file_characters;
 use crate::models::youtube_model::YouTubeAudio;
-use tokio::time::{timeout,Duration};
 use crate::helper::tools::meta_duration_to_minutes_raw;
 
 #[tauri::command]
@@ -59,83 +58,92 @@ pub async fn youtube_search_by_url(url: String) -> Result<YouTubeAudio, String> 
 
 #[tauri::command(async)]
 pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String> {
-    pub use crate::helper::files:: {create_audio_store_directory, delete_file_if_exists};
+    pub use crate::helper::files:: create_audio_store_directory;
     use crate::models::audio_model::NewAudio;
     use crate::db::establish_connection;
     use diesel::SqliteConnection;
     use diesel::prelude::*;
     use crate::schema::audio::dsl::*;
     use tokio::sync::mpsc;
-    use tokio::process::Command;
     use tokio::task;
+    use tauri::api::process::Command;
 
     create_audio_store_directory()?;
 
     let (tx, mut rx) = mpsc::channel(32);
     let mut handles = vec![];
     for yt_audio in audio_list {
-        let command = if cfg!(target_os = "windows") { YT_DLP_PATH } else { YT_DLP_NO_EXT_PATH };
-        let ffmpeg = if cfg!(target_os = "windows") { FFMPEG_PATH } else { FFMPEG_NO_EXT_PATH };
-
         let tx = tx.clone();
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
             let audio_store_path = audio_store_path();
             let yt_title = yt_audio.title.clone().unwrap_or_default();
-            let mut output_path = audio_store_path.join(format!("{}.mp3", yt_title.replace(" ", "_")));
-            let mut output_path_webm = audio_store_path.join(format!("{}.webm", yt_title.replace(" ", "_")));
+            let mut output_path = audio_store_path.join(format!("{}.webm", trim_invalid_file_characters(&yt_title)));
+            let mut output_path_final = audio_store_path.join(format!("{}.mp3", trim_invalid_file_characters(&yt_title)));
             let mut counter = 0;
 
             while output_path.exists() {
                 counter += 1;
-                let dup_title = format!("{}-{}", yt_title, counter);
-                output_path = audio_store_path.join(format!("{}.mp3", dup_title.replace(" ", "_")));
-                output_path_webm = audio_store_path.join(format!("{}.webm", dup_title.replace(" ", "_")));
+                let dup_title = format!("{}-{}", trim_invalid_file_characters(&yt_title), counter);
+                output_path = audio_store_path.join(format!("{}.webm", dup_title.replace(" ", "_")));
+                output_path_final = audio_store_path.join(format!("{}.mp3", dup_title.replace(" ", "_")));
             }
 
             let args = vec![
                 "-x",
-                "--audio-format", "mp3",
                 "--max-filesize", "500m",
                 "-o", output_path.to_str().unwrap(),
+                "--postprocessor-args", "ffmpeg:-strict -2",
                 "--cookies", "cookies.txt",
-                "--ffmpeg-location", ffmpeg,
                 &yt_audio.url,
             ];
-            let output = match timeout(Duration::from_secs(300), 
-                Command::new(command)
+
+            let command = if cfg!(target_os = "windows") { "yt-dlp.exe" } else { "yt-dlp" };
+            Command::new_sidecar(command)
+                .expect("failed to create `my-sidecar` binary command")
                 .args(&args)
-                .output()).await {
-                Ok(Ok(output)) => output,
-                Ok(Err(e)) => {
-                    let _ = tx.send(Err(format!("Error: {}",e))).await;
-                    return;
-                },
-                Err(_) => {
-                    let _ = tx.send(Err(format!("Error: Download timed out"))).await;
-                    return;
+                .spawn()
+                .expect("Failed to spawn sidecar");
+
+            let timeout_duration = std::time::Duration::from_secs(120);
+            let start_time = std::time::Instant::now();
+            // Wait for the output path to exist
+            while !std::path::Path::new(output_path.to_str().unwrap()).exists() {
+                if start_time.elapsed() > timeout_duration {
+                    panic!("Timeout waiting for output file to exist");
                 }
-            };
-            
-            if !output.status.success() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                let _ = tx.send(Err(format!("Error: {}", stderr))).await;
-                return;
+                std::thread::sleep(std::time::Duration::from_secs(1));
             }
             
-            if std::fs::metadata(&output_path).unwrap().len() > 200_000_000 {
-                let _ = tx.send(Err(format!("Error: A downloaded file size exceeds 200MB" ))).await;
-                delete_file_if_exists(&output_path).unwrap();
-                delete_file_if_exists(&output_path_webm).unwrap();
-                return;
+            let ffmpeg_args = vec![
+                "-i", &output_path.to_str().unwrap(),
+                &output_path_final.to_str().unwrap(),
+            ];
+
+            let ffmpeg_command = if cfg!(target_os = "windows") { "ffmpeg.exe" } else { "ffmpeg" };
+            Command::new_sidecar(ffmpeg_command)
+                .expect("failed to create `my-sidecar` binary command")
+                .args(&ffmpeg_args)
+                .spawn()
+                .expect("Failed to spawn sidecar");
+
+            let timeout_duration = std::time::Duration::from_secs(120);
+            let start_time = std::time::Instant::now();
+            // Wait for the output path to exist
+            while !std::path::Path::new(output_path_final.to_str().unwrap()).exists() {
+                if start_time.elapsed() > timeout_duration {
+                    panic!("Timeout waiting for output file to exist");
+                }
+                std::thread::sleep(std::time::Duration::from_secs(1));
             }
+            
             // Fetch metadata and insert into the database
             let download_result = fetch_metadata(yt_audio.url).await.unwrap();
             let mut connection: SqliteConnection = establish_connection();
             let new_audio: NewAudio<'_> = NewAudio{
                 title: &download_result.title.unwrap_or_default(),
                 author: &download_result.channel.unwrap_or_default(),
-                path: output_path.to_str().unwrap(),
+                path: output_path_final.to_str().unwrap(),
                 duration: &download_result.duration.unwrap_or_default(),
                 audio_type: "mp3",
             };

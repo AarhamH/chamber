@@ -1,10 +1,10 @@
 use std::fs;
 use std::path::Path;
-use std::env;
 
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use home::home_dir;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
@@ -44,8 +44,8 @@ fn db_file_exists() -> bool {
 }
 
 fn get_db_path() -> String {
-    let repo_dir: std::path::PathBuf = env::current_dir().unwrap();
-    repo_dir.to_str().unwrap().to_string() + "/chamberdb.sqlite"
+    let db_dir = home_dir().unwrap();
+    db_dir.to_str().unwrap().to_string() + "/chamberdb.sqlite"
 }
 
 #[cfg(test)]

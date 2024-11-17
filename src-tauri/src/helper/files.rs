@@ -54,6 +54,21 @@ pub fn delete_file_if_exists(path: &std::path::PathBuf) -> Result<(), String> {
     Ok(())
 }
 
+pub fn trim_invalid_file_characters(path: &str) -> String {
+    let mut trimmed_path = String::new();
+    for c in path.chars() {
+        match c {
+            ' ' => trimmed_path.push('-'), // Replace spaces with hyphens
+            c if !c.is_alphanumeric() && !c.is_whitespace() => {
+                // Replace invalid characters with hyphens
+                trimmed_path.push('-');
+            }
+            _ => trimmed_path.push(c),
+        }
+    }
+    trimmed_path
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

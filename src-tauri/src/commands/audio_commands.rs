@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use diesel::prelude::*;
 use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::tag::Accessor;
@@ -205,7 +203,7 @@ pub fn delete_audio(audio_id_arg: i32) -> Result<(), String> {
 
 #[tauri::command(async)]
 pub async fn export_to_destination_driectory(audio_id_arg: i32, destination_directory: String) -> Result<(), String> {
-  use crate::helper::files::copy_file_to_destination;
+  use crate::helper::files::{copy_file_to_destination,trim_invalid_file_characters};
   use crate::schema::audio::dsl::*;
 
   let mut connection: SqliteConnection = establish_connection();
@@ -216,8 +214,9 @@ pub async fn export_to_destination_driectory(audio_id_arg: i32, destination_dire
 
   let source_path = selected_audio.path.as_str();
   let file_name = selected_audio.title.as_str();
+  let file_type = selected_audio.audio_type.as_str();
 
-  let destination_path = format!("{}/{}",destination_directory, file_name);
+  let destination_path = format!("{}/{}.{}",destination_directory, trim_invalid_file_characters(file_name),file_type);
 
   copy_file_to_destination(source_path, destination_path.as_str()).map_err(|e| format!("Unable to copy file: {}", e))?;
 

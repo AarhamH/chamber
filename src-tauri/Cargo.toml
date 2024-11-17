@@ -11,7 +11,7 @@ edition = "2021"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "shell-sidecar", "shell-open", "fs-copy-file", "fs-create-dir", "fs-read-file", "fs-write-file", "fs-remove-file", "dialog-all"] }
+tauri = { version = "1", features = [ "shell-all", "process-command-api", "fs-copy-file", "fs-create-dir", "fs-read-file", "fs-write-file", "fs-remove-file", "dialog-all"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
