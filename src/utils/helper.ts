@@ -33,8 +33,6 @@ export const buildBlob = async (filePath:string, audioType: string) => {
   const byteArray = new Uint8Array(byteNumbers);
   const getMimeType = (format: string): string => {
     switch (format.toLowerCase()) {
-      case "webm":
-        return "audio/webm";
       case "mp3":
         return "audio/mp3";
       case "opus":

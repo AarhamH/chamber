@@ -79,12 +79,14 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             let audio_store_path = audio_store_path();
             let yt_title = yt_audio.title.clone().unwrap_or_default();
             let mut output_path = audio_store_path.join(format!("{}.webm", trim_invalid_file_characters(&yt_title)));
+            let mut output_path_final = audio_store_path.join(format!("{}.mp3", trim_invalid_file_characters(&yt_title)));
             let mut counter = 0;
 
             while output_path.exists() {
                 counter += 1;
                 let dup_title = format!("{}-{}", trim_invalid_file_characters(&yt_title), counter);
                 output_path = audio_store_path.join(format!("{}.webm", dup_title.replace(" ", "_")));
+                output_path_final = audio_store_path.join(format!("{}.mp3", dup_title.replace(" ", "_")));
             }
 
             let args = vec![
@@ -113,6 +115,27 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }
             
+            let ffmpeg_args = vec![
+                "-i", &output_path.to_str().unwrap(),
+                &output_path_final.to_str().unwrap(),
+            ];
+
+            let ffmpeg_command = if cfg!(target_os = "windows") { "ffmpeg.exe" } else { "ffmpeg" };
+            Command::new_sidecar(ffmpeg_command)
+                .expect("failed to create `my-sidecar` binary command")
+                .args(&ffmpeg_args)
+                .spawn()
+                .expect("Failed to spawn sidecar");
+
+            let timeout_duration = std::time::Duration::from_secs(120);
+            let start_time = std::time::Instant::now();
+            // Wait for the output path to exist
+            while !std::path::Path::new(output_path_final.to_str().unwrap()).exists() {
+                if start_time.elapsed() > timeout_duration {
+                    panic!("Timeout waiting for output file to exist");
+                }
+                std::thread::sleep(std::time::Duration::from_secs(1));
+            }
             
             // Fetch metadata and insert into the database
             let download_result = fetch_metadata(yt_audio.url).await.unwrap();
@@ -120,9 +143,9 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             let new_audio: NewAudio<'_> = NewAudio{
                 title: &download_result.title.unwrap_or_default(),
                 author: &download_result.channel.unwrap_or_default(),
-                path: output_path.to_str().unwrap(),
+                path: output_path_final.to_str().unwrap(),
                 duration: &download_result.duration.unwrap_or_default(),
-                audio_type: "webm",
+                audio_type: "mp3",
             };
 
             let result: Result<usize, diesel::result::Error> = diesel::insert_into(audio)

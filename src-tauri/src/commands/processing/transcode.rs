@@ -2,6 +2,7 @@
 use diesel::prelude::*;
 use crate::db::establish_connection;
 use crate::helper::constants::audio_store_path;
+use crate::helper::files::trim_invalid_file_characters;
 pub use crate::helper::files::{create_audio_store_directory, construct_output_path};
 use crate::models::audio_model::NewAudio;
 use crate::schema::audio::dsl::*;
@@ -36,7 +37,7 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
         let file_paths = Arc::clone(&file_paths);
 
         let handle = task::spawn(async move {
-            let base_file_name = format!("{}-converted_to-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, queue_item.converted_type);
+            let base_file_name = format!("{}-converted_to-{}.{}", trim_invalid_file_characters(&queue_item.title), queue_item.converted_type, queue_item.converted_type);
             let audio_store_path = audio_store_path();
             let mut destination_path = audio_store_path.join(format!("{}.{}",base_file_name,queue_item.converted_type)); 
             let mut counter = 1;
@@ -50,7 +51,7 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
                 } else {
                     // Generate a new file name
                     counter += 1;
-                    let new_file_name = format!("{}-converted_to-{}-{}.{}", queue_item.title.replace(" ", "_"), queue_item.converted_type, counter, queue_item.converted_type);
+                    let new_file_name = format!("{}-{}", base_file_name, counter);
                     destination_path = audio_store_path.join(format!("{}.{}",new_file_name,queue_item.converted_type)); 
                 }
             }
@@ -67,6 +68,16 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
                 .spawn()
                 .expect("Failed to spawn sidecar");
 
+            let timeout_duration = std::time::Duration::from_secs(120);
+            let start_time = std::time::Instant::now();
+            // Wait for the output path to exist
+            while !std::path::Path::new(destination_path.to_str().unwrap()).exists() {
+                if start_time.elapsed() > timeout_duration {
+                    panic!("Timeout waiting for output file to exist");
+                }
+                std::thread::sleep(std::time::Duration::from_secs(1));
+            }
+            
             if queue_item.is_added_to_list {
                 // Fetch metadata and insert into the database
                 let mut connection: SqliteConnection = establish_connection();
