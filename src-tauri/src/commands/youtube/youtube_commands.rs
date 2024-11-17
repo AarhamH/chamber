@@ -2,6 +2,7 @@ use rusty_ytdl::search::{SearchOptions, SearchResult, YouTube};
 use rusty_ytdl::search::SearchType::Video;
 use scraper::Html;
 use crate::helper::constants::audio_store_path;
+use crate::helper::files::trim_invalid_file_characters;
 use crate::models::youtube_model::YouTubeAudio;
 use crate::helper::tools::meta_duration_to_minutes_raw;
 
@@ -77,13 +78,13 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         let handle = task::spawn(async move {
             let audio_store_path = audio_store_path();
             let yt_title = yt_audio.title.clone().unwrap_or_default();
-            let mut output_path = audio_store_path.join(format!("{}", yt_title.replace(" ", "_")));
+            let mut output_path = audio_store_path.join(format!("{}.webm", trim_invalid_file_characters(&yt_title)));
             let mut counter = 0;
 
             while output_path.exists() {
                 counter += 1;
-                let dup_title = format!("{}-{}", yt_title, counter);
-                output_path = audio_store_path.join(format!("{}", dup_title.replace(" ", "_")));
+                let dup_title = format!("{}-{}", trim_invalid_file_characters(&yt_title), counter);
+                output_path = audio_store_path.join(format!("{}.webm", dup_title.replace(" ", "_")));
             }
 
             let args = vec![
