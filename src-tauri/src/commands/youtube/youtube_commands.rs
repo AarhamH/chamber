@@ -77,13 +77,13 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
         let handle = task::spawn(async move {
             let audio_store_path = audio_store_path();
             let yt_title = yt_audio.title.clone().unwrap_or_default();
-            let mut output_path = audio_store_path.join(format!("{}.mp3", yt_title.replace(" ", "_")));
+            let mut output_path = audio_store_path.join(format!("{}", yt_title.replace(" ", "_")));
             let mut counter = 0;
 
             while output_path.exists() {
                 counter += 1;
                 let dup_title = format!("{}-{}", yt_title, counter);
-                output_path = audio_store_path.join(format!("{}.mp3", dup_title.replace(" ", "_")));
+                output_path = audio_store_path.join(format!("{}", dup_title.replace(" ", "_")));
             }
 
             let args = vec![
@@ -109,7 +109,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 author: &download_result.channel.unwrap_or_default(),
                 path: output_path.to_str().unwrap(),
                 duration: &download_result.duration.unwrap_or_default(),
-                audio_type: "mp3",
+                audio_type: "webm",
             };
 
             let result: Result<usize, diesel::result::Error> = diesel::insert_into(audio)
