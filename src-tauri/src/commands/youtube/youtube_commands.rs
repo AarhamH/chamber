@@ -91,6 +91,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
 
             let args = vec![
                 "-x",
+                "--audio-format", "mp3",
                 "--max-filesize", "500m",
                 "-o", output_path.to_str().unwrap(),
                 "--postprocessor-args", "ffmpeg:-strict -2",
@@ -115,27 +116,6 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }
             
-            let ffmpeg_args = vec![
-                "-i", &output_path.to_str().unwrap(),
-                &output_path_final.to_str().unwrap(),
-            ];
-
-            let ffmpeg_command = if cfg!(target_os = "windows") { "ffmpeg.exe" } else { "ffmpeg" };
-            Command::new_sidecar(ffmpeg_command)
-                .expect("failed to create `my-sidecar` binary command")
-                .args(&ffmpeg_args)
-                .spawn()
-                .expect("Failed to spawn sidecar");
-
-            let timeout_duration = std::time::Duration::from_secs(120);
-            let start_time = std::time::Instant::now();
-            // Wait for the output path to exist
-            while !std::path::Path::new(output_path_final.to_str().unwrap()).exists() {
-                if start_time.elapsed() > timeout_duration {
-                    panic!("Timeout waiting for output file to exist");
-                }
-                std::thread::sleep(std::time::Duration::from_secs(1));
-            }
             
             // Fetch metadata and insert into the database
             let download_result = fetch_metadata(yt_audio.url).await.unwrap();
