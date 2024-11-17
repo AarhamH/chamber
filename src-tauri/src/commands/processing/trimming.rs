@@ -1,21 +1,17 @@
-use std::process::Command;
-
 use diesel::prelude::*;
 use diesel::SqliteConnection;
-use crate::binary_path_gen::FFMPEG_NO_EXT_PATH;
-use crate::binary_path_gen::FFMPEG_PATH;
 use crate::db::establish_connection;
 pub use crate::helper::files::{create_audio_store_directory, construct_output_path};
 pub use crate::helper::tools::{seconds_to_minutes,seconds_to_hh_mm_ss};
 use crate::models::audio_model::NewAudio;
 use crate::schema::audio::dsl::*;
 use crate::helper::constants::audio_store_path;
+use tauri::api::process::Command;
 
 #[tauri::command]
 pub async fn trim_single_audio(file_name:String, file_path:String, start:f64, end:f64, file_type:String) -> Result<(), String> {  
     create_audio_store_directory()?;
     let length = (end-start).ceil() as i32;
-    let command = if cfg!(target_os = "windows") { FFMPEG_PATH } else { FFMPEG_NO_EXT_PATH };
     let base_file_name = format!("{}-trimmed-to-{}-sec", file_name.replace(" ", "_"), length);
     let audio_store_path = audio_store_path();
     let mut destination_path = audio_store_path.join(format!("{}.{}",&base_file_name,&file_type)); 
@@ -39,15 +35,12 @@ pub async fn trim_single_audio(file_name:String, file_path:String, start:f64, en
       &destination_path.to_str().unwrap(),
     ];
 
-    let output = Command::new(command)
-      .args(&args)
-      .output()
-      .expect("Failed to execute command");
-
-    if !output.status.success() {
-        return Err("Failed to trim audio".to_string());
-    }
-
+    let command = if cfg!(target_os = "windows") { "ffmpeg.exe" } else { "ffmpeg" };
+    Command::new_sidecar(command)
+        .expect("failed to create `my-sidecar` binary command")
+        .args(&args)
+        .spawn()
+        .expect("Failed to spawn sidecar");
 
     let mut connection: SqliteConnection = establish_connection();
     let new_audio: NewAudio<'_> = NewAudio {
