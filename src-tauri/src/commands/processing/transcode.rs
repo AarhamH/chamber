@@ -1,14 +1,11 @@
 
 use diesel::prelude::*;
-use crate::binary_path_gen::FFMPEG_NO_EXT_PATH;
-use crate::binary_path_gen::FFMPEG_PATH;
 use crate::db::establish_connection;
 use crate::helper::constants::audio_store_path;
 pub use crate::helper::files::{create_audio_store_directory, construct_output_path};
 use crate::models::audio_model::NewAudio;
 use crate::schema::audio::dsl::*;
 use tokio::sync::mpsc;
-use std::process::Command;
 use tokio::task;
 use serde::{Serialize, Deserialize};   
 use std::sync::{Arc, Mutex};     
@@ -26,6 +23,7 @@ pub struct QueueItem {
 
 #[tauri::command]
 pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> {
+    use tauri::api::process::Command;
     create_audio_store_directory()?;
 
     let (tx, mut rx) = mpsc::channel(32);
@@ -33,7 +31,6 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
     let file_paths = Arc::new(Mutex::new(HashSet::new())); // HashSet to track file paths
 
     for queue_item in queue_items {
-        let command = if cfg!(target_os = "windows") { FFMPEG_PATH } else { FFMPEG_NO_EXT_PATH };
         let tx = tx.clone();
         let handles = Arc::clone(&handles);
         let file_paths = Arc::clone(&file_paths);
@@ -63,16 +60,12 @@ pub async fn transcode_audio(queue_items: Vec<QueueItem>) -> Result<(), String> 
                 &destination_path.to_str().unwrap(),
             ];
 
-            let output = Command::new(command)
+            let command = if cfg!(target_os = "windows") { "ffmpeg.exe" } else { "ffmpeg" };
+            Command::new_sidecar(command)
+                .expect("failed to create `my-sidecar` binary command")
                 .args(&args)
-                .output()
-                .expect("Failed to execute command");
-
-            if !output.status.success() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                let _ = tx.send(Err(format!("Error: {}", stderr))).await;
-                return;
-            }
+                .spawn()
+                .expect("Failed to spawn sidecar");
 
             if queue_item.is_added_to_list {
                 // Fetch metadata and insert into the database
