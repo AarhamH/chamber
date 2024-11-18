@@ -6,7 +6,7 @@ on:
     paths:
       - 'src-tauri/**'
       - '**.yml'
-      
+
 jobs:
   publish-tauri:
     permissions:
@@ -49,6 +49,12 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
+      - name: install frontend dependencies
+        run: npm install
+      
+      - name: Run setup to bundle ffmpeg and yt-dlp
+        run: npm run setup
+      
       - name: Run unit tests
         run: cargo test
         working-directory: src-tauri
