@@ -56,5 +56,5 @@ jobs:
         run: npm run setup
       
       - name: Run unit tests
-        run: cargo test
+        run: cargo test --tests
         working-directory: src-tauri
