@@ -61,11 +61,6 @@ jobs:
       - name: Run setup to bundle ffmpeg and yt-dlp
         run: npm run setup
 
-      - name: Log the contents of release_sidecar/
-        run: |
-          ls -la src-tauri/release_sidecar/
-          echo $(src-tauri/src/binary_path_gen.rs)
-
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
