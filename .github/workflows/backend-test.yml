@@ -2,10 +2,11 @@ name: 'Backend Unit Tests'
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - release
-
+  pull_request:
+    paths:
+      - 'src-tauri/**'
+      - '**.yml'
+      
 jobs:
   publish-tauri:
     permissions:
