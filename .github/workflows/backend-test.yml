@@ -2,7 +2,7 @@ name: 'Backend Unit Tests'
 
 on:
   push:
-    brnaches:
+    branches:
       - main
       - release
     paths:
