@@ -16,8 +16,6 @@
   </p>
 </div>
 
-
-_NOTE: THIS PROJECT IS INTENDED FOR PERSONAL AND NON-COMMERCIAL USE ONLY_
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
