@@ -61,7 +61,7 @@ export const PlayBack = () => {
             max={audioDuration() || 100}
             value={trackProgress()}
             onInput={handleTrackChange}
-            class="flex-grow"
+            class="flex-grow range pr-6 accent-foreground"
           />
           <span class="text-sm ml-2 w-12 text-left">
             {formatTime(audioDuration())}
@@ -76,7 +76,7 @@ export const PlayBack = () => {
         <div class="hover:cursor-pointer" onClick={handleVolumeMute}>
           {isMuted() ? <BiRegularVolumeMute size={"1.2em"} /> : <BiRegularVolumeFull size={"1.2em"} />}
         </div>
-        <input type="range" min="0" max="1" step="0.01" value={1} onInput={handleVolumeChange} class="w-1/2" />
+        <input type="range" min="0" max="1" step="0.01" value={1} onInput={handleVolumeChange} class="w-1/2 accent-foreground" />
         <Button 
           class="m-auto hover:cursor-pointer w-fit rounded-full" 
           onClick={() => setColorMode(colorMode() === "dark" ? "light" : "dark")}>
