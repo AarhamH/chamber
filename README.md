@@ -56,13 +56,14 @@ Chamber supports the following features:
 Sample pics:
 
 Playlist
-![Chambe Screenshot 1][chamber-pic-1]
+![playlist-cap](https://github.com/user-attachments/assets/e52c0ffb-88c6-4053-8297-c1c8ee9e0a22)
 
 YouTube Search
-![Chamber Screenshot 2][chamber-pic-2]
+![search-cap](https://github.com/user-attachments/assets/20d53c68-04a2-43d8-a669-c0b6e73dfd45)
 
 Audio Trimmer
-![Chamber Screenshot 3][chamber-pic-3]
+![trimmer](https://github.com/user-attachments/assets/41962341-092f-485a-a3fe-be83989c0f70)
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
