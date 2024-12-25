@@ -258,7 +258,7 @@ export const WaveTrimmer = () => {
                     <DialogTrigger class="flex items-center justify-center">
                       <BsPlus size={"2em"} class="mb-2 hover:cursor-pointer" />
                     </DialogTrigger>
-                    <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
+                    <AllAudioModal title="Add to Trimmer" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
                   </Dialog>
                 </div>
               )}
@@ -295,7 +295,7 @@ export const WaveTrimmer = () => {
               <div class="text-3xl font-thin">Welcome to the Trimmer</div>
               <Dialog>
                 <DialogTrigger as={Button} class="mt-5 w-32 border-2 hover:bg-transparent hover:border-opacity-60" size={"sm"}>(+) Add Audio</DialogTrigger>
-                <AllAudioModal title="Add to Transcoding" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
+                <AllAudioModal title="Add to Trimmer" modalAction={{icon:IoAdd, onClick:insertFromAllAudios}} />
               </Dialog>
             </div>
           </div>
