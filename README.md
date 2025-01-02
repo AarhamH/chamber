@@ -44,7 +44,17 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Chamber is a fast and light-weight audio library to handle playback, audio storage, transcoding, trimming, and audio recording. This project aims to centralize many desired audio features into one client, allowing video editors to easily compile audios.
+Chamber is a fast and light-weight audio library to handle playback, search & download, transcoding, trimming, and audio recording.
+
+### The problem
+Compiling audios is HARD! It's often a multi-step process to handle various conversions, each step taking an ample of time. It is also difficult storing it if you have a hard time organizing your files (like I do).
+
+Here is a graph of a common workflow for collecting and converting audio files:
+
+![chamber-chart](https://github.com/user-attachments/assets/2ce328d6-ff74-4bbd-9570-1fb0ee2caf1c)
+
+The real kicker is that you have to do this all over again for the rest of your audios. Chamber attempts to fix this by streamlining all of these steps through concurrency and an ergonomic UI.
+
 
 Chamber supports the following features:
 * Basic audio playback features and playlist support
