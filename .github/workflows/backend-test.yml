@@ -37,7 +37,7 @@ jobs:
         run: npm install
 
       - name: Set PKG_CONFIG_PATH
-        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >>
+        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
       
       - name: Run setup to bundle ffmpeg and yt-dlp
         run: npm run setup
