@@ -5,6 +5,7 @@ pub mod helper {
     pub mod tools;
     pub mod files;
     pub mod constants;
+    pub mod db_lock;
 }
 
 

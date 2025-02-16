@@ -5,6 +5,8 @@ use crate::helper::constants::audio_store_path;
 use crate::helper::files::trim_invalid_file_characters;
 use crate::models::youtube_model::YouTubeAudio;
 use crate::helper::tools::meta_duration_to_minutes_raw;
+use crate::helper::db_lock::DB_LOCK;
+
 
 #[tauri::command]
 pub async fn youtube_suggestion(input: String) -> Result<Vec<String>, String> {
@@ -74,6 +76,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
     let mut handles = vec![];
     for yt_audio in audio_list {
         let tx = tx.clone();
+        let db_lock = DB_LOCK.clone();
         // Spawn a task for each audio download
         let handle = task::spawn(async move {
             let audio_store_path = audio_store_path();
@@ -115,6 +118,8 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
             
             // Fetch metadata and insert into the database
             let download_result = fetch_metadata(yt_audio.url).await.unwrap();
+            let _lock = db_lock.lock().await;
+        
             let mut connection: SqliteConnection = establish_connection();
             let new_audio: NewAudio<'_> = NewAudio{
                 title: &download_result.title.unwrap_or_default(),
