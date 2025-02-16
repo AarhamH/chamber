@@ -32,7 +32,6 @@ pub async fn trim_single_audio(file_name:String, file_path:String, start:f64, en
       "-ss", start_as_hh_mm_ss.as_str(),
       "-to", end_as_hh_mm_ss.as_str(),
       "-i", &file_path,
-      "-c", "copy",
       &destination_path.to_str().unwrap(),
     ];
 
