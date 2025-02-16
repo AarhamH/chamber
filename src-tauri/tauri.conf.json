@@ -42,10 +42,11 @@
     "windows": [
       {
         "title": "chamber",
-        "width": 1920,
-        "height": 1080,
+        "width": 1080,
+        "height": 720,
         "minWidth": 800,
-        "minHeight": 800
+        "minHeight": 720,
+        "center": true
       }
     ],
     "security": {
