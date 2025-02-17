@@ -66,3 +66,5 @@ pub fn extract_views(document: &Html) -> Result <String, String>{
     false => Ok(trim_number(&views))
   }
 }
+
+//
