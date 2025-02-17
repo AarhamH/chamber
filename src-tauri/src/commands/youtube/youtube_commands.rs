@@ -116,7 +116,7 @@ pub async fn download_audio(audio_list: Vec<YouTubeAudio>) -> Result<(), String>
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }
             
-            // Fetch metadata and insert into the database
+            // Lock multithreaded access to avoid database blocks
             let download_result = fetch_metadata(yt_audio.url).await.unwrap();
             let _lock = db_lock.lock().await;
         
