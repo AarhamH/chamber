@@ -55,7 +55,7 @@ pub fn extract_channel(document: &Html) -> Result <String, String>{
 
 pub fn extract_views(document: &Html) -> Result <String, String>{
   use crate::helper::tools::trim_number;
-  let views_selector: Selector = Selector::parse("meta[itemprop='interactionCount']").unwrap();
+  let views_selector: Selector = Selector::parse("meta[itemprop='userInteractionCount']").unwrap();
   let views: String = document.select(&views_selector)
     .next()
     .map(|e| e.value().attr("content").unwrap_or("").to_string())
